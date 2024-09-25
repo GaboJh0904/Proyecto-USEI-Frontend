@@ -1,70 +1,95 @@
 <template>
-    <div>
-      <header>
-        <NavBar :userRole="userRole" />
-      </header>
-  
-      <main class="user-management-container">
-        <h1 class="user-management-title">Listado de Estudiantes</h1>
-  
-        <!-- Botón para cargar archivo CSV -->
-        <div class="upload-section">
-          <div class="csv-buttons">
-            <a href="#" class="liquid-button">
-              <label for="csvInput">
-                <span>Seleccionar archivo .csv</span>
-                <div class="liquid"></div>
-              </label>
-              <input type="file" id="csvInput" @change="handleFileUpload" accept=".csv" style="display: none;" />
-            </a>
-  
-            <a href="#" class="liquid-button" @click="processCSV">
-              <span>Cargar CSV</span>
+  <div>
+    <header>
+      <NavBar :userRole="userRole" />
+    </header>
+
+    <main class="user-management-container">
+      <h1 class="user-management-title">Listado de Estudiantes</h1>
+
+      <!-- Botón para guardar cambios -->
+      <div v-if="editingIndex !== null" class="save-button-container">
+        <button @click="saveChanges" class="save-button">Guardar Cambios</button>
+        <button @click="cancelChanges" class="cancel-button">Cancelar</button>
+      </div>
+
+      <!-- Botón para cargar archivo CSV -->
+      <div class="upload-section">
+        <div class="csv-buttons">
+          <a href="#" class="liquid-button">
+            <label for="csvInput">
+              <span>Seleccionar archivo .csv</span>
               <div class="liquid"></div>
-            </a>
-          </div>
+            </label>
+            <input type="file" id="csvInput" @change="handleFileUpload" accept=".csv" style="display: none;" />
+          </a>
+
+          <a href="#" class="liquid-button" @click="processCSV">
+            <span>Cargar CSV</span>
+            <div class="liquid"></div>
+          </a>
         </div>
-  
-        <!-- Tabla de estudiantes cargados -->
-        <div class="user-table-container">
-          <h2>Lista de estudiantes cargados</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Carnet</th>
-                <th>Carrera</th>
-                <th>Asignatura</th>
-                <th>Celular</th>
-                <th>Correo electrónico</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(estudiante, index) in estudiantes" :key="index">
-                <td>{{ estudiante.nombre }}</td>
-                <td>{{ estudiante.carnet }}</td>
-                <td>{{ estudiante.carrera }}</td>
-                <td>{{ estudiante.asignatura }}</td>
-                <td>{{ estudiante.celular }}</td>
-                <td>{{ estudiante.correo_electronico }}</td>
-                <td id="button-container-table">
-                  <button @click="editEstudiante(index)" class="action-btn edit-btn">
-                    <i class="fas fa-pencil-alt"></i>
-                  </button>
-                  <button @click="deleteEstudiante(index)" class="action-btn delete-btn">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </main>
-  
-      <FooterComponent />
-    </div>
-  </template>
+      </div>
+
+      <!-- Tabla de estudiantes cargados -->
+      <div class="user-table-container">
+        <h2>Lista de estudiantes cargados</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Carnet</th>
+              <th>Carrera</th>
+              <th>Asignatura</th>
+              <th>Celular</th>
+              <th>Correo electrónico</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(estudiante, index) in estudiantes" :key="index">
+              <td>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.nombre" />
+                <span v-else>{{ estudiante.nombre }}</span>
+              </td>
+              <td>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.carnet" />
+                <span v-else>{{ estudiante.carnet }}</span>
+              </td>
+              <td>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.carrera" />
+                <span v-else>{{ estudiante.carrera }}</span>
+              </td>
+              <td>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.asignatura" />
+                <span v-else>{{ estudiante.asignatura }}</span>
+              </td>
+              <td>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.celular" />
+                <span v-else>{{ estudiante.celular }}</span>
+              </td>
+              <td>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.correo_electronico" />
+                <span v-else>{{ estudiante.correo_electronico }}</span>
+              </td>
+              <td id="button-container-table">
+                <button @click="editEstudiante(index)" class="action-btn edit-btn" v-if="editingIndex !== index">
+                  <i class="fas fa-pencil-alt"></i>
+                </button>
+                <button @click="deleteEstudiante(index)" class="action-btn delete-btn">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <FooterComponent />
+  </div>
+</template>
+
   
   <script>
 import Papa from 'papaparse'; // Para procesar CSV
@@ -100,68 +125,104 @@ export default {
         }
       ], // Datos estáticos para la tabla
       file: null, // Archivo CSV cargado
+      editingIndex: null, 
+      editedEstudiante: {} 
     };
   },
   mounted() {
-    // Obtener el rol del usuario desde el localStorage
     this.userRole = localStorage.getItem('rol') || '';
   },
   methods: {
-    handleFileUpload(event) {
-      this.file = event.target.files[0];
-    },
-    processCSV() {
-      if (this.file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const csvData = e.target.result;
-          Papa.parse(csvData, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (result) => {
-              this.estudiantes = result.data; // Almacenar los datos del CSV en estudiantes
-              Swal.fire({
-                icon: 'success',
-                title: 'Archivo CSV cargado exitosamente',
-                showConfirmButton: false,
-                timer: 1500
-              });
-            },
-          });
-        };
-        reader.readAsText(this.file);
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Por favor, selecciona un archivo CSV primero',
+  handleFileUpload(event) {
+    this.file = event.target.files[0];
+  },
+  processCSV() {
+    if (this.file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const csvData = e.target.result;
+        Papa.parse(csvData, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (result) => {
+            this.estudiantes = result.data;
+            Swal.fire({
+              icon: 'success',
+              title: 'Archivo CSV cargado exitosamente',
+              showConfirmButton: false,
+              timer: 1500
+            });
+          },
         });
-      }
-    },
-    editEstudiante(index) {
-      console.log('Editar estudiante', this.estudiantes[index]);
-      // Lógica para editar el estudiante
-    },
-    deleteEstudiante(index) {
+      };
+      reader.readAsText(this.file);
+    } else {
       Swal.fire({
-        title: '¿Estás seguro?',
-        text: "¡No podrás revertir esto!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminarlo'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.estudiantes.splice(index, 1);
-          Swal.fire(
-            'Eliminado',
-            'El estudiante ha sido eliminado.',
-            'success'
-          );
-        }
+        icon: 'error',
+        title: 'Error',
+        text: 'Por favor, selecciona un archivo CSV primero',
       });
     }
+  },
+  editEstudiante(index) {
+    this.editingIndex = index;
+    this.editedEstudiante = { ...this.estudiantes[index] }; // Copia los datos del estudiante
+  },
+  saveChanges() {
+    if (this.editingIndex !== null) {
+      this.estudiantes.splice(this.editingIndex, 1, this.editedEstudiante);
+      this.editingIndex = null; // Finaliza el modo de edición
+      Swal.fire({
+        icon: 'success',
+        title: 'Cambios guardados exitosamente',
+        showConfirmButton: false,
+        timer: 1500
+      });
+    }
+  },
+  cancelChanges() {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: "¡Se perderán los cambios no guardados!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#80CED7', 
+    cancelButtonColor: '#8E6C88',  
+    confirmButtonText: 'Sí, cancelar',
+    cancelButtonText: 'No, continuar editando'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.editingIndex = null; // Cancela la edición y restablece el estado
+      Swal.fire(
+        'Cancelado',
+        'La edición ha sido cancelada.',
+        'success'
+      );
+    }
+  });
+},
+
+deleteEstudiante(index) {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: "¡No podrás revertir esto!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#80CED7', 
+    cancelButtonColor: '#8E6C88',  
+    confirmButtonText: 'Sí, eliminarlo',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.estudiantes.splice(index, 1);
+      Swal.fire(
+        'Eliminado',
+        'El estudiante ha sido eliminado.',
+        'success'
+      );
+    }
+  });
+}
   }
 };
 </script>
@@ -301,14 +362,16 @@ export default {
   
   /* Tabla de lista de estudiantes*/
   .user-table-container {
-    background-color: #CBDADB;
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 60rem; /* Se ajusta el ancho máximo */
-    margin-bottom: 2rem;
-  }
+  background-color: #CBDADB;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 75rem; /* Aumenté el ancho máximo para hacer el recuadro más ancho */
+  margin-bottom: 2rem;
+  overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
+}
+
   
   .user-table-container table {
     width: 100%;
@@ -372,5 +435,60 @@ export default {
     border: 1px solid #263D42;
     border-radius: 10px;
   }
+
+
+.user-table-container td input {
+  width: 100%; /* Para que los inputs se ajusten al 100% del ancho de la celda */
+  box-sizing: border-box; /* Asegura que el padding y border se incluyan en el width */
+  padding: 5px; /* Ajusta el padding para que se vea mejor */
+  font-size: 14px; /* Ajusta el tamaño de fuente para que sea consistente */
+}
+
+.user-table-container td {
+  max-width: 200px; /* Limitar el ancho máximo de las celdas */
+  overflow: hidden; /* Para asegurarse de que el contenido que se desborda no rompa la estructura */
+  text-overflow: ellipsis; /* Muestra "..." si el contenido se desborda */
+  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+.user-table-container {
+  overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
+}
+
+.cancel-button {
+  background-color: #8E6C88;
+  color: white;
+  padding: 10px 20px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-button:hover {
+  background-color: #263D42;
+}
+
+ /* Boton de guardar cambios una vez presionado el de editar*/
+ .save-button-container {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.save-button {
+  background-color: #80CED7;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.save-button:hover {
+  background-color: #263D42;
+}
+
+
+
   </style>
   
