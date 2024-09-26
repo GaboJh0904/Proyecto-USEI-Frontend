@@ -47,7 +47,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(estudiante, index) in estudiantes" :key="index">
+            <tr v-for="(estudiante, index) in estudiantesPaginados" :key="index">
               <td>
                 <input v-if="editingIndex === index" v-model="editedEstudiante.nombre" />
                 <span v-else>{{ estudiante.nombre }}</span>
@@ -84,146 +84,157 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Contenedor de la paginación con el componente de paginación -->
+      <PaginationComponent
+        :page-count="totalPages"
+        @page-changed="handlePageClick"
+      />
     </main>
 
     <FooterComponent />
   </div>
 </template>
 
-  
-  <script>
+<script>
 import Papa from 'papaparse'; // Para procesar CSV
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';
+import PaginationComponent from '@/components/PaginationComponent.vue'; // Importa el componente de paginación
 
 export default {
   name: 'ListadoEstudiantes',
   components: {
     NavBar,
     FooterComponent,
+    PaginationComponent, // Agrega el componente de paginación aquí
   },
   data() {
     return {
-      userRole: '', // Añadir userRole para gestionar el rol del usuario
-      estudiantes: [
-        {
-          nombre: "Rosario Calisaya",
-          carnet: "9172358",
-          carrera: "Ingeniría de sistemas",
-          asignatura: "Taller de grado I",
-          celular: "67304790",
-          correo_electronico: "rosario.calisaya@ucb.edu.bo"
-        },
-        {
-          nombre: "Laura Mallea",
-          carnet: "1234567",
-          carrera: "Ingeniría de sistemas",
-          asignatura: "Taller de grado I",
-          celular: "7654321",
-          correo_electronico: "laura.mallea@ucb.edu.bo"
-        }
-      ], // Datos estáticos para la tabla
-      file: null, // Archivo CSV cargado
-      editingIndex: null, 
-      editedEstudiante: {} 
+      userRole: '',
+      estudiantes: [],
+      file: null,
+      editingIndex: null,
+      editedEstudiante: {},
+      perPage: 10, // Estudiantes por página
+      currentPage: 1, // Página actual
     };
   },
-  mounted() {
-    this.userRole = localStorage.getItem('rol') || '';
+  computed: {
+    estudiantesPaginados() {
+      // Calcula los estudiantes que se mostrarán en la página actual
+      const start = (this.currentPage - 1) * this.perPage;
+      const end = start + this.perPage;
+      return this.estudiantes.slice(start, end);
+    },
+    totalPages() {
+      // Calcula el total de páginas
+      return Math.ceil(this.estudiantes.length / this.perPage);
+    },
   },
   methods: {
-  handleFileUpload(event) {
-    this.file = event.target.files[0];
-  },
-  processCSV() {
-    if (this.file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const csvData = e.target.result;
-        Papa.parse(csvData, {
-          header: true,
-          skipEmptyLines: true,
-          complete: (result) => {
-            this.estudiantes = result.data;
-            Swal.fire({
-              icon: 'success',
-              title: 'Archivo CSV cargado exitosamente',
-              showConfirmButton: false,
-              timer: 1500
-            });
-          },
+    handleFileUpload(event) {
+      this.file = event.target.files[0];
+    },
+    processCSV() {
+      if (this.file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const csvData = e.target.result;
+          Papa.parse(csvData, {
+            header: true,
+            skipEmptyLines: true,
+            encoding: 'UTF-8',
+            complete: (result) => {
+              if (result.data && result.data.length > 0 && result.data[0].CARNET) {
+                this.estudiantes = result.data.map((estudiante) => ({
+                  nombre: estudiante.NOMBRE,
+                  carnet: estudiante.CARNET,
+                  carrera: estudiante.CARRERA,
+                  asignatura: estudiante.ASIGNATURA,
+                  celular: estudiante.CELULAR,
+                  correo_electronico: estudiante.CORREO_ELECTRONICO,
+                }));
+                Swal.fire({
+                  icon: 'success',
+                  title: 'Archivo CSV cargado exitosamente',
+                  showConfirmButton: false,
+                  timer: 1500,
+                });
+              } else {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error en el CSV',
+                  text: 'Los datos del CSV no tienen el formato correcto o los encabezados no coinciden',
+                });
+              }
+            },
+          });
+        };
+        reader.readAsText(this.file, 'UTF-8');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Por favor, selecciona un archivo CSV primero',
         });
-      };
-      reader.readAsText(this.file);
-    } else {
+      }
+    },
+    editEstudiante(index) {
+      this.editingIndex = index;
+      this.editedEstudiante = { ...this.estudiantes[index] };
+    },
+    saveChanges() {
+      if (this.editingIndex !== null) {
+        this.estudiantes.splice(this.editingIndex, 1, this.editedEstudiante);
+        this.editingIndex = null;
+        Swal.fire({
+          icon: 'success',
+          title: 'Cambios guardados exitosamente',
+          showConfirmButton: false,
+          timer: 1500,
+        });
+      }
+    },
+    cancelChanges() {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Por favor, selecciona un archivo CSV primero',
+        title: '¿Estás seguro?',
+        text: '¡Se perderán los cambios no guardados!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#80CED7',
+        cancelButtonColor: '#8E6C88',
+        confirmButtonText: 'Sí, cancelar',
+        cancelButtonText: 'No, continuar editando',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.editingIndex = null;
+          Swal.fire('Cancelado', 'La edición ha sido cancelada.', 'success');
+        }
       });
-    }
-  },
-  editEstudiante(index) {
-    this.editingIndex = index;
-    this.editedEstudiante = { ...this.estudiantes[index] }; // Copia los datos del estudiante
-  },
-  saveChanges() {
-    if (this.editingIndex !== null) {
-      this.estudiantes.splice(this.editingIndex, 1, this.editedEstudiante);
-      this.editingIndex = null; // Finaliza el modo de edición
+    },
+    deleteEstudiante(index) {
       Swal.fire({
-        icon: 'success',
-        title: 'Cambios guardados exitosamente',
-        showConfirmButton: false,
-        timer: 1500
+        title: '¿Estás seguro?',
+        text: '¡No podrás revertir esto!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#80CED7',
+        cancelButtonColor: '#8E6C88',
+        confirmButtonText: 'Sí, eliminarlo',
+        cancelButtonText: 'Cancelar',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.estudiantes.splice(index, 1);
+          Swal.fire('Eliminado', 'El estudiante ha sido eliminado.', 'success');
+        }
       });
-    }
+    },
+    handlePageClick(pageNumber) {
+      this.currentPage = pageNumber; // Actualiza la página actual cuando se hace clic en la paginación
+    },
   },
-  cancelChanges() {
-  Swal.fire({
-    title: '¿Estás seguro?',
-    text: "¡Se perderán los cambios no guardados!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#80CED7', 
-    cancelButtonColor: '#8E6C88',  
-    confirmButtonText: 'Sí, cancelar',
-    cancelButtonText: 'No, continuar editando'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      this.editingIndex = null; // Cancela la edición y restablece el estado
-      Swal.fire(
-        'Cancelado',
-        'La edición ha sido cancelada.',
-        'success'
-      );
-    }
-  });
-},
-
-deleteEstudiante(index) {
-  Swal.fire({
-    title: '¿Estás seguro?',
-    text: "¡No podrás revertir esto!",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#80CED7', 
-    cancelButtonColor: '#8E6C88',  
-    confirmButtonText: 'Sí, eliminarlo',
-    cancelButtonText: 'Cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      this.estudiantes.splice(index, 1);
-      Swal.fire(
-        'Eliminado',
-        'El estudiante ha sido eliminado.',
-        'success'
-      );
-    }
-  });
-}
-  }
 };
 </script>
 
@@ -488,7 +499,14 @@ deleteEstudiante(index) {
   background-color: #263D42;
 }
 
-
-
-  </style>
+/*Estilos de la paginacion*/
+/* Contenedor de la paginación */
+.pagination-container {
+  margin-top: 20px; /* Margen superior para separar de la tabla */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0; /* Un poco de padding para separación adicional */
+}
+</style>
   
