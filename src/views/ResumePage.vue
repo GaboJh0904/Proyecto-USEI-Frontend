@@ -22,10 +22,9 @@
         <p><strong>Cédula de Identidad:</strong> {{ form['11'] }}</p>
         <p><strong>Estado Civil:</strong> {{ form['12'] }}</p>
         
-        
         <div class="form-actions">
           <button class="back-button" @click="goBackToSurvey">Regresar a la Encuesta</button>
-          <button class="submit-button" @click="submitForm">Enviar</button>
+          <button class="submit-button" @click="submitSurvey">Enviar</button>
         </div>
       </div>
     </main>
@@ -39,6 +38,7 @@ import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import Swal from 'sweetalert2'; // Importar SweetAlert2
 
 export default {
   name: 'ResumePage',
@@ -55,13 +55,12 @@ export default {
     goBackToSurvey() {
       localStorage.setItem('surveyAnswers', JSON.stringify(this.form));
       this.$router.push({ name: 'encuestaEstudiante', query: { fromResume: true } });
-
     },
     async submitSurvey() {
       try {
         const estudianteId = this.form.estudianteId;
         if (!estudianteId) {
-          throw new Error('El ID del estudiante no esta disponible.');
+          throw new Error('El ID del estudiante no está disponible.');
         }
 
         // Iterar sobre las respuestas para enviar cada una con el ID de la pregunta
@@ -75,12 +74,27 @@ export default {
           }
         }
 
-        alert('Encuesta enviada con éxito');
-        localStorage.removeItem('surveyAnswers'); // Limpiar LocalStorage después de enviar
+        // Mostrar notificación de éxito con SweetAlert2
+        Swal.fire({
+          icon: 'success',
+          title: '¡Encuesta enviada!',
+          text: 'Tu encuesta ha sido enviada exitosamente.',
+          confirmButtonText: 'Aceptar'
+        });
+
+        // Limpiar el almacenamiento local y redirigir
+        localStorage.removeItem('surveyAnswers'); 
         this.$router.push('/menu-estudiante');
       } catch (error) {
         console.error('Detalles del error:', error);
-        alert('Error al enviar la encuesta. Vuelve a intentar.');
+
+        // Mostrar mensaje de error con SweetAlert2
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al enviar la encuesta. Por favor, inténtalo más tarde.',
+          confirmButtonText: 'Aceptar'
+        });
       }
     }
   }
