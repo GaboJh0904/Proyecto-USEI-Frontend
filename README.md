@@ -50,4 +50,9 @@ npm install sweetalert2
 ```sh
 npm install papaparse
 ```
+## Paginación 
+```sh
+npm install vuejs-paginate-next
+```
+
 
