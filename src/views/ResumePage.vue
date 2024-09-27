@@ -39,8 +39,6 @@ import FooterComponent from '@/components/FooterComponent.vue';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';  
 import axios from 'axios';
-import Swal from 'sweetalert2'; // Importar SweetAlert2
-
 export default {
   name: 'ResumePage',
   components: {
