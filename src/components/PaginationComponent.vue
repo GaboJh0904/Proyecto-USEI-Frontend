@@ -40,7 +40,6 @@
   </script>
   
   <style scoped>
-  /* Estilos del componente de paginación */
 .pagination-container {
   margin-top: 20px;
   display: flex;
@@ -61,29 +60,31 @@
   margin: 0 5px;
 }
 
-.page-link {
+/* Selector profundo de Vue para asegurarse de que se aplique a los elementos hijos */
+::v-deep .page-link {
   padding: 8px 12px;
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 5px;
-  color: #80CED7;
+  color: #263d42;
   cursor: pointer;
   text-align: center;
 }
 
-.active .page-link {
+::v-deep .active .page-link,
+::v-deep .page-link.active {
   background-color: #8E6C88 !important; /* Cambiar el color activo a morado */
   color: white !important;
   border: 1px solid #8E6C88 !important; /* Mantener el borde morado */
 }
 
-.page-link:hover {
+::v-deep .page-link:hover {
   background-color: #8E6C88 !important; /* Cambiar color de fondo al hacer hover */
   color: white !important; /* Cambiar color de texto a blanco al hacer hover */
 }
 
-.page-prev,
-.page-next {
+::v-deep .page-prev,
+::v-deep .page-next {
   display: inline-block;
   padding: 8px 12px;
   background-color: #ffffff;
@@ -94,10 +95,11 @@
   text-align: center;
 }
 
-.page-prev:hover,
-.page-next:hover {
+::v-deep .page-prev:hover,
+::v-deep .page-next:hover {
   background-color: #8E6C88 !important; /* Cambiar color de fondo al hacer hover en anterior/siguiente */
-  color: white !important; /* Cambiar color de texto al hacer hover en anterior/siguiente */
+  color: #263d42 !important; /* Cambiar color de texto al hacer hover en anterior/siguiente */
 }
+
   </style>
   

@@ -90,7 +90,7 @@
           </div>
           <h3>ESTUDIANTES</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToListadoEstudiantes">Ingresar</button>
           </div>
         </div>
       </div>
@@ -151,11 +151,14 @@
       },
       goToEnProgreso(){
         this.$router.push('/en-progreso');
-      }
+      },
+      goToListadoEstudiantes() {
+      this.$router.push('/listado-estudiantes');
+    },
     },
     goToEnviarEnc() {
       this.$router.push('/enviar-encuesta');
-    }
+    },
   };
   </script>
   

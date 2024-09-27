@@ -64,8 +64,18 @@ const router = createRouter({
       path: '/listado-estudiantes', // Nueva ruta
       name: 'ListadoEstudiantes',
       component: ListadoEstudiantes
+    },
+  ],
+  // Aquí es donde agregamos el comportamiento de desplazamiento
+  scrollBehavior(to, from, savedPosition) {
+    // Si la posición guardada existe (por ejemplo, al hacer clic en "atrás")
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      // Si no hay posición guardada, desplazarse hacia la parte superior
+      return { top: 0 };
     }
-  ]
+  },
 })
 
 export default router
