@@ -99,88 +99,108 @@
   </template>
   
   <script>
-  import NavBar from '@/components/NavBar.vue';
-  import FooterComponent from '@/components/FooterComponent.vue';
-  // import axios from 'axios'; // Descomentar cuando se integre con la API
-  
-  export default {
-    name: 'ActualizarEncuesta',
-    components: {
-      NavBar,
-      FooterComponent
-    },
-    data() {
-      return {
-        questions: [
-          // Ejemplo de preguntas iniciales, eliminar cuando se use la API
-          { idPregunta: 1, numPregunta: 1, pregunta: "¿Cuál es tu color favorito?", tipoPregunta: "Texto", estado: "ACTIVO", options: [] },
-          { idPregunta: 2, numPregunta: 2, pregunta: "¿Cuál es tu comida favorita?", tipoPregunta: "Texto", estado: "ACTIVO", options: [] }
-        ],
-        question: {
-          numPregunta: '',
-          pregunta: '',
-          tipoPregunta: '',
-          estado: 'ACTIVO',
-          options: [] // Array para almacenar las opciones de respuesta
-        },
-        isUpdating: false,
-        showForm: false,
-        showOptionsField: false // Controla si se muestran los campos de opciones
-      };
-    },
-    methods: {
-      submitQuestion() {
-        if (this.isUpdating) {
-          console.log('Actualizar pregunta:', this.question);
-          // Aquí debes hacer la solicitud PUT para actualizar la pregunta
-        } else {
-          console.log('Agregar nueva pregunta:', this.question);
-          // Aquí debes hacer la solicitud POST para crear una nueva pregunta
-        }
-        this.resetForm();
+import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
+import NavBar from '@/components/NavBar.vue';
+import FooterComponent from '@/components/FooterComponent.vue';
+
+export default {
+  name: 'ActualizarEncuesta',
+  components: {
+    NavBar,
+    FooterComponent
+  },
+  data() {
+    return {
+      questions: [], // Lista de preguntas, se cargará desde la API
+      question: {
+        numPregunta: '',
+        pregunta: '',
+        tipoPregunta: '',
+        estado: 'ACTIVO',
+        options: [] // Array para almacenar las opciones de respuesta
       },
-      resetForm() {
-        // Restablecer el formulario a su estado inicial
-        this.question = {
-          numPregunta: '',
-          pregunta: '',
-          tipoPregunta: '',
-          estado: 'ACTIVO',
-          options: []
-        };
-        this.isUpdating = false;
-        this.showForm = false; // Ocultar el formulario
-        this.showOptionsField = false; // Ocultar campo de opciones
-      },
-      editQuestion(question) {
-        // Cargar datos de una pregunta existente para su actualización
-        this.question = { ...question };
-        this.isUpdating = true;
-        this.showForm = true; // Mostrar el formulario para editar
-        this.showOptionsField = ['Seleccion', 'Multiple'].includes(this.question.tipoPregunta); // Mostrar campo de opciones si es necesario
-      },
-      showAddQuestionForm() {
-        this.resetForm();
-        this.showForm = true; // Mostrar el formulario para agregar una nueva pregunta
-      },
-      handleQuestionTypeChange() {
-        // Mostrar el campo de opciones de respuesta solo si el tipo de pregunta es "Seleccion" o "Multiple"
-        this.showOptionsField = ['Seleccion', 'Multiple'].includes(this.question.tipoPregunta);
-        if (!this.showOptionsField) {
-          this.question.options = []; // Limpiar las opciones si se cambia a un tipo sin opciones
-        }
-      },
-      addOption() {
-        // Añadir una nueva opción de respuesta
-        this.question.options.push('');
-      },
-      removeOption(index) {
-        // Eliminar una opción de respuesta
-        this.question.options.splice(index, 1);
+      isUpdating: false,
+      showForm: false,
+      showOptionsField: false, // Controla si se muestran los campos de opciones
+      apiUrl: 'http://localhost:8082/pregunta' // URL base para las solicitudes a la API
+    };
+  },
+  mounted() {
+    // Cargar todas las preguntas al montar el componente
+    this.fetchQuestions();
+  },
+  methods: {
+    async fetchQuestions() {
+      try {
+        const response = await axios.get(this.apiUrl);
+        this.questions = response.data;
+      } catch (error) {
+        console.error('Error al obtener las preguntas:', error);
+        // Mostrar mensaje de error o manejar el error según sea necesario
       }
+    },
+    async submitQuestion() {
+      try {
+        if (this.isUpdating) {
+          // Actualizar pregunta existente
+          await axios.put(`${this.apiUrl}/${this.question.idPregunta}`, this.question);
+          console.log('Pregunta actualizada:', this.question);
+        } else {
+          // Crear nueva pregunta
+          const response = await axios.post(this.apiUrl, this.question);
+          console.log('Nueva pregunta creada:', response.data);
+          this.questions.push(response.data); // Añadir la nueva pregunta a la lista
+        }
+        this.resetForm(); // Limpiar el formulario después de enviar
+        this.fetchQuestions(); // Refrescar la lista de preguntas
+      } catch (error) {
+        console.error('Error al enviar la pregunta:', error);
+        // Mostrar mensaje de error o manejar el error según sea necesario
+      }
+    },
+    resetForm() {
+      // Restablecer el formulario a su estado inicial
+      this.question = {
+        numPregunta: '',
+        pregunta: '',
+        tipoPregunta: '',
+        estado: 'ACTIVO',
+        options: []
+      };
+      this.isUpdating = false;
+      this.showForm = false; // Ocultar el formulario
+      this.showOptionsField = false; // Ocultar campo de opciones
+    },
+    editQuestion(question) {
+      // Cargar datos de una pregunta existente para su actualización
+      this.question = { ...question };
+      this.isUpdating = true;
+      this.showForm = true; // Mostrar el formulario para editar
+      this.showOptionsField = ['Seleccion', 'Multiple'].includes(this.question.tipoPregunta); // Mostrar campo de opciones si es necesario
+    },
+    showAddQuestionForm() {
+      this.resetForm();
+      this.showForm = true; // Mostrar el formulario para agregar una nueva pregunta
+    },
+    handleQuestionTypeChange() {
+      // Mostrar el campo de opciones de respuesta solo si el tipo de pregunta es "Seleccion" o "Multiple"
+      this.showOptionsField = ['Seleccion', 'Multiple'].includes(this.question.tipoPregunta);
+      if (!this.showOptionsField) {
+        this.question.options = []; // Limpiar las opciones si se cambia a un tipo sin opciones
+      }
+    },
+    addOption() {
+      // Añadir una nueva opción de respuesta
+      this.question.options.push('');
+    },
+    removeOption(index) {
+      // Eliminar una opción de respuesta
+      this.question.options.splice(index, 1);
     }
-  };
-  </script>
+  }
+};
+</script>
+
   
   <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
