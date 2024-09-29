@@ -9,6 +9,7 @@ import GestionDirectores from '../views/GestionDirectores.vue'
 import EnviarEncuesta from '../views/EnviarEncuesta.vue'
 import EnProgreso from '@/views/EnProgreso.vue'
 import ActualizarEncuesta from '@/views/ActualizarEncuesta.vue'
+import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -64,8 +65,23 @@ const router = createRouter({
       path: '/actualizar-encuesta', // Nueva ruta
       name: 'ActualizarEncuesta',
       component: ActualizarEncuesta
+    },
+    {
+      path: '/listado-estudiantes', // Nueva ruta
+      name: 'ListadoEstudiantes',
+      component: ListadoEstudiantes
+    },
+  ],
+  // Aquí es donde agregamos el comportamiento de desplazamiento
+  scrollBehavior(to, from, savedPosition) {
+    // Si la posición guardada existe (por ejemplo, al hacer clic en "atrás")
+    if (savedPosition) {
+      return savedPosition;
+    } else {
+      // Si no hay posición guardada, desplazarse hacia la parte superior
+      return { top: 0 };
     }
-  ]
+  },
 })
 
 export default router

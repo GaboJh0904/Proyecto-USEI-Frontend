@@ -42,4 +42,17 @@ npm install @fortawesome/fontawesome-free
 ```sh
 npm install flickity
 ```
+## Alertas SweetAlert
+```sh
+npm install sweetalert2
+```
+## Manejo de archivos. csv
+```sh
+npm install papaparse
+```
+## Paginación 
+```sh
+npm install vuejs-paginate-next
+```
+
 

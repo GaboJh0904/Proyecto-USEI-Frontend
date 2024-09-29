@@ -4,23 +4,40 @@
       <img src="@/components/images/USEI.png" alt="Logo" />
     </div>
     <div class="nav-links">
-      <a @click="goToEnProgreso" class="navigation-link">Opción 1</a>
-      <a @click="goToEnProgreso" class="navigation-link">Opción 2</a>
-      <a @click="goToEnProgreso" class="navigation-link">Opción 3</a>
-      <a @click="goToEnProgreso" class="navigation-link">Opción 4</a>
+      <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
+      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage">
+        <a @click="goToPreviousPage" class="navigation-link">Volver</a>
+        <button @click="openSupport" class="icon-button support-icon" title="Soporte">
+          <i class="fas fa-headset"></i>
+        </button>
+      </template>
 
-      <!-- Mostrar iconos de usuario y notificaciones si es vista del estudiante -->
-      <template v-if="userRole === 'Student' || userRole === 'Director' || userRole === 'Administrador'">
-        <!-- Icono de notificaciones -->
+      <!-- Mostrar opciones de usuario y notificaciones cuando está logueado -->
+      <template v-else>
+        <!-- Regular navigation options -->
+        <a v-if="!userRole" href="#carrusel" class="navigation-link">Noticias</a>
+        <a v-if="!userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
+        <a v-if="!userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
+
+        <!-- Opciones si el usuario está logueado -->
+        <a v-if="userRole" href="#noticias" class="navigation-link">Noticias</a>
+        <a v-if="userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
+        <a v-if="userRole" href="#panel" class="navigation-link">Panel</a>
+        <a v-if="userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
+        <button v-if="userRole" @click="openSupport" class="icon-button support-icon" title="Soporte">
+          <i class="fas fa-headset"></i>
+        </button>
+      </template>
+
+      <!-- Mostrar notificaciones y perfil si el usuario está logueado -->
+      <template v-if="userRole">
         <button @click="toggleNotifications" class="icon-button notification-icon">
           <i class="fas fa-bell"></i>
         </button>
-
-        <!-- Menu de notificaciones -->
         <div v-if="showNotifications" class="notification-menu">
           <h3>Notificaciones</h3>
           <div class="notification-item" v-for="(notification, index) in notifications" :key="index">
-            <i class="fas fa-envelope notification-icon"></i> <!-- Icono de mensaje -->
+            <i class="fas fa-envelope notification-icon"></i>
             <div class="notification-content">
               <p><strong>{{ notification.title }}</strong></p>
               <p>{{ notification.description }}</p>
@@ -29,45 +46,37 @@
           </div>
         </div>
 
-        <!-- Icono de usuario y label con el nombre y rol -->
         <div class="user-wrapper">
           <button @click="openUserProfile" class="icon-button user-icon">
             <i class="fas fa-user-circle"></i>
           </button>
           <div class="user-info">
             <span class="username-label">{{ username }}</span>
-            <span class="role-label">{{ role }}</span> <!-- Mostrar el rol debajo -->
+            <span class="role-label">{{ role }}</span>
           </div>
         </div>
       </template>
 
-      <!-- Mostrar el botón de iniciar sesión si NO es la vista del estudiante -->
-      <a v-else href="#" class="login-btn" @click="showLoginPopup = true">Iniciar Sesión</a>
+      <!-- Mostrar el botón de iniciar sesión si no está logueado -->
+      <template v-if="!userRole">
+        <a href="#" class="login-btn" @click="showLoginPopup = true">Iniciar Sesión</a>
+      </template>
     </div>
 
-    <!-- Mostrar el popup de perfil de usuario -->
+    <!-- Popups para login, perfil, etc. -->
     <UserProfilePopup v-if="showUserProfile" @close="closeUserProfile" />
-
-    <!-- Mostrar el popup de inicio de sesión -->
-    <LoginPopup
-    v-if="showLoginPopup"
-    @close="showLoginPopup = false"
-    @switch-to-register="switchToRegister"
-    @switch-to-admin-login="switchToAdminLogin"
-  />
-
-    <!-- Mostrar el popup de registro -->
-    <RegisterPopup
-    v-if="showRegisterPopup"
-    @close="showRegisterPopup = false"
-  />
-    <!-- Nuevo popup de login para Admin/Director -->
-    <AdminLoginPopup
-    v-if="showAdminLoginPopup"
-    @close="showAdminLoginPopup = false"
-    @switch-to-student-login="switchToStudentLogin"
-  />
-
+    <LoginPopup 
+      v-if="showLoginPopup" 
+      @close="showLoginPopup = false" 
+      @switch-to-register="switchToRegister" 
+      @switch-to-admin-login="switchToAdminLogin" 
+    />
+    <RegisterPopup v-if="showRegisterPopup" @close="showRegisterPopup = false" />
+    <AdminLoginPopup 
+      v-if="showAdminLoginPopup" 
+      @close="showAdminLoginPopup = false" 
+      @switch-to-student-login="switchToStudentLogin" 
+    />
   </nav>
 </template>
 
@@ -87,43 +96,60 @@ export default {
   },
   props: {
     userRole: {
-      type: String, 
-      default: '' 
-    }
+      type: String,
+      default: '', // Vacío si no hay usuario logueado
+    },
   },
   data() {
     return {
       showLoginPopup: false,
       showRegisterPopup: false,
       showUserProfile: false,
-      showNotifications: false, 
-      showAdminLoginPopup: false,  // Variable para mostrar el popup de Admin/Director
-      username: '', 
-      role: '',  // Nueva variable para almacenar el rol
+      showAdminLoginPopup: false,
+      showNotifications: false,
+      username: '',
+      role: '',
       notifications: [
-        { title: 'Nueva notificación', description: 'Revisión de encuesta', time: 'Hace 6 horas' }
-      ]
+        { title: 'Nueva notificación', description: 'Revisión de encuesta', time: 'Hace 6 horas' },
+      ],
     };
   },
+  computed: {
+    isEncuestaEstudiante() {
+      return this.$route.path === '/encuesta-estudiante';
+    },
+    isGestionDirectores() {
+      return this.$route.path === '/gestion-directores';
+    },
+    isEnviarEncuesta() {
+      return this.$route.path === '/enviar-encuesta';
+    },
+    isListadoEstudiantes() {
+      return this.$route.path === '/listado-estudiantes';
+    },
+    isResumePage() {
+      return this.$route.path === '/resume';
+    }
+
+  },
   mounted() {
-    // Obtener el nombre y rol del usuario desde el localStorage
+    // Set username and role from localStorage (or defaults)
     this.username = localStorage.getItem('nombre') || 'USERNAME';
-    this.role = localStorage.getItem('rol') || 'ROL';  // Aquí obtenemos el rol almacenado
+    this.role = localStorage.getItem('rol') || 'ROL';
   },
   methods: {
     switchToRegister() {
       this.showLoginPopup = false;
-      this.showAdminLoginPopup = false;  // Cerrar el popup de Admin/Director
+      this.showAdminLoginPopup = false;
       this.showRegisterPopup = true;
     },
     switchToAdminLogin() {
       this.showLoginPopup = false;
       this.showRegisterPopup = false;
-      this.showAdminLoginPopup = true;  // Mostrar el popup de Admin/Director
+      this.showAdminLoginPopup = true;
     },
     switchToStudentLogin() {
-      this.showAdminLoginPopup = false;  // Cerrar el popup de Admin/Director
-      this.showRegisterPopup = false;
+      this.showAdminLoginPopup = false;
       this.showLoginPopup = true;
     },
     toggleNotifications() {
@@ -135,10 +161,13 @@ export default {
     closeUserProfile() {
       this.showUserProfile = false;
     },
-      goToEnProgreso(){
-        this.$router.push('/en-progreso');
-      }
-  }
+    goToPreviousPage() {
+      this.$router.go(-1);
+    },
+    openSupport() {
+      this.$router.push('/support');
+    }
+  },
 };
 </script>
 
