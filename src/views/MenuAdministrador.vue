@@ -80,7 +80,7 @@
           </div>
           <h3>EDITAR ENCUESTA</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToEditarEncuesta">Ingresar</button>
           </div>
         </div>
         <!-- Card 6 -->
@@ -155,10 +155,13 @@
       goToListadoEstudiantes() {
       this.$router.push('/listado-estudiantes');
     },
-    },
     goToEnviarEnc() {
       this.$router.push('/enviar-encuesta');
     },
+    goToEditarEncuesta() {
+      this.$router.push('/editar-encuesta');
+    },
+  },
   };
   </script>
   

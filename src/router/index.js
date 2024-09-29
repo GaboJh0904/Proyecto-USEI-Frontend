@@ -8,8 +8,9 @@ import ResumePage from '../views/ResumePage.vue' // Importa la nueva vista
 import GestionDirectores from '../views/GestionDirectores.vue'
 import EnviarEncuesta from '../views/EnviarEncuesta.vue'
 import EnProgreso from '@/views/EnProgreso.vue'
-import ActualizarEncuesta from '@/views/ActualizarEncuesta.vue'
+import EditarEncuesta from '../views/EditarEncuesta.vue'
 import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
+import GestionOpcionesPregunta from '../views/GestionOpcionesPregunta.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -62,15 +63,20 @@ const router = createRouter({
       component: EnProgreso
     },
     {
-      path: '/actualizar-encuesta', // Nueva ruta
-      name: 'ActualizarEncuesta',
-      component: ActualizarEncuesta
+      path: '/editar-encuesta', // Nueva ruta
+      name: 'EditarEncuesta',
+      component: EditarEncuesta
     },
     {
       path: '/listado-estudiantes', // Nueva ruta
       name: 'ListadoEstudiantes',
       component: ListadoEstudiantes
     },
+    {
+      path: '/preguntas/:idPregunta/opciones',
+      name: 'GestionOpcionesPregunta',
+      component: GestionOpcionesPregunta
+    }
   ],
   // Aquí es donde agregamos el comportamiento de desplazamiento
   scrollBehavior(to, from, savedPosition) {
