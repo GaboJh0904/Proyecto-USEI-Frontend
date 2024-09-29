@@ -213,15 +213,34 @@ export default {
       this.editingIndex = null;
     },
     deleteEstudiante(idEstudiante) {
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: 'No podrás revertir esta acción',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#80CED7', 
+    cancelButtonColor: '#8E6C88',  
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Si el usuario confirma, procede con la eliminación
       axios.delete(`http://localhost:8082/estudiante/${idEstudiante}`)
         .then(() => {
           this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
-          Swal.fire('Eliminado', 'Estudiante eliminado correctamente', 'success');
+          Swal.fire(
+            'Eliminado',
+            'El estudiante ha sido eliminado correctamente',
+            'success'
+          );
         })
         .catch(error => {
           Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
         });
-    },
+    }
+  });
+},
+
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
     },
