@@ -41,13 +41,13 @@
               <th>CI</th>
               <th>Carrera</th>
               <th>Asignatura</th>
-              <th>Celular</th>
-              <th>Correo electrónico</th>
+              <th>Teléfono</th>
+              <th>Correo institucional</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(estudiante, index) in estudiantesPaginados" :key="index">
+            <tr v-for="(estudiante, index) in estudiantesPaginados" :key="estudiante.idEstudiante">
               <td>
                 <input v-if="editingIndex === index" v-model="editedEstudiante.nombre" />
                 <span v-else>{{ estudiante.nombre }}</span>
@@ -65,18 +65,18 @@
                 <span v-else>{{ estudiante.asignatura }}</span>
               </td>
               <td>
-                <input v-if="editingIndex === index" v-model="editedEstudiante.celular" />
-                <span v-else>{{ estudiante.celular }}</span>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.telefono" />
+                <span v-else>{{ estudiante.telefono }}</span>
               </td>
               <td>
-                <input v-if="editingIndex === index" v-model="editedEstudiante.correo_electronico" />
-                <span v-else>{{ estudiante.correo_electronico }}</span>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.correoInsitucional" />
+                <span v-else>{{ estudiante.correoInsitucional }}</span>
               </td>
               <td>
                 <button v-if="editingIndex !== index" @click="editEstudiante(index)" class="action-btn edit-btn">
                   <i class="fas fa-pencil-alt"></i>
                 </button>
-                <button v-if="editingIndex !== index" @click="deleteEstudiante(index)" class="action-btn delete-btn">
+                <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.idEstudiante)" class="action-btn delete-btn">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </td>
@@ -94,7 +94,6 @@
 
 <script>
 import axios from 'axios';
-import Papa from 'papaparse';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';
@@ -134,100 +133,109 @@ export default {
       this.file = event.target.files[0];
     },
     async processCSV() {
-  if (this.file) {
-    const formData = new FormData();
-    formData.append('file', this.file);
+      if (this.file) {
+        const formData = new FormData();
+        formData.append('file', this.file);
 
-    try {
-      // Enviar el archivo CSV al backend
-      const response = await axios.post('http://localhost:8082/estudiante/upload-csv', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+        try {
+          const response = await axios.post('http://localhost:8082/estudiante/upload-csv', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          });
 
-      // Asegurarnos de que el backend retorne el `idEstudiante` en los datos.
-      // Mapeamos la respuesta de la API para incluir el `idEstudiante`
-      this.estudiantes = response.data.map(estudiante => ({
-        idEstudiante: estudiante.idEstudiante, // Asegurarse de que el campo `idEstudiante` exista
-        nombre: estudiante.nombre,
-        ci: estudiante.ci,
-        carrera: estudiante.carrera,
-        asignatura: estudiante.asignatura,
-        celular: estudiante.telefono,
-        correo_electronico: estudiante.correoInsitucional,
-      }));
+          this.estudiantes = response.data.map(estudiante => ({
+            idEstudiante: estudiante.idEstudiante,
+            nombre: estudiante.nombre,
+            ci: estudiante.ci,
+            carrera: estudiante.carrera,
+            asignatura: estudiante.asignatura,
+            telefono: estudiante.telefono,
+            correoInsitucional: estudiante.correoInsitucional,
+          }));
 
-      Swal.fire('Éxito', 'Estudiantes cargados correctamente', 'success');
-    } catch (error) {
-      Swal.fire('Error', 'No se pudo cargar el archivo CSV', 'error');
-    }
-  }
-},
-
+          Swal.fire('Éxito', 'Estudiantes cargados correctamente', 'success');
+        } catch (error) {
+          Swal.fire('Error', 'No se pudo cargar el archivo CSV', 'error');
+        }
+      }
+    },
     editEstudiante(index) {
       this.editingIndex = index;
       this.editedEstudiante = { ...this.estudiantes[index] };
     },
     saveChanges() {
-  if (this.editingIndex !== null) {
-    // Verificar si el apellido está presente y establecer un valor predeterminado
-    if (!this.editedEstudiante.apellido || this.editedEstudiante.apellido.trim() === '') {
-      this.editedEstudiante.apellido = 'N/A'; // Valor predeterminado si está vacío
-    }
+      if (this.editingIndex !== null) {
+        if (!this.editedEstudiante.nombre || this.editedEstudiante.nombre.trim() === '') {
+          Swal.fire('Error', 'El campo nombre no puede estar vacío', 'error');
+          return;
+        }
+        if (!this.editedEstudiante.ci || String(this.editedEstudiante.ci).trim() === '') {
+          Swal.fire('Error', 'El campo CI no puede estar vacío', 'error');
+          return;
+        }
+        if (!this.editedEstudiante.correoInsitucional || this.editedEstudiante.correoInsitucional.trim() === '') {
+          Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
+          return;
+        }
+        if (!this.editedEstudiante.telefono || String(this.editedEstudiante.telefono).trim() === '') {
+          Swal.fire('Error', 'El campo teléfono no puede estar vacío', 'error');
+          return;
+        }
 
-    console.log('Datos enviados:', this.editedEstudiante);  // Agrega esta línea para revisar los datos
+        const estudianteActualizado = {
+          idEstudiante: this.editedEstudiante.idEstudiante, 
+          nombre: this.editedEstudiante.nombre,
+          ci: this.editedEstudiante.ci,
+          carrera: this.editedEstudiante.carrera,
+          asignatura: this.editedEstudiante.asignatura,
+          telefono: this.editedEstudiante.telefono,
+          correoInsitucional: this.editedEstudiante.correoInsitucional,
+        };
 
-    axios.put(`http://localhost:8082/estudiante/${this.editedEstudiante.idEstudiante}`, this.editedEstudiante)
-      .then(response => {
-        this.estudiantes[this.editingIndex] = response.data;
-        this.editingIndex = null;
-        Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
-      })
-      .catch(error => {
-        console.error('Error en la solicitud PUT:', error);
-        Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
-      });
-  }
-},
-
-
+        axios.put(`http://localhost:8082/estudiante/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          this.estudiantes[this.editingIndex] = response.data;
+          this.editingIndex = null;
+          Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
+        })
+        .catch(error => {
+          console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
+          Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
+        });
+      }
+    },
     cancelChanges() {
       this.editingIndex = null;
     },
-    deleteEstudiante(index) {
-  const idEstudiante = this.estudiantes[index].idEstudiante;
-
-  if (idEstudiante) {
-    axios.delete(`http://localhost:8082/estudiante/${idEstudiante}`)
-      .then(() => {
-        this.estudiantes.splice(index, 1);
-        Swal.fire('Eliminado', 'Estudiante eliminado correctamente', 'success');
-      })
-      .catch(error => {
-        Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
-      });
-  } else {
-    Swal.fire('Error', 'El ID del estudiante no se encontró', 'error');
-  }
-},
-
+    deleteEstudiante(idEstudiante) {
+      axios.delete(`http://localhost:8082/estudiante/${idEstudiante}`)
+        .then(() => {
+          this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
+          Swal.fire('Eliminado', 'Estudiante eliminado correctamente', 'success');
+        })
+        .catch(error => {
+          Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
+        });
+    },
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
     },
     fetchUserData() {
-      // Simula la obtención de los datos del usuario logueado
-      this.userName = 'Rosario Calisaya'; // Ejemplo de usuario logueado
-      this.userRole = 'Administrador'; // Ejemplo de rol de usuario
+      this.userName = 'Rosario Calisaya';
+      this.userRole = 'Administrador';
     },
   },
   created() {
-    this.fetchUserData(); // Llama a la función fetchUserData al crearse el componente
+    this.fetchUserData();
   },
 };
 </script>
 
-  
   <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
   
@@ -249,13 +257,13 @@ export default {
   
   /* Contenedor principal */
   .user-management-container {
-    padding-top: 100px; /* Añadido más espacio para que no se sobreponga con el header */
+    padding-top: 100px; 
     min-height: 100vh;
     background-color: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 30px auto; /* Ajuste para dar espacio en los lados */
+    margin: 30px auto; 
   }
 
   #button-container-table{
@@ -270,14 +278,14 @@ export default {
     font-size: 35px;
     font-weight: bold;
     color: #000000;
-    margin-bottom: 2rem; /* Más espacio debajo del título */
+    margin-bottom: 2rem; 
   }
   
   /* Sección de carga CSV */
   .upload-section {
     display: flex;
     justify-content: center;
-    margin-bottom: 40px; /* Mayor separación entre botones y tabla */
+    margin-bottom: 40px; 
     width: 100%;
     max-width: 600px;
   }
@@ -367,9 +375,9 @@ export default {
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 75rem; /* Aumenté el ancho máximo para hacer el recuadro más ancho */
+  max-width: 75rem; 
   margin-bottom: 2rem;
-  overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
+  overflow-x: auto; 
 }
 
   
@@ -398,7 +406,7 @@ export default {
   .user-table-container td button {
     background-color: #263D42;
     color: white;
-    padding: 0.8rem 1rem; /* Aumentamos el tamaño de los botones */
+    padding: 0.8rem 1rem; 
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -416,43 +424,43 @@ export default {
   
   .edit-btn i {
     color: #80CED7;
-    font-size: 24px; /* Aumentamos aún más el tamaño de los íconos */
+    font-size: 24px; 
   }
   
   .delete-btn i {
     color: #8E6C88;
-    font-size: 24px; /* Aumentamos aún más el tamaño de los íconos */
+    font-size: 24px; 
   }
   
   .action-btn:hover {
     background-color: #ececec;
-    border-radius: 5px; /* Borde redondeado */
+    border-radius: 5px; 
   }
   
   .action-btn {
-    padding: 10px; /* Más espacio alrededor de los botones */
-    margin-right: 15px; /* Más separación entre los botones */
+    padding: 10px; 
+    margin-right: 15px; 
     border: 1px solid #263D42;
     border-radius: 10px;
   }
 
 
 .user-table-container td input {
-  width: 100%; /* Para que los inputs se ajusten al 100% del ancho de la celda */
-  box-sizing: border-box; /* Asegura que el padding y border se incluyan en el width */
-  padding: 5px; /* Ajusta el padding para que se vea mejor */
-  font-size: 14px; /* Ajusta el tamaño de fuente para que sea consistente */
+  width: 100%; 
+  box-sizing: border-box; 
+  padding: 5px; 
+  font-size: 14px; 
 }
 
 .user-table-container td {
-  max-width: 200px; /* Limitar el ancho máximo de las celdas */
-  overflow: hidden; /* Para asegurarse de que el contenido que se desborda no rompa la estructura */
-  text-overflow: ellipsis; /* Muestra "..." si el contenido se desborda */
-  white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+  max-width: 200px; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+  white-space: nowrap; 
 }
 
 .user-table-container {
-  overflow-x: auto; /* Habilita el scroll horizontal si es necesario */
+  overflow-x: auto; 
 }
 
 .cancel-button {
@@ -491,11 +499,11 @@ export default {
 /*Estilos de la paginacion*/
 /* Contenedor de la paginación */
 .pagination-container {
-  margin-top: 20px; /* Margen superior para separar de la tabla */
+  margin-top: 20px; 
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 0; /* Un poco de padding para separación adicional */
+  padding: 10px 0; 
 }
 </style>
   
