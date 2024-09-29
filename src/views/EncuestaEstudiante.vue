@@ -13,7 +13,7 @@
           <!-- Año de ingreso -->
           <div class="form-group">
             <label for="year">Año que ingresó a la U.C.B.</label>
-            <select id="year" v-model="answers['1']">
+            <select id="year" v-model="answers['1']" :disabled="false">
               <option value="2019">2019</option>
               <option value="2018">2018</option>
               <option value="2017">2017</option>
@@ -40,7 +40,7 @@
           <!-- Carrera -->
           <div class="form-group">
             <label for="career">Carrera de la que se graduó</label>
-            <select id="career" v-model="answers['2']">
+            <select id="career" v-model="answers['2']":disabled="!answers['1']">
               <option value="Administración de Empresas">Administración de Empresas</option>
               <option value="Administración Turística">Administración Turística</option>
               <option value="Contaduría Pública">Contaduría Pública</option>
@@ -67,36 +67,36 @@
           <div class="form-group">
             <label for="lastName1">Apellido Paterno</label>
             <input type="text" id="lastName1" v-model="answers['3']"
-            @input="validateTextInput($event, '3')" >
+            @input="validateTextInput($event, '3')" :disabled="!answers['2']">
             </div>
             <!-- Apellido materno -->
           <div class="form-group">
             <label for="lastName2">Apellido Materno</label>
-            <input type="text" id="lastName2" v-model="answers['4']"
-            @input="validateTextInput($event, '4')">          
+            <input type="text" id="lastName2" v-model="answers['4']" 
+            @input="validateTextInput($event, '4')" :disabled="!answers['3']">          
           </div>
             <!-- Nombres -->
           <div class="form-group">
             <label for="names">Nombres</label>
             <input type="text" id="names" v-model="answers['5']"
-            @input="validateTextInput($event, '5')"
+            @input="validateTextInput($event, '5')" :disabled="!answers['4']"
             >
           </div>
           <!-- Edad -->
           <div class="form-group">
             <label for="age">Edad</label>
-            <input type="number" id="age" v-model="answers['6']">
+            <input type="number" id="age" v-model="answers['6']" :disabled="!answers['5']">
           </div>
             <!-- Sexo -->
           <div class="form-group">
             <label>Sexo</label>
             <div class="radio-group">
               <div class="radio-option">
-                <input id="gender" type="radio" v-model="answers['7']" value="Mujer">
+                <input id="gender" type="radio" v-model="answers['7']" value="Mujer" :disabled="!answers['6']">
                 <label for="fame">Mujer</label>
               </div>
               <div class="radio-option">
-                <input id="gender" type="radio" v-model="answers['7']" value="Varón">
+                <input id="gender" type="radio" v-model="answers['7']" value="Varón" :disabled="!answers['6']">
                 <label for="male">Varón</label>
               </div>
             </div>
@@ -104,20 +104,20 @@
             <!-- Telefono fijo -->
             <div class="form-group">
               <label for="telephone">Teléfono</label>
-              <input type="tel" id="telephone" v-model="answers['8']"
-            @input="validatePhoneInput($event, '8')"
+              <input type="tel" id="telephone" v-model="answers['8']" 
+            @input="validatePhoneInput($event, '8')" :disabled="!answers['7']"
             >            </div>
             <!-- Telefono movil -->
             <div class="form-group">
               <label for="telephone2">Teléfono móvil</label>
-              <input type="tel" id="telephone2" v-model="answers['9']"
-            @input="validatePhoneInput($event, '9')"
+              <input type="tel" id="telephone2" v-model="answers['9']" 
+            @input="validatePhoneInput($event, '9')" :disabled="!answers['8']"
             >
             </div>
         <!--Ciudad -->
           <div class="form-group">
             <label for="city">Seleccione su ciudad de nacimiento</label>
-            <select id="city" v-model="answers['10']">
+            <select id="city" v-model="answers['10']" :disabled="!answers['9']">
               <option value="La Paz">La Paz</option>
               <option value="Santa Cruz">Santa Cruz</option>
               <option value="Cochabamba">Cochabamba</option>
@@ -134,30 +134,30 @@
            <!-- Cédula de Identidad -->
           <div class="form-group">
             <label for="idcard">Cédula de identidad</label>
-            <input type="text" id="idcard" v-model="answers['11']">
+            <input type="text" id="idcard" v-model="answers['11']"  :disabled="!answers['10']" >
           </div>
           <!-- Estado Civil -->
           <div class="form-group">
             <label>Indique su Estado Civil actual</label>
             <div class="radio-group">
               <div class="radio-option">
-                <input id="civil-single" type="radio" v-model="answers['12']" value="Soltero(a)">
+                <input id="civil-single" type="radio" v-model="answers['12']" value="Soltero(a)"  :disabled="!answers['11']">
                 <label for="civil-single">Soltero(a)</label>
               </div>
               <div class="radio-option">
-                <input id="civil-married" type="radio" v-model="answers['12']" value="Casado(a)">
+                <input id="civil-married" type="radio" v-model="answers['12']" value="Casado(a)"  :disabled="!answers['11']">
                 <label for="civil-married">Casado(a)</label>
               </div>
               <div class="radio-option">
-                <input id="civil-cohabitant" type="radio" v-model="answers['12']" value="Concubino(a)">
+                <input id="civil-cohabitant" type="radio" v-model="answers['12']" value="Concubino(a)"  :disabled="!answers['11']">
                 <label for="civil-cohabitant">Concubino(a)</label>
               </div>
               <div class="radio-option">
-                <input id="civil-divorced" type="radio" v-model="answers['12']" value="Divorciado(a)">
+                <input id="civil-divorced" type="radio" v-model="answers['12']" value="Divorciado(a)"  :disabled="!answers['11']">
                 <label for="civil-divorced">Divorciado(a)</label>
               </div>
               <div class="radio-option">
-                <input id="civil-widowed" type="radio" v-model="answers['12']" value="Viudo(a)">
+                <input id="civil-widowed" type="radio" v-model="answers['12']" value="Viudo(a)"  :disabled="!answers['11']">
                 <label for="civil-widowed">Viudo(a)</label>
               </div>
             </div>
@@ -173,6 +173,8 @@
     <FooterComponent />
   </div>
 </template>
+
+
 
 <script>
 import NavBar from '@/components/NavBar.vue';
