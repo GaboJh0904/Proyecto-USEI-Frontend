@@ -6,7 +6,7 @@
             <NavBar userRole="Administrador" />
         </header>
   
-        <div class="content-header">
+        <div class="content-header" id="carrusel">
           <div class="container">
             <ImageCarousel />
           </div>
@@ -15,7 +15,7 @@
   
       <!-- About Section -->
       <section class="about">
-        <div class="container">
+        <div class="container" id="about">
           <div class="about-container">
             <img src="@/components/images/graduados.jpg" alt="" />
           </div>
@@ -29,7 +29,7 @@
   
       <!-- New Section (Icon Cards) -->
       <section class="icon-cards">
-      <div class="container-cards">
+      <div class="container-cards" id="panel">
         <!-- Card 1 -->
         <div class="card-wrapper">
           <div class="card">
