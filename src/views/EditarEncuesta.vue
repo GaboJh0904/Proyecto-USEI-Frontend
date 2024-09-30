@@ -72,10 +72,8 @@
               <td>{{ question.estado }}</td>
               <td>
                 <button @click="editQuestion(question)" class="edit-button">Editar</button>
-                <!-- Redirigir a la gestión de opciones pasando el ID de la pregunta -->
-                <router-link :to="{ name: 'GestionOpcionesPregunta', params: { idPregunta: question.idPregunta }}" class="options-link">
-                  Gestionar Opciones
-                </router-link>
+                <!-- Botón para gestionar opciones -->
+                <button @click="goToGestionOpciones(question.idPregunta)" class="options-button">Gestionar Opciones</button>
               </td>
             </tr>
           </tbody>
@@ -89,6 +87,7 @@
 
 <script>
 import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
+import Swal from 'sweetalert2'; // Importamos SweetAlert
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 
@@ -123,9 +122,16 @@ export default {
         this.questions = response.data;
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
+        Swal.fire('Error', 'No se pudieron cargar las preguntas.', 'error');
       }
     },
     async submitQuestion() {
+      // Verifica si todos los campos están completos
+      if (!this.question.numPregunta || !this.question.pregunta || !this.question.tipoPregunta || !this.question.estado) {
+        Swal.fire('Advertencia', 'Todos los campos son obligatorios.', 'warning');
+        return;
+      }
+
       try {
         if (this.isUpdating) {
           // Actualizar pregunta existente
@@ -135,7 +141,7 @@ export default {
             tipoPregunta: this.question.tipoPregunta,
             estado: this.question.estado
           });
-          console.log('Pregunta actualizada:', this.question);
+          Swal.fire('Actualizado', 'La pregunta ha sido actualizada exitosamente.', 'success');
         } else {
           // Crear nueva pregunta
           const response = await axios.post(`${this.apiBaseUrl}/pregunta`, {
@@ -144,13 +150,14 @@ export default {
             tipoPregunta: this.question.tipoPregunta,
             estado: this.question.estado
           });
-          console.log('Nueva pregunta creada:', response.data);
+          Swal.fire('Agregado', 'La nueva pregunta ha sido registrada exitosamente.', 'success');
           this.questions.push(response.data); // Añadir la nueva pregunta a la lista
         }
         this.resetForm(); // Limpiar el formulario después de enviar
         this.fetchQuestions(); // Refrescar la lista de preguntas
       } catch (error) {
         console.error('Error al enviar la pregunta:', error);
+        Swal.fire('Error', 'Ocurrió un problema al registrar la pregunta.', 'error');
       }
     },
     resetForm() {
@@ -173,11 +180,14 @@ export default {
     showAddQuestionForm() {
       this.resetForm();
       this.showForm = true; // Mostrar el formulario para agregar una nueva pregunta
+    },
+    goToGestionOpciones(idPregunta) {
+      // Redirigir a la vista de gestión de opciones para la pregunta
+      this.$router.push({ name: 'GestionOpcionesPregunta', params: { idPregunta } });
     }
   }
 };
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -194,7 +204,14 @@ header {
   width: 100%;
   z-index: 1000;
 }
-
+div.question-list {
+  width: 100%;
+  max-width: 48rem;
+  background-color: #CBDADB ;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
 .question-container {
   padding-top: 80px;
   min-height: 100vh;
@@ -259,7 +276,7 @@ header {
   width: 100%;
   padding: 0.5rem;
   border: 1px solid #263D42;
-  border-radius: 5px;
+  border-radius: 15px;
 }
 
 .option-input {
@@ -272,32 +289,18 @@ header {
   flex-grow: 1;
 }
 
-.remove-option-button {
-  background-color: #e74c3c;
+.options-button {
+  background-color: #63C7B2;
   color: white;
+  padding: 0.25rem 0.5rem;
   border: none;
-  border-radius: 5px;
-  padding: 0.5rem;
+  border-radius: 15px;
   cursor: pointer;
-  margin-left: 0.5rem;
+  margin-left: 10px;
 }
 
-.remove-option-button:hover {
-  background-color: #c0392b;
-}
-
-.add-option-button {
-  background-color: #2ecc71;
-  color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  margin-top: 0.5rem;
-}
-
-.add-option-button:hover {
-  background-color: #27ae60;
+.options-button:hover {
+  background-color: #50a08f;
 }
 
 .form-actions {
@@ -350,16 +353,15 @@ header {
   color: white;
 }
 
-.edit-button {
-  background-color: #4CAF50;
-  color: white;
-  padding: 0.25rem 0.5rem;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.edit-button:hover {
-  background-color: #45A049;
-}
+.edit-button{
+    background-color: #8E6C88;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+  }
+  .edit-button:hover {
+    background-color: #765a70;
+  }
 </style>
