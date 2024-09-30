@@ -39,7 +39,9 @@
           </div>
           <!-- Carrera -->
           <div class="form-group">
-            <label for="career">Carrera de la que se graduó</label>
+            <label for="career">Carrera de la que se graduó
+              <i v-if="!answers['2']" class="warning-icon" @click="showWarning">⚠️</i>        
+            </label>
             <select id="career" v-model="answers['2']":disabled="!answers['1']">
               <option value="Administración de Empresas">Administración de Empresas</option>
               <option value="Administración Turística">Administración Turística</option>
@@ -65,31 +67,41 @@
           </div>
             <!-- Apellido paterno -->
           <div class="form-group">
-            <label for="lastName1">Apellido Paterno</label>
+            <label for="lastName1">Apellido Paterno
+              <i v-if="!answers['3']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <input type="text" id="lastName1" v-model="answers['3']"
             @input="validateTextInput($event, '3')" :disabled="!answers['2']">
             </div>
             <!-- Apellido materno -->
           <div class="form-group">
-            <label for="lastName2">Apellido Materno</label>
+            <label for="lastName2">Apellido Materno
+              <i v-if="!answers['4']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <input type="text" id="lastName2" v-model="answers['4']" 
             @input="validateTextInput($event, '4')" :disabled="!answers['3']">          
           </div>
             <!-- Nombres -->
           <div class="form-group">
-            <label for="names">Nombres</label>
+            <label for="names">Nombres
+              <i v-if="!answers['5']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <input type="text" id="names" v-model="answers['5']"
             @input="validateTextInput($event, '5')" :disabled="!answers['4']"
             >
           </div>
           <!-- Edad -->
           <div class="form-group">
-            <label for="age">Edad</label>
+            <label for="age">Edad
+              <i v-if="!answers['6']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <input type="number" id="age" v-model="answers['6']" :disabled="!answers['5']">
           </div>
             <!-- Sexo -->
           <div class="form-group">
-            <label>Sexo</label>
+            <label>Sexo
+              <i v-if="!answers['7']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <div class="radio-group">
               <div class="radio-option">
                 <input id="gender" type="radio" v-model="answers['7']" value="Mujer" :disabled="!answers['6']">
@@ -103,20 +115,26 @@
           </div>
             <!-- Telefono fijo -->
             <div class="form-group">
-              <label for="telephone">Teléfono</label>
+              <label for="telephone">Teléfono
+                <i v-if="!answers['8']" class="warning-icon" @click="showWarning">⚠️</i>
+              </label>
               <input type="tel" id="telephone" v-model="answers['8']" 
             @input="validatePhoneInput($event, '8')" :disabled="!answers['7']"
             >            </div>
             <!-- Telefono movil -->
             <div class="form-group">
-              <label for="telephone2">Teléfono móvil</label>
+              <label for="telephone2">Teléfono móvil
+                <i v-if="!answers['9']" class="warning-icon" @click="showWarning">⚠️</i>
+              </label>
               <input type="tel" id="telephone2" v-model="answers['9']" 
             @input="validatePhoneInput($event, '9')" :disabled="!answers['8']"
             >
             </div>
         <!--Ciudad -->
           <div class="form-group">
-            <label for="city">Seleccione su ciudad de nacimiento</label>
+            <label for="city">Seleccione su ciudad de nacimiento
+              <i v-if="!answers['10']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <select id="city" v-model="answers['10']" :disabled="!answers['9']">
               <option value="La Paz">La Paz</option>
               <option value="Santa Cruz">Santa Cruz</option>
@@ -133,12 +151,16 @@
           </div>
            <!-- Cédula de Identidad -->
           <div class="form-group">
-            <label for="idcard">Cédula de identidad</label>
+            <label for="idcard">Cédula de identidad
+              <i v-if="!answers['11']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <input type="text" id="idcard" v-model="answers['11']"  :disabled="!answers['10']" >
           </div>
           <!-- Estado Civil -->
           <div class="form-group">
-            <label>Indique su Estado Civil actual</label>
+            <label>Indique su Estado Civil actual
+              <i v-if="!answers['12']" class="warning-icon" @click="showWarning">⚠️</i>
+            </label>
             <div class="radio-group">
               <div class="radio-option">
                 <input id="civil-single" type="radio" v-model="answers['12']" value="Soltero(a)"  :disabled="!answers['11']">
@@ -208,8 +230,8 @@ export default {
             this.$router.push({ name: '/' });
 
           })
-      //alert('Por favor, inicie sesión antes de continuar.');
-      //this.$router.push({ name: '/' });
+      
+
     }
 
 
@@ -239,7 +261,6 @@ export default {
         });
         return;
         
-        //alert('Por favor, complete todos los campos obligatorios.');
       
       } 
     },
@@ -259,7 +280,14 @@ export default {
     validatePhoneInput(event, field) {
       const value = event.target.value.replace(/\D/g, ''); // Elimina todo excepto dígitos
       this.answers[field] = value;
-    }
+    },
+    showWarning() {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Por favor, responda las preguntas previas antes de avanzar.',
+      confirmButtonText: 'Aceptar'
+    });
+  },
   }
 };
 </script>
@@ -268,6 +296,13 @@ export default {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+.warning-icon {
+  color: orange;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 1.2em;
+}
 
 * {
   margin: 0;
