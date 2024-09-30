@@ -11,6 +11,7 @@ import EnProgreso from '@/views/EnProgreso.vue'
 import EditarEncuesta from '../views/EditarEncuesta.vue'
 import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
 import GestionOpcionesPregunta from '../views/GestionOpcionesPregunta.vue'
+import NoticiaForm from '@/views/NoticiaForm.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -76,6 +77,11 @@ const router = createRouter({
       path: '/preguntas/:idPregunta/opciones',
       name: 'GestionOpcionesPregunta',
       component: GestionOpcionesPregunta
+    },
+    {
+      path: '/noticia-form',
+      name: 'NoticiaForm',
+      component: NoticiaForm
     }
   ],
   // Aquí es donde agregamos el comportamiento de desplazamiento

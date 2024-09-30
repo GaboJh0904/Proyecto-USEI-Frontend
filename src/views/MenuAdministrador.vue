@@ -127,6 +127,16 @@
           </div>
         </div>
       </div>
+      <!-- Card 10 -->
+      <div class="card-wrapper">
+          <div class="card">
+            <img src="@/components/images/noticias.png" alt="Soporte" class="card-icon" />
+          </div>
+          <h3>NOTICIAS/ANUNCIOS</h3>
+          <div class="card-button-container">
+            <button class="btn-ingresar" @click="goToNoticiaForm">Ingresar</button>
+          </div>
+        </div>
     </section>
   
       <!-- Footer Section -->
@@ -160,6 +170,9 @@
     },
     goToEditarEncuesta() {
       this.$router.push('/editar-encuesta');
+    },
+    goToNoticiaForm() {
+      this.$router.push('/noticia-form');
     },
   },
   };
