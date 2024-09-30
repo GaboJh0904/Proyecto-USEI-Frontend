@@ -49,7 +49,7 @@ export default {
   },
   data() {
     return {
-      form: this.$route.query // Recibe los datos del formulario a través de query params
+      form: this.$route.query // Recibe los datos del formulario a mediante de query params
     };
   },
   methods: {
@@ -80,9 +80,10 @@ export default {
           title: 'Encuesta enviada con éxito',
           confirmButtonText: 'Continuar',
         });
-        //alert('Encuesta enviada con éxito');
-        localStorage.removeItem('surveyAnswers'); // Limpiar LocalStorage después de enviar
+        
+        localStorage.removeItem('surveyAnswers'); 
         this.$router.push('/menu-estudiante');
+
       } catch (error) {
         console.error('Detalles del error:', error);
         Swal.fire({
@@ -91,7 +92,6 @@ export default {
           confirmButtonText: 'Continuar',
         });
         return;
-        //alert('Error al enviar la encuesta. Vuelve a intentar.');
       }
     }
   }
