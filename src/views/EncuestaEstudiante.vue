@@ -186,7 +186,10 @@
           </div>
           <div class="form-actions">
             <button class="volver-button" @click="goBack">Volver</button>
-            <button class="submit-button">Siguiente</button>
+            <button class="submit-button" :disabled="isNextDisabled()"
+            :class="{ 'disabled-button': isNextDisabled(), 
+            'enabled-button': !isNextDisabled() }"
+            >Siguiente</button>
           </div>
         </form>
       </div>
@@ -270,6 +273,15 @@ export default {
              this.answers['4'] && this.answers['5'] && this.answers['6'] &&
              this.answers['7'] && this.answers['8'] && this.answers['9'] &&
              this.answers['10'] && this.answers['11'] && this.answers['12'];
+    },
+    // Desactiva el botón "Siguiente" si no se han respondido todas las preguntas anteriores
+    isNextDisabled() {
+      return !(
+        this.answers['1'] && this.answers['2'] && this.answers['3'] &&
+        this.answers['4'] && this.answers['5'] && this.answers['6'] &&
+        this.answers['7'] && this.answers['8'] && this.answers['9'] &&
+        this.answers['10'] && this.answers['11'] && this.answers['12']
+      );
     },
     // Validar que el input solo permita letras y espacios
     validateTextInput(event, field) {
@@ -411,6 +423,7 @@ header {
   cursor: pointer;
 }
 
+
 .submit-button:hover {
   background-color: #263D42;
 }
@@ -430,4 +443,15 @@ header {
 .volver-button:hover {
   background-color: #6c5b7b;
 }
+.submit-button:disabled {
+  background-color: #bfbdbd; 
+  color: #645e5e; 
+  cursor: not-allowed; 
+}
+
+.submit-button:enabled {
+  background-color: #263D42;
+  color: white;
+}
+
 </style>
