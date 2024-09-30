@@ -5,8 +5,11 @@
     </div>
     <div class="nav-links">
       <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
-      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage">
-        <a @click="goToPreviousPage" class="navigation-link">Volver</a>
+      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm">
+        <!-- Botón "Volver" con icono -->
+        <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
+          <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
+        </button>
         <button @click="openSupport" class="icon-button support-icon" title="Soporte">
           <i class="fas fa-headset"></i>
         </button>
@@ -80,6 +83,7 @@
   </nav>
 </template>
 
+
 <script>
 import LoginPopup from '@/components/LoginPopup.vue';
 import RegisterPopup from '@/components/RegisterPopup.vue';
@@ -129,6 +133,9 @@ export default {
     },
     isResumePage() {
       return this.$route.path === '/resume';
+    },
+    isNoticiaForm(){
+      return this.$route.path === '/noticia-form'
     }
 
   },
@@ -237,6 +244,22 @@ nav {
 
 .icon-button:hover {
   color: #263d42; 
+}
+
+/* Estilos específicos para el botón "Volver" */
+.volver-icon {
+  font-size: 20px;
+  color: white;
+  background-color: #8e6c88;
+  padding: 7px;
+  border-radius: 20%;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.volver-icon:hover {
+  background-color: #263d42;
+  color: white;
 }
 
 .user-wrapper {
