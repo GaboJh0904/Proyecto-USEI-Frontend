@@ -47,7 +47,7 @@ export default {
   },
   data() {
     return {
-      form: this.$route.query // Recibe los datos del formulario a través de query params
+      form: this.$route.query // Recibe los datos del formulario a mediante de query params
     };
   },
   methods: {
@@ -80,10 +80,10 @@ export default {
           text: 'Tu encuesta ha sido enviada exitosamente.',
           confirmButtonText: 'Aceptar'
         });
-
-        // Limpiar el almacenamiento local y redirigir
+        
         localStorage.removeItem('surveyAnswers'); 
         this.$router.push('/menu-estudiante');
+
       } catch (error) {
         console.error('Detalles del error:', error);
 
@@ -94,6 +94,7 @@ export default {
           text: 'Hubo un problema al enviar la encuesta. Por favor, inténtalo más tarde.',
           confirmButtonText: 'Aceptar'
         });
+        return;
       }
     }
   }
