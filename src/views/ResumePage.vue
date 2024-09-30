@@ -9,23 +9,14 @@
 
       <!-- Contenedor único para todas las respuestas -->
       <div class="resume-form">
-        <p><strong>Año de ingreso:</strong> {{ form['1'] }}</p>
-        <p><strong>Carrera:</strong> {{ form['2'] }}</p>
-        <p><strong>Apellido Paterno:</strong> {{ form['3'] }}</p>
-        <p><strong>Apellido Materno:</strong> {{ form['4'] }}</p>
-        <p><strong>Nombres:</strong> {{ form['5'] }}</p>
-        <p><strong>Edad:</strong> {{ form['6']}}</p>
-        <p><strong>Sexo:</strong> {{ form['7'] }}</p>
-        <p><strong>Teléfono Fijo:</strong> {{ form['8'] }}</p>
-        <p><strong>Teléfono Móvil:</strong> {{ form['9'] }}</p>
-        <p><strong>Ciudad de Nacimiento:</strong> {{ form['10'] }}</p>
-        <p><strong>Cédula de Identidad:</strong> {{ form['11'] }}</p>
-        <p><strong>Estado Civil:</strong> {{ form['12'] }}</p>
-        
+        <!-- Iteramos sobre las respuestas, pero excluimos el 'estudianteId' -->
+        <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId">
+          <strong>{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
+        </p>
         
         <div class="form-actions">
           <button class="back-button" @click="goBackToSurvey">Regresar a la Encuesta</button>
-          <button class="submit-button" @click="submitForm">Enviar</button>
+          <button class="submit-button" @click="submitSurvey">Enviar</button>
         </div>
       </div>
     </main>
@@ -37,7 +28,7 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';  
 import axios from 'axios';
 
 export default {
@@ -48,39 +39,82 @@ export default {
   },
   data() {
     return {
-      form: this.$route.query // Recibe los datos del formulario a través de query params
+      form: this.$route.query, // Recibe los datos del formulario a través de query params
+      preguntas: [] // Lista de preguntas que viene de la base de datos
     };
   },
+  computed: {
+    // Computed property para excluir el 'estudianteId' del form
+    filteredForm() {
+      const { estudianteId, ...preguntasRespuestas } = this.form;
+      return preguntasRespuestas;
+    }
+  },
+  mounted() {
+    // Obtener todas las preguntas para mostrar su texto en el resumen
+    this.fetchPreguntas();
+  },
   methods: {
+    async fetchPreguntas() {
+      try {
+        const response = await axios.get('http://localhost:8082/pregunta');
+        this.preguntas = response.data;
+      } catch (error) {
+        console.error('Error al obtener las preguntas:', error);
+        Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
+      }
+    },
+
+    // Método para obtener el texto de una pregunta según su ID
+    getPreguntaTexto(idPregunta) {
+      const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
+      
+      // Si no se encuentra la pregunta, devolver un mensaje claro
+      return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
+    },
+
     goBackToSurvey() {
       localStorage.setItem('surveyAnswers', JSON.stringify(this.form));
       this.$router.push({ name: 'encuestaEstudiante', query: { fromResume: true } });
-
     },
+
     async submitSurvey() {
       try {
         const estudianteId = this.form.estudianteId;
         if (!estudianteId) {
-          throw new Error('El ID del estudiante no esta disponible.');
+          throw new Error('El ID del estudiante no está disponible.');
         }
 
         // Iterar sobre las respuestas para enviar cada una con el ID de la pregunta
-        for (const [preguntaId, respuesta] of Object.entries(this.form)) {
-          if (preguntaId !== 'estudianteId') {
-            await axios.post('http://localhost:8082/respuesta', {
-              respuesta: respuesta,
-              preguntaIdPregunta: { idPregunta: preguntaId },
-              estudianteIdEstudiante: { idEstudiante: estudianteId }
-            });
-          }
+        for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
+          await axios.post('http://localhost:8082/respuesta', {
+            respuesta: respuesta,
+            preguntaIdPregunta: { idPregunta: preguntaId },
+            estudianteIdEstudiante: { idEstudiante: estudianteId }
+          });
         }
 
-        alert('Encuesta enviada con éxito');
-        localStorage.removeItem('surveyAnswers'); // Limpiar LocalStorage después de enviar
+        // Mostrar notificación de éxito con SweetAlert2
+        Swal.fire({
+          icon: 'success',
+          title: '¡Encuesta enviada!',
+          text: 'Tu encuesta ha sido enviada exitosamente.',
+          confirmButtonText: 'Aceptar'
+        });
+        
+        localStorage.removeItem('surveyAnswers'); 
         this.$router.push('/menu-estudiante');
+
       } catch (error) {
         console.error('Detalles del error:', error);
-        alert('Error al enviar la encuesta. Vuelve a intentar.');
+
+        // Mostrar mensaje de error con SweetAlert2
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al enviar la encuesta. Por favor, inténtalo más tarde.',
+          confirmButtonText: 'Aceptar'
+        });
       }
     }
   }

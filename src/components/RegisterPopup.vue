@@ -169,7 +169,7 @@ export default {
         ci: this.ci,
         nombre: this.nombre,
         apellido: this.apellido,
-        correoInsitucional: this.correoInstitucional,
+        correoInstitucional: this.correoInstitucional,
         correoPersonal: this.correoPersonal,
         carrera: this.carrera,
         asignatura: this.asignatura,

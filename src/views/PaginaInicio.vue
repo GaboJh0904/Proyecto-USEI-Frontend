@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Header Section -->
-    <section class="header-master">
+    <section class="header-master" id="carrusel">
       <header>
         <NavBar />
       </header>
@@ -14,7 +14,7 @@
     </section>
 
     <!-- About Section -->
-    <section class="about">
+    <section class="about" id="about">
       <div class="container">
         <div class="about-container">
           <img src="@/components/images/graduados.jpg" alt="" />

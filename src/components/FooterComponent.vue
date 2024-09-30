@@ -1,5 +1,5 @@
 <template>
-    <footer class="footer">
+    <footer class="footer" id="footer">
       <div class="footer-container">
         <!-- Columna de logo y contacto -->
         <div class="footer-column">

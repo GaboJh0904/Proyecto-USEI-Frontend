@@ -10,165 +10,51 @@
       <div class="survey-form-container">
         <h1 class="survey-title">ENCUESTA</h1>
         <form @submit.prevent="goToResume" class="survey-form">
-          <!-- Año de ingreso -->
-          <div class="form-group">
-            <label for="year">Año que ingresó a la U.C.B.</label>
-            <select id="year" v-model="answers['1']">
-              <option value="2019">2019</option>
-              <option value="2018">2018</option>
-              <option value="2017">2017</option>
-              <option value="2016">2016</option>
-              <option value="2015">2015</option>
-              <option value="2014">2014</option>
-              <option value="2013">2013</option>
-              <option value="2012">2012</option>
-              <option value="2011">2011</option>
-              <option value="2010">2010</option>
-              <option value="2009">2009</option>
-              <option value="2008">2008</option>
-              <option value="2007">2007</option>
-              <option value="2006">2006</option>
-              <option value="2005">2005</option>
-              <option value="2004">2004</option>
-              <option value="2003">2003</option>
-              <option value="2002">2002</option>
-              <option value="2001">2001</option>
-              <option value="2000">2000</option>
-              <option value="ANTES 2000">ANTES 2000</option>
-            </select>
-          </div>
-          <!-- Carrera -->
-          <div class="form-group">
-            <label for="career">Carrera de la que se graduó</label>
-            <select id="career" v-model="answers['2']">
-              <option value="Administración de Empresas">Administración de Empresas</option>
-              <option value="Administración Turística">Administración Turística</option>
-              <option value="Contaduría Pública">Contaduría Pública</option>
-              <option value="Economía">Economía</option>
-              <option value="Economía e Inteligencia de Negocios">Economía e Inteligencia de Negocios</option>
-              <option value="Ingeniería Comercial">Ingeniería Comercial</option>
-              <option value="Ingeniería en Innovación Empresarial">Ingeniería en Innovación Empresarial</option>
-              <option value="Marketing y Medios Digitales">Marketing y Medios Digitales</option>
-              <option value="Ingeniería Ambiental">Ingeniería Ambiental</option>
-              <option value="Ingeniería Biomédica">Ingeniería Biomédica</option>
-              <option value="Ingeniería Bioquímica y de Bioprocesos">Ingeniería Bioquímica y de Bioprocesos</option>
-              <option value="Ingeniería Civil">Ingeniería Civil</option>
-              <option value="Ingeniería en Energía">Ingeniería en Energía</option>
-              <option value="Ingeniería en Multimedia e Interactividad Digital">Ingeniería en Multimedia e Interactividad Digital</option>
-              <option value="Ingeniería en Logística y Analítica de la Cadena de Suministro">Ingeniería en Logística y Analítica de la Cadena de Suministro</option>
-              <option value="Ingeniería Industrial">Ingeniería Industrial</option>
-              <option value="Ingeniería Mecatrónica">Ingeniería Mecatrónica</option>
-              <option value="Ingeniería Química">Ingeniería Química</option>
-              <option value="Ingeniería en Sistemas">Ingeniería en Sistemas</option>
-              <option value="Ingeniería en Telecomunicaciones">Ingeniería en Telecomunicaciones</option>
-            </select>
-          </div>
-            <!-- Apellido paterno -->
-          <div class="form-group">
-            <label for="lastName1">Apellido Paterno</label>
-            <input type="text" id="lastName1" v-model="answers['3']"
-            @input="validateTextInput($event, '3')" >
-            </div>
-            <!-- Apellido materno -->
-          <div class="form-group">
-            <label for="lastName2">Apellido Materno</label>
-            <input type="text" id="lastName2" v-model="answers['4']"
-            @input="validateTextInput($event, '4')">          
-          </div>
-            <!-- Nombres -->
-          <div class="form-group">
-            <label for="names">Nombres</label>
-            <input type="text" id="names" v-model="answers['5']"
-            @input="validateTextInput($event, '5')"
-            >
-          </div>
-          <!-- Edad -->
-          <div class="form-group">
-            <label for="age">Edad</label>
-            <input type="number" id="age" v-model="answers['6']">
-          </div>
-            <!-- Sexo -->
-          <div class="form-group">
-            <label>Sexo</label>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input id="gender" type="radio" v-model="answers['7']" value="Mujer">
-                <label for="fame">Mujer</label>
+          <!-- Dinámicamente renderizar preguntas -->
+          <div v-for="(question, index) in questions" :key="question.idPregunta" class="form-group">
+            <label :for="'question-' + index">{{ question.pregunta }}</label>
+
+            <!-- Tipos de Pregunta -->
+            <template v-if="question.tipoPregunta === 'Seleccion'">
+              <select :id="'question-' + index" v-model="answers[question.idPregunta]" :disabled="false">
+                <option v-for="option in question.opciones" :key="option.idOpciones" :value="option.opcion">
+                  {{ option.opcion }}
+                </option>
+              </select>
+            </template>
+
+            <template v-else-if="question.tipoPregunta === 'Texto'">
+              <input
+                :id="'question-' + index"
+                type="text"
+                v-model="answers[question.idPregunta]"
+                :disabled="false"
+              />
+            </template>
+
+            <template v-else-if="question.tipoPregunta === 'Multiple'">
+              <div v-for="option in question.opciones" :key="option.idOpciones" class="checkbox-group">
+                <input
+                  type="checkbox"
+                  :id="'option-' + option.idOpciones"
+                  :value="option.opcion"
+                  v-model="answers[question.idPregunta]"
+                />
+                <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
               </div>
-              <div class="radio-option">
-                <input id="gender" type="radio" v-model="answers['7']" value="Varón">
-                <label for="male">Varón</label>
-              </div>
-            </div>
+            </template>
           </div>
-            <!-- Telefono fijo -->
-            <div class="form-group">
-              <label for="telephone">Teléfono</label>
-              <input type="tel" id="telephone" v-model="answers['8']"
-            @input="validatePhoneInput($event, '8')"
-            >            </div>
-            <!-- Telefono movil -->
-            <div class="form-group">
-              <label for="telephone2">Teléfono móvil</label>
-              <input type="tel" id="telephone2" v-model="answers['9']"
-            @input="validatePhoneInput($event, '9')"
-            >
-            </div>
-        <!--Ciudad -->
-          <div class="form-group">
-            <label for="city">Seleccione su ciudad de nacimiento</label>
-            <select id="city" v-model="answers['10']">
-              <option value="La Paz">La Paz</option>
-              <option value="Santa Cruz">Santa Cruz</option>
-              <option value="Cochabamba">Cochabamba</option>
-              <option value="Sucre">Sucre</option>
-              <option value="Oruro">Oruro</option>
-              <option value="Potosí">Potosí</option>
-              <option value="Tarija">Tarija</option>
-              <option value="Trinidad">Trinidad</option>
-              <option value="Cobija">Cobija</option>
-              <option value="El Alto">El Alto</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-           <!-- Cédula de Identidad -->
-          <div class="form-group">
-            <label for="idcard">Cédula de identidad</label>
-            <input type="text" id="idcard" v-model="answers['11']">
-          </div>
-          <!-- Estado Civil -->
-          <div class="form-group">
-            <label>Indique su Estado Civil actual</label>
-            <div class="radio-group">
-              <div class="radio-option">
-                <input id="civil-single" type="radio" v-model="answers['12']" value="Soltero(a)">
-                <label for="civil-single">Soltero(a)</label>
-              </div>
-              <div class="radio-option">
-                <input id="civil-married" type="radio" v-model="answers['12']" value="Casado(a)">
-                <label for="civil-married">Casado(a)</label>
-              </div>
-              <div class="radio-option">
-                <input id="civil-cohabitant" type="radio" v-model="answers['12']" value="Concubino(a)">
-                <label for="civil-cohabitant">Concubino(a)</label>
-              </div>
-              <div class="radio-option">
-                <input id="civil-divorced" type="radio" v-model="answers['12']" value="Divorciado(a)">
-                <label for="civil-divorced">Divorciado(a)</label>
-              </div>
-              <div class="radio-option">
-                <input id="civil-widowed" type="radio" v-model="answers['12']" value="Viudo(a)">
-                <label for="civil-widowed">Viudo(a)</label>
-              </div>
-            </div>
-          </div>
+
           <div class="form-actions">
             <button class="volver-button" @click="goBack">Volver</button>
-            <button class="submit-button">Siguiente</button>
+            <button class="submit-button" :disabled="isNextDisabled()"
+              :class="{ 'disabled-button': isNextDisabled(), 'enabled-button': !isNextDisabled() }"
+            >Siguiente</button>
           </div>
         </form>
       </div>
     </main>
+
     <!-- Footer Section -->
     <FooterComponent />
   </div>
@@ -177,7 +63,8 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';  
+import axios from 'axios';
 
 export default {
   name: 'EncuestaEstudiante',
@@ -187,18 +74,27 @@ export default {
   },
   data() {
     return {
+      questions: [], // Preguntas obtenidas de la API
       answers: JSON.parse(localStorage.getItem('surveyAnswers')) || {}, // Cargar datos del LocalStorage
-      estudianteId: null, // ID del estudiante que inició sesión
+      estudianteId: null, // ID del estudiante que inicio sesión
     };
   },
   mounted() {
     // Obtener el ID del estudiante desde localStorage
     this.estudianteId = localStorage.getItem('id_estudiante');
     if (!this.estudianteId) {
-      alert('Por favor, inicie sesión antes de continuar.');
-      this.$router.push({ name: '/' });
+      Swal.fire({
+        icon: 'error',
+        title: 'Credenciales incorrectas',
+        text: 'No se encontró un ID de estudiante válido',
+        confirmButtonText: 'Aceptar',
+      }).then(() => {
+        this.$router.push({ name: 'Home' });
+      });
+    } else {
+      // Cargar las preguntas al montar el componente
+      this.fetchQuestions();
     }
-
 
     if (!this.$route.query.fromResume) {
       localStorage.removeItem('surveyAnswers');
@@ -207,6 +103,43 @@ export default {
     }
   },
   methods: {
+    async fetchQuestions() {
+      try {
+        const response = await axios.get('http://localhost:8082/pregunta');
+        const questions = response.data;
+
+        // Para cada pregunta, obtener sus opciones (si aplica)
+        for (let question of questions) {
+          if (question.tipoPregunta === 'Seleccion' || question.tipoPregunta === 'Multiple') {
+            const optionsResponse = await axios.get(`http://localhost:8082/opciones_pregunta/pregunta/${question.idPregunta}`);
+            question.opciones = optionsResponse.data;
+          } else {
+            question.opciones = []; // No hay opciones para preguntas de tipo 'Texto'
+          }
+        }
+
+        this.questions = questions;
+
+        // Si se vuelve desde el resumen, verificar que se mantengan las respuestas
+        if (this.$route.query.fromResume) {
+          this.syncAnswersWithQuestions();
+        }
+      } catch (error) {
+        console.error('Error al obtener las preguntas:', error);
+        Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
+      }
+    },
+
+    syncAnswersWithQuestions() {
+      // Si volvemos del resumen, asegurarnos de que las respuestas ya guardadas se sincronicen con las preguntas actuales.
+      this.questions.forEach((question) => {
+        if (!(question.idPregunta in this.answers)) {
+          // Inicializar la respuesta si no existe en el localStorage
+          this.answers[question.idPregunta] = '';
+        }
+      });
+    },
+
     goBack() {
       this.$router.go(-1);
     },
@@ -214,40 +147,48 @@ export default {
     goToResume() {
       // Validación para verificar si todos los campos requeridos están completos
       if (this.isFormComplete()) {
+        // Guardar respuestas en el localStorage
+        localStorage.setItem('surveyAnswers', JSON.stringify(this.answers));
+
+        // Navegar al resumen
         this.$router.push({
           name: 'ResumePage',
           query: { ...this.answers, estudianteId: this.estudianteId }
         });
       } else {
-        alert('Por favor, complete todos los campos obligatorios.');
-      
-      } 
+        Swal.fire({
+          icon: 'warning',
+          title: 'Por favor, complete todos los campos obligatorios.',
+          confirmButtonText: 'Continuar',
+        });
+      }
     },
+
     isFormComplete() {
-      // Verificar que todos los campos importantes estén llenos
-      return this.answers['1'] && this.answers['2'] && this.answers['3'] &&
-             this.answers['4'] && this.answers['5'] && this.answers['6'] &&
-             this.answers['7'] && this.answers['8'] && this.answers['9'] &&
-             this.answers['10'] && this.answers['11'] && this.answers['12'];
+      // Verificar que todas las preguntas tengan una respuesta
+      return this.questions.every((question) => {
+        return this.answers[question.idPregunta] !== '' && this.answers[question.idPregunta] !== undefined;
+      });
     },
-    // Validar que el input solo permita letras y espacios
-    validateTextInput(event, field) {
-      const value = event.target.value.replace(/[^a-zA-Z\s]/g, ''); // Elimina todo excepto letras y espacios
-      this.answers[field] = value;
-    },
-    // Validar que el input de teléfono solo permita números
-    validatePhoneInput(event, field) {
-      const value = event.target.value.replace(/\D/g, ''); // Elimina todo excepto dígitos
-      this.answers[field] = value;
+
+    isNextDisabled() {
+      // Desactiva el botón "Siguiente" si no se han respondido todas las preguntas
+      return !this.isFormComplete();
     }
   }
 };
 </script>
 
 
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+.warning-icon {
+  color: orange;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 1.2em;
+}
 
 * {
   margin: 0;
@@ -356,6 +297,7 @@ header {
   cursor: pointer;
 }
 
+
 .submit-button:hover {
   background-color: #263D42;
 }
@@ -375,4 +317,15 @@ header {
 .volver-button:hover {
   background-color: #6c5b7b;
 }
+.submit-button:disabled {
+  background-color: #bfbdbd; 
+  color: #645e5e; 
+  cursor: not-allowed; 
+}
+
+.submit-button:enabled {
+  background-color: #263D42;
+  color: white;
+}
+
 </style>

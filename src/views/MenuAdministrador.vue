@@ -6,7 +6,7 @@
             <NavBar userRole="Administrador" />
         </header>
   
-        <div class="content-header">
+        <div class="content-header" id="carrusel">
           <div class="container">
             <ImageCarousel />
           </div>
@@ -15,7 +15,7 @@
   
       <!-- About Section -->
       <section class="about">
-        <div class="container">
+        <div class="container" id="about">
           <div class="about-container">
             <img src="@/components/images/graduados.jpg" alt="" />
           </div>
@@ -29,7 +29,7 @@
   
       <!-- New Section (Icon Cards) -->
       <section class="icon-cards">
-      <div class="container-cards">
+      <div class="container-cards" id="panel">
         <!-- Card 1 -->
         <div class="card-wrapper">
           <div class="card">
@@ -80,7 +80,7 @@
           </div>
           <h3>EDITAR ENCUESTA</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToEditarEncuesta">Ingresar</button>
           </div>
         </div>
         <!-- Card 6 -->
@@ -90,7 +90,7 @@
           </div>
           <h3>ESTUDIANTES</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToListadoEstudiantes">Ingresar</button>
           </div>
         </div>
       </div>
@@ -151,11 +151,17 @@
       },
       goToEnProgreso(){
         this.$router.push('/en-progreso');
-      }
+      },
+      goToListadoEstudiantes() {
+      this.$router.push('/listado-estudiantes');
     },
     goToEnviarEnc() {
       this.$router.push('/enviar-encuesta');
-    }
+    },
+    goToEditarEncuesta() {
+      this.$router.push('/editar-encuesta');
+    },
+  },
   };
   </script>
   
