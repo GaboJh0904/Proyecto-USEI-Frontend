@@ -69,8 +69,8 @@
                 <span v-else>{{ estudiante.telefono }}</span>
               </td>
               <td>
-                <input v-if="editingIndex === index" v-model="editedEstudiante.correoInsitucional" />
-                <span v-else>{{ estudiante.correoInsitucional }}</span>
+                <input v-if="editingIndex === index" v-model="editedEstudiante.correoInstitucional" />
+                <span v-else>{{ estudiante.correoInstitucional }}</span>
               </td>
               <td>
                 <button v-if="editingIndex !== index" @click="editEstudiante(index)" class="action-btn edit-btn">
@@ -151,7 +151,7 @@ export default {
             carrera: estudiante.carrera,
             asignatura: estudiante.asignatura,
             telefono: estudiante.telefono,
-            correoInsitucional: estudiante.correoInsitucional,
+            correoInstitucional: estudiante.correoInstitucional,
           }));
 
           Swal.fire('Éxito', 'Estudiantes cargados correctamente', 'success');
@@ -174,7 +174,7 @@ export default {
           Swal.fire('Error', 'El campo CI no puede estar vacío', 'error');
           return;
         }
-        if (!this.editedEstudiante.correoInsitucional || this.editedEstudiante.correoInsitucional.trim() === '') {
+        if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
           Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
           return;
         }
@@ -190,7 +190,7 @@ export default {
           carrera: this.editedEstudiante.carrera,
           asignatura: this.editedEstudiante.asignatura,
           telefono: this.editedEstudiante.telefono,
-          correoInsitucional: this.editedEstudiante.correoInsitucional,
+          correoInstitucional: this.editedEstudiante.correoInstitucional,
         };
 
         axios.put(`http://localhost:8082/estudiante/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
