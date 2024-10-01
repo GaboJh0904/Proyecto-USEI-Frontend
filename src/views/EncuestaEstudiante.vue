@@ -28,7 +28,18 @@
                 :id="'question-' + index"
                 type="text"
                 v-model="answers[question.idPregunta]"
+                @input="validateTextInput($event, question.idPregunta)"
                 :disabled="false"
+              />
+            </template>
+
+            <template v-else-if="question.tipoPregunta === 'Numerico'">
+              <input
+              :id="'question-' + index"
+              type="text"
+              v-model="answers[question.idPregunta]"
+              @input="validatePhoneInput($event, question.idPregunta)"
+              :disabled="false"
               />
             </template>
 
@@ -103,6 +114,15 @@ export default {
     }
   },
   methods: {
+    validateTextInput(event, field) {
+      const value = event.target.value.replace(/[^a-zA-Z\s]/g, ''); // Solo letras y espacios
+      this.answers[field] = value;
+    },
+
+    validatePhoneInput(event, field) {
+      const value = event.target.value.replace(/\D/g, ''); // Solo números
+      this.answers[field] = value;
+    },
     async fetchQuestions() {
       try {
         const response = await axios.get('http://localhost:8082/pregunta');

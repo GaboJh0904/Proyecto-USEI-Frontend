@@ -30,6 +30,7 @@
             <select v-model="question.tipoPregunta" id="tipoPregunta" required>
               <option value="" disabled>Selecciona el tipo de pregunta</option>
               <option value="Texto">Texto</option>
+              <option value="Numerico">Numerico</option>
               <option value="Seleccion">Selección</option>
               <option value="Multiple">Opción Múltiple</option>
             </select>
