@@ -16,7 +16,10 @@
 
             <!-- Tipos de Pregunta -->
             <template v-if="question.tipoPregunta === 'Seleccion'">
-              <select :id="'question-' + index" v-model="answers[question.idPregunta]" :disabled="false">
+              <select :id="'question-' + index" 
+              v-model="answers[question.idPregunta]" 
+              :disabled="isFieldDisabled(index)"
+              >
                 <option v-for="option in question.opciones" :key="option.idOpciones" :value="option.opcion">
                   {{ option.opcion }}
                 </option>
@@ -29,8 +32,8 @@
                 type="text"
                 v-model="answers[question.idPregunta]"
                 @input="validateTextInput($event, question.idPregunta)"
-                :disabled="false"
-              />
+                :disabled="isFieldDisabled(index)"
+                />
             </template>
 
             <template v-else-if="question.tipoPregunta === 'Numerico'">
@@ -39,7 +42,7 @@
               type="text"
               v-model="answers[question.idPregunta]"
               @input="validatePhoneInput($event, question.idPregunta)"
-              :disabled="false"
+              :disabled="isFieldDisabled(index)"
               />
             </template>
 
@@ -50,7 +53,8 @@
                   :id="'option-' + option.idOpciones"
                   :value="option.opcion"
                   v-model="answers[question.idPregunta]"
-                />
+                  :disabled="isFieldDisabled(index)"
+                  />
                 <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
               </div>
             </template>
@@ -114,6 +118,7 @@ export default {
     }
   },
   methods: {
+
     validateTextInput(event, field) {
       const value = event.target.value.replace(/[^a-zA-Z\s]/g, ''); // Solo letras y espacios
       this.answers[field] = value;
@@ -123,7 +128,32 @@ export default {
       const value = event.target.value.replace(/\D/g, ''); // Solo números
       this.answers[field] = value;
     },
+
+    isFieldDisabled(index) {
+      // La primera pregunta habilitada
+      if (index === 0) {
+        return false;
+      }
+      
+      // Revisar si todas las preguntas anteriores han sido respondidas
+      for (let i = 0; i < index; i++) {
+        const questionId = this.questions[i].idPregunta;
+        const answer = this.answers[questionId];
+
+        // Si alguna pregunta anterior no es respondida, deshabilitar el campo
+        if (answer === '' || answer === undefined) {
+          return true;
+        }
+      }
+      
+      return false;
+  },
+
+   
+
+
     async fetchQuestions() {
+
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
         const questions = response.data;
