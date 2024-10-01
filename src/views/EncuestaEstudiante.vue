@@ -13,7 +13,10 @@
           <!-- Dinámicamente renderizar preguntas -->
           <div v-for="(question, index) in questions" :key="question.idPregunta" class="form-group">
             <label :for="'question-' + index">{{ question.pregunta }}</label>
-
+            <div class="input-warning-container">
+              <span v-if="!isAnswered(question.idPregunta)" class="warning-icon" @click="showWarning(question.pregunta)">
+                <i class="fas fa-exclamation-circle"></i>
+              </span>
             <!-- Tipos de Pregunta -->
             <template v-if="question.tipoPregunta === 'Seleccion'">
               <select :id="'question-' + index" 
@@ -58,6 +61,7 @@
                 <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
               </div>
             </template>
+            </div>
           </div>
 
           <div class="form-actions">
@@ -149,7 +153,20 @@ export default {
       return false;
   },
 
-   
+    isAnswered(questionId) {
+      const answer = this.answers[questionId];
+      return answer !== '' && answer !== undefined;
+    },
+
+    showWarning(questionText) {
+      // Mostrar mensaje de advertencia de icono
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo incompleto',
+        text: `Por favor, complete la pregunta: "${questionText}", para continuar con la siguiente pregunta`,
+        confirmButtonText: 'Aceptar',
+      });
+    },
 
 
     async fetchQuestions() {
@@ -236,8 +253,23 @@ export default {
 .warning-icon {
   color: orange;
   cursor: pointer;
-  margin-left: 10px;
   font-size: 1.2em;
+}
+.input-warning-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Espacio entre el ícono y el campo de entrada */
+}
+
+.form-group select,
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="tel"] {
+  flex: 1; /* Asegura que el campo ocupe el resto del espacio */
+  padding: 8px 12px;
+  border: 1px solid #929292;
+  border-radius: 15px;
+  font-size: 1rem;
 }
 
 * {
@@ -376,6 +408,7 @@ header {
 .submit-button:enabled {
   background-color: #263D42;
   color: white;
+
 }
 
 </style>
