@@ -40,7 +40,8 @@ export default {
   data() {
     return {
       form: this.$route.query, // Recibe los datos del formulario a través de query params
-      preguntas: [] // Lista de preguntas que viene de la base de datos
+      preguntas: [], // Lista de preguntas que viene de la base de datos
+      encuestaId: 1, // Cambiar este valor si es dinámico
     };
   },
   computed: {
@@ -94,11 +95,21 @@ export default {
           });
         }
 
+        // Después de enviar las respuestas, cambiar el estado de la encuesta a "Completada"
+        const estadoEncuesta = {
+          estado: 'Completada',
+          fechaEstado: new Date().toISOString(), // Fecha actual
+          estudianteIdEstudiante: { idEstudiante: estudianteId },
+          encuestaIdEncuesta: { idEncuesta: this.encuestaId }
+        };
+
+        await axios.post('http://localhost:8082/estado_encuesta', estadoEncuesta);
+
         // Mostrar notificación de éxito con SweetAlert2
         Swal.fire({
           icon: 'success',
           title: '¡Encuesta enviada!',
-          text: 'Tu encuesta ha sido enviada exitosamente.',
+          text: 'Tu encuesta ha sido enviada y marcada como completada exitosamente.',
           confirmButtonText: 'Aceptar'
         });
         

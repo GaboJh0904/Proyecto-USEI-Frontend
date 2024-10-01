@@ -12,6 +12,7 @@ import EditarEncuesta from '../views/EditarEncuesta.vue'
 import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
 import GestionOpcionesPregunta from '../views/GestionOpcionesPregunta.vue'
 import NoticiaForm from '@/views/NoticiaForm.vue'
+import GestionEncuestas from '@/views/GestionEncuestas.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -64,7 +65,7 @@ const router = createRouter({
       component: EnProgreso
     },
     {
-      path: '/editar-encuesta', // Nueva ruta
+      path: '/editar-encuesta/:idEncuesta/preguntas', // Nueva ruta
       name: 'EditarEncuesta',
       component: EditarEncuesta
     },
@@ -82,6 +83,11 @@ const router = createRouter({
       path: '/noticia-form',
       name: 'NoticiaForm',
       component: NoticiaForm
+    },
+    {
+      path: '/gestion-encuestas',
+      name: 'GestionEncuestas',
+      component: GestionEncuestas
     }
   ],
   // Aquí es donde agregamos el comportamiento de desplazamiento

@@ -169,7 +169,7 @@
       this.$router.push('/enviar-encuesta');
     },
     goToEditarEncuesta() {
-      this.$router.push('/editar-encuesta');
+      this.$router.push('/gestion-encuestas');
     },
     goToNoticiaForm() {
       this.$router.push('/noticia-form');

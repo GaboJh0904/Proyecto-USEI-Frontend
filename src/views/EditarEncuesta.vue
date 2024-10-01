@@ -91,7 +91,6 @@ import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
 import Swal from 'sweetalert2'; // Importamos SweetAlert
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-
 export default {
   name: 'EditarEncuesta',
   components: {
@@ -100,32 +99,34 @@ export default {
   },
   data() {
     return {
-      questions: [], // Lista de preguntas, se cargará desde la API
+      questions: [], // Lista de preguntas, cargada desde la API
       question: {
         numPregunta: '',
         pregunta: '',
         tipoPregunta: '',
-        estado: 'ACTIVO'
+        estado: 'ACTIVO',
+        encuestaIdEncuesta: { idEncuesta: this.$route.params.idEncuesta } // ID de la encuesta obtenido desde los parámetros de la ruta
       },
       isUpdating: false,
-      showForm: false,
-      apiBaseUrl: 'http://localhost:8082' // Puedes cambiar la URL base según tu configuración
+      showForm: false
     };
   },
   mounted() {
-    // Cargar todas las preguntas al montar el componente
+    // Cargar las preguntas al montar el componente
     this.fetchQuestions();
   },
   methods: {
     async fetchQuestions() {
       try {
-        const response = await axios.get(`${this.apiBaseUrl}/pregunta`);
+        const response = await axios.get('http://localhost:8082/pregunta');
         this.questions = response.data;
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
         Swal.fire('Error', 'No se pudieron cargar las preguntas.', 'error');
       }
     },
+    
+    // Método para crear o actualizar la pregunta y asociarla a la encuesta
     async submitQuestion() {
       // Verifica si todos los campos están completos
       if (!this.question.numPregunta || !this.question.pregunta || !this.question.tipoPregunta || !this.question.estado) {
@@ -134,9 +135,11 @@ export default {
       }
 
       try {
+        let response;
+
         if (this.isUpdating) {
-          // Actualizar pregunta existente
-          await axios.put(`${this.apiBaseUrl}/pregunta/${this.question.idPregunta}`, {
+          // Actualizar la pregunta existente
+          response = await axios.put(`http://localhost:8082/pregunta/${this.question.idPregunta}`, {
             numPregunta: this.question.numPregunta,
             pregunta: this.question.pregunta,
             tipoPregunta: this.question.tipoPregunta,
@@ -145,7 +148,7 @@ export default {
           Swal.fire('Actualizado', 'La pregunta ha sido actualizada exitosamente.', 'success');
         } else {
           // Crear nueva pregunta
-          const response = await axios.post(`${this.apiBaseUrl}/pregunta`, {
+          response = await axios.post('http://localhost:8082/pregunta', {
             numPregunta: this.question.numPregunta,
             pregunta: this.question.pregunta,
             tipoPregunta: this.question.tipoPregunta,
@@ -154,41 +157,70 @@ export default {
           Swal.fire('Agregado', 'La nueva pregunta ha sido registrada exitosamente.', 'success');
           this.questions.push(response.data); // Añadir la nueva pregunta a la lista
         }
+
+        const preguntaId = response.data.idPregunta; // ID de la pregunta recién creada o actualizada
+
+        // Asociar la pregunta a la encuesta en EncuestaGestion
+        await this.asociarPreguntaConEncuesta(preguntaId);
+
         this.resetForm(); // Limpiar el formulario después de enviar
         this.fetchQuestions(); // Refrescar la lista de preguntas
+
       } catch (error) {
         console.error('Error al enviar la pregunta:', error);
         Swal.fire('Error', 'Ocurrió un problema al registrar la pregunta.', 'error');
       }
     },
+
+    // Método para asociar la pregunta con la encuesta
+    async asociarPreguntaConEncuesta(idPregunta) {
+      try {
+        await axios.post('http://localhost:8082/encuesta_gestion', {
+          anio: new Date().getFullYear(), // Año actual
+          semestre: 1, // Semestre, puedes hacerlo dinámico si es necesario
+          encuestaIdEncuesta: { idEncuesta: this.question.encuestaIdEncuesta.idEncuesta }, // ID de la encuesta desde el parámetro
+          preguntaIdPregunta: { idPregunta: idPregunta } // ID de la pregunta recién creada
+        });
+        Swal.fire('Asociada', 'La pregunta ha sido asociada a la encuesta exitosamente.', 'success');
+      } catch (error) {
+        console.error('Error al asociar la pregunta con la encuesta:', error);
+        Swal.fire('Error', 'Ocurrió un problema al asociar la pregunta con la encuesta.', 'error');
+      }
+    },
+
     resetForm() {
       // Restablecer el formulario a su estado inicial
       this.question = {
         numPregunta: '',
         pregunta: '',
         tipoPregunta: '',
-        estado: 'ACTIVO'
+        estado: 'ACTIVO',
+        encuestaIdEncuesta: { idEncuesta: this.$route.params.idEncuesta } // Mantener el ID de la encuesta desde los parámetros
       };
       this.isUpdating = false;
       this.showForm = false; // Ocultar el formulario
     },
+
     editQuestion(question) {
-      // Cargar datos de una pregunta existente para su actualización
+      // Cargar los datos de una pregunta existente para actualizarla
       this.question = { ...question };
       this.isUpdating = true;
       this.showForm = true; // Mostrar el formulario para editar
     },
+
     showAddQuestionForm() {
       this.resetForm();
       this.showForm = true; // Mostrar el formulario para agregar una nueva pregunta
     },
+
     goToGestionOpciones(idPregunta) {
-      // Redirigir a la vista de gestión de opciones para la pregunta
+      // Redirigir a la vista de gestión de opciones para la pregunta seleccionada
       this.$router.push({ name: 'GestionOpcionesPregunta', params: { idPregunta } });
     }
   }
 };
 </script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
