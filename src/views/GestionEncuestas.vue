@@ -135,7 +135,6 @@
   </script>
   
   <style scoped>
-  /* Estilos del componente */
   .encuestas-container {
     padding: 2rem;
   }
@@ -176,8 +175,34 @@
   
   .form-group {
     margin-bottom: 1rem;
+    display: flex;
+    flex-direction: block;
+    align-items: center; 
   }
-  
+  .encuesta-form {
+    background-color: #CBDADB;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 48rem;
+    margin-top: 35px;
+  }
+
+  .form-group label {
+    font-weight: 500;
+    color: #263D42;
+    padding-right: 10px;
+  }
+  .form-group input, .form-group textarea {
+    width: 100%;
+    padding: 0.5em;
+    justify-self: center;
+    border: 1px solid #263D42;
+    border-radius: 15px;
+
+  }
+
   .form-actions {
     display: flex;
     justify-content: space-between;
@@ -192,6 +217,10 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
+  }
+
+  .submit-button:hover, .reset-button:hover {
+    background-color: #1D2D30;
   }
   </style>
   
