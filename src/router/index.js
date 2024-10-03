@@ -85,7 +85,7 @@ const router = createRouter({
       component: NoticiaForm
     },
     {
-      path: '/gestion-encuestas',
+      path: '/gestion-encuestas/:idUsuario',
       name: 'GestionEncuestas',
       component: GestionEncuestas
     }
