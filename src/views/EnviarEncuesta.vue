@@ -5,6 +5,22 @@
     </header>
     <main class="student-list-container">
       <h1 class="student-list-title">Estudiantes que Completaron la Encuesta</h1>
+      
+      <!-- Campos de búsqueda y filtro -->
+      <div class="filters-container">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Buscar por nombre"
+          class="search-input"
+        />
+        <select v-model="selectedEstado" class="filter-select">
+          <option value="">Todos los Estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="enviado">Enviado</option>
+        </select>
+      </div>
+
       <div class="student-table-container">
         <h2>Lista de Estudiantes</h2>
         <table>
@@ -15,18 +31,18 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody v-if="estudiantes.length > 0">
-    <tr v-for="estudiante in estudiantes" :key="estudiante.idEstudiante">
-        <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
-        <td>{{ estudiante.estado }}</td>
-        <td>
-            <button @click="enviarCertificado(estudiante.idEstudiante)" class="send-button">Enviar Certificado</button>
-        </td>
-    </tr>
-</tbody>
+          <tbody v-if="filteredEstudiantes.length > 0">
+            <tr v-for="estudiante in filteredEstudiantes" :key="estudiante.idEstudiante">
+              <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
+              <td>{{ estudiante.estado }}</td>
+              <td>
+                <button @click="enviarCertificado(estudiante.idEstudiante)" class="send-button">Enviar Certificado</button>
+              </td>
+            </tr>
+          </tbody>
           <tbody v-else>
             <tr>
-              <td colspan="3">No hay estudiantes que hayan completado la encuesta.</td>
+              <td colspan="3">No se encontraron estudiantes que coincidan con los criterios de búsqueda.</td>
             </tr>
           </tbody>
         </table>
@@ -49,7 +65,9 @@ export default {
   },
   data() {
     return {
-      estudiantes: [] // Lista de estudiantes con estado de certificado
+      estudiantes: [], // Lista de estudiantes con estado de certificado
+      searchQuery: '', // Almacena la búsqueda por nombre
+      selectedEstado: '' // Almacena el estado seleccionado para el filtro
     };
   },
   mounted() {
@@ -57,23 +75,24 @@ export default {
   },
   methods: {
     async fetchEstudiantes() {
-    try {
+      try {
         const response = await axios.get('http://localhost:8082/estado_certificado');
         if (response.data && Array.isArray(response.data)) {
-            this.estudiantes = response.data;
+          this.estudiantes = response.data;
         } else {
-            console.error('Respuesta inesperada:', response.data);
+          console.error('Respuesta inesperada:', response.data);
         }
-    } catch (error) {
+      } catch (error) {
         console.error('Error al obtener los estudiantes:', error);
+      }
+    },
+    enviarCertificado(idEstudiante) {
+      // Lógica para enviar el certificado
+      console.log(`Enviando certificado para el estudiante con ID: ${idEstudiante}`);
     }
-}
-
-
   }
 };
 </script>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
