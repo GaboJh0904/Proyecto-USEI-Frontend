@@ -86,6 +86,12 @@
       </div>
 
       <PaginationComponent :page-count="totalPages" @page-changed="handlePageClick" />
+
+      <div class="send-invitacion-container">
+        <button @click="enviarInvitaciones" class="send-invitacion-btn">Enviar invitación</button>
+      </div>
+
+
     </main>
 
     <FooterComponent />
@@ -160,6 +166,17 @@ export default {
         }
       }
     },
+
+    enviarInvitaciones() {
+      axios.post('http://localhost:8082/estudiante/enviarEnlace') 
+        .then(() => {
+          Swal.fire('Éxito', 'Invitaciones enviadas correctamente', 'success');
+        })
+        .catch(error => {
+          Swal.fire('Error', 'No se pudieron enviar las invitaciones', 'error');
+        });
+    },
+
     editEstudiante(index) {
       this.editingIndex = index;
       this.editedEstudiante = { ...this.estudiantes[index] };
@@ -524,5 +541,28 @@ export default {
   align-items: center;
   padding: 10px 0; 
 }
+
+.send-invitacion-container {
+  display: flex;
+  justify-content: center; /* Centra el botón horizontalmente */
+  margin: 20px 0; /* Espaciado alrededor del botón */
+}
+
+.send-invitacion-btn {
+  background-color: #80CED7;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+.send-invitacion-btn:hover {
+  background-color: #263D42;
+}
+
+
 </style>
   
