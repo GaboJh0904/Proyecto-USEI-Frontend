@@ -155,6 +155,21 @@
       ImageCarousel,
       FooterComponent  
     },
+    data() {
+    return {
+      usuarioId: null, // Para almacenar el ID del usuario administrador
+    };
+  },
+  mounted() {
+    const storedUsuarioId = localStorage.getItem('id_usuario');
+
+    if (storedUsuarioId) {
+      this.usuarioId = storedUsuarioId;
+    } else {
+      console.error('No se encontró el ID del usuario en el localStorage.');
+
+    }
+  },
     methods: {
       goToDirectores() {
         this.$router.push('/gestion-directores');
@@ -169,7 +184,8 @@
       this.$router.push('/enviar-encuesta');
     },
     goToEditarEncuesta() {
-      this.$router.push('/gestion-encuestas');
+      // Redirigir a la página de gestión de encuestas pasando el id_usuario como parámetro
+      this.$router.push({ name: 'GestionEncuestas', params: { idUsuario: this.usuarioId } });
     },
     goToNoticiaForm() {
       this.$router.push('/noticia-form');
