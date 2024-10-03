@@ -7,9 +7,8 @@
     <main class="resume-container">
       <h1 class="resume-title">Revisión de Respuestas</h1>
 
-      <!-- Contenedor único para todas las respuestas -->
       <div class="resume-form">
-        <!-- Iteramos sobre las respuestas, pero excluimos el 'estudianteId' -->
+        <!-- Iterar sobre las respuestas, pero excluir el 'estudianteId' -->
         <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId">
           <strong>{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
         </p>
@@ -39,20 +38,20 @@ export default {
   },
   data() {
     return {
-      form: this.$route.query, // Recibe los datos del formulario a través de query params
-      preguntas: [], // Lista de preguntas que viene de la base de datos
-      encuestaId: 1, // Cambiar este valor si es dinámico
+      form: this.$route.query, // Recibe los datos del formulario desde query params
+      preguntas: [], // Lista de preguntas obtenida desde la base de datos
+      encuestaId: this.$route.params.idEncuesta || 1, // ID dinámico de la encuesta (cambiar según sea necesario)
     };
   },
   computed: {
-    // Computed property para excluir el 'estudianteId' del form
+    // Excluir 'estudianteId' del formulario para mostrar sólo las preguntas y respuestas
     filteredForm() {
       const { estudianteId, ...preguntasRespuestas } = this.form;
       return preguntasRespuestas;
     }
   },
   mounted() {
-    // Obtener todas las preguntas para mostrar su texto en el resumen
+    // Obtener todas las preguntas para mostrar el texto en el resumen
     this.fetchPreguntas();
   },
   methods: {
@@ -69,8 +68,6 @@ export default {
     // Método para obtener el texto de una pregunta según su ID
     getPreguntaTexto(idPregunta) {
       const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
-      
-      // Si no se encuentra la pregunta, devolver un mensaje claro
       return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
     },
 
@@ -86,7 +83,7 @@ export default {
           throw new Error('El ID del estudiante no está disponible.');
         }
 
-        // Iterar sobre las respuestas para enviar cada una con el ID de la pregunta
+        // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
           await axios.post('http://localhost:8082/respuesta', {
             respuesta: respuesta,
@@ -95,7 +92,7 @@ export default {
           });
         }
 
-        // Después de enviar las respuestas, cambiar el estado de la encuesta a "Completada"
+        // Cambiar el estado de la encuesta a "Completada"
         const estadoEncuesta = {
           estado: 'Completada',
           fechaEstado: new Date().toISOString(), // Fecha actual
@@ -105,21 +102,21 @@ export default {
 
         await axios.post('http://localhost:8082/estado_encuesta', estadoEncuesta);
 
-        // Mostrar notificación de éxito con SweetAlert2
+        // Mostrar notificación de éxito
         Swal.fire({
           icon: 'success',
           title: '¡Encuesta enviada!',
           text: 'Tu encuesta ha sido enviada y marcada como completada exitosamente.',
           confirmButtonText: 'Aceptar'
         });
-        
-        localStorage.removeItem('surveyAnswers'); 
-        this.$router.push('/menu-estudiante');
 
+        // Limpiar respuestas guardadas en localStorage
+        localStorage.removeItem('surveyAnswers');
+        this.$router.push('/menu-estudiante');
       } catch (error) {
         console.error('Detalles del error:', error);
 
-        // Mostrar mensaje de error con SweetAlert2
+        // Mostrar mensaje de error
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -131,7 +128,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
