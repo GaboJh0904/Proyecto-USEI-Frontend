@@ -73,6 +73,8 @@
               <td>{{ question.estado }}</td>
               <td>
                 <button @click="editQuestion(question)" class="edit-button">Editar</button>
+                <!-- Botón para eliminar pregunta -->
+                <button @click="confirmDeleteQuestion(question.idPregunta)" class="delete-button">Eliminar</button>
                 <!-- Botón para gestionar opciones -->
                 <button @click="goToGestionOpciones(question.idPregunta)" class="options-button">Gestionar Opciones</button>
               </td>
@@ -85,12 +87,12 @@
     <FooterComponent />
   </div>
 </template>
-
 <script>
 import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
 import Swal from 'sweetalert2'; // Importamos SweetAlert
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
+
 export default {
   name: 'EditarEncuesta',
   components: {
@@ -185,6 +187,34 @@ export default {
       } catch (error) {
         console.error('Error al asociar la pregunta con la encuesta:', error);
         Swal.fire('Error', 'Ocurrió un problema al asociar la pregunta con la encuesta.', 'error');
+      }
+    },
+
+    async confirmDeleteQuestion(idPregunta) {
+      const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "No podrás revertir esto.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        this.deleteQuestion(idPregunta);
+      }
+    },
+
+    async deleteQuestion(idPregunta) {
+      try {
+        await axios.delete(`http://localhost:8082/pregunta/${idPregunta}`);
+        Swal.fire('Eliminada', 'La pregunta ha sido eliminada.', 'success');
+        this.fetchQuestions(); // Refrescar la lista después de eliminar
+      } catch (error) {
+        console.error('Error al eliminar la pregunta:', error);
+        Swal.fire('Error', 'Ocurrió un problema al eliminar la pregunta.', 'error');
       }
     },
 
@@ -328,8 +358,8 @@ div.question-list {
   padding: 0.25rem 0.5rem;
   border: none;
   border-radius: 15px;
+  margin-top: 10px;
   cursor: pointer;
-  margin-left: 10px;
 }
 
 .options-button:hover {
@@ -397,4 +427,18 @@ div.question-list {
   .edit-button:hover {
     background-color: #765a70;
   }
+
+  .delete-button {
+  background-color: #d9534f;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 15px;
+  margin-left: 15px;
+  cursor: pointer;
+}
+.delete-button:hover {
+  background-color: #c9302c;
+}
+
 </style>
