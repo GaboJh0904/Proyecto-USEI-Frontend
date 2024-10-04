@@ -32,8 +32,8 @@
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody v-if="filteredEstudiantes.length > 0">
-            <tr v-for="estudiante in filteredEstudiantes" :key="estudiante.idEstudiante">
+          <tbody v-if="sortedEstudiantes.length > 0">
+            <tr v-for="estudiante in sortedEstudiantes" :key="estudiante.idEstudiante">
               <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
               <td>{{ estudiante.estado }}</td>
               <td>
