@@ -170,10 +170,12 @@ export default {
 
 
     async fetchQuestions() {
-
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
-        const questions = response.data;
+        let questions = response.data;
+
+        // Filtrar solo preguntas con estado ACTIVO
+        questions = questions.filter(question => question.estado === 'ACTIVO');
 
         // Para cada pregunta, obtener sus opciones (si aplica)
         for (let question of questions) {
@@ -195,7 +197,8 @@ export default {
         console.error('Error al obtener las preguntas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
       }
-    },
+    }
+
 
     syncAnswersWithQuestions() {
       // Si volvemos del resumen, asegurarnos de que las respuestas ya guardadas se sincronicen con las preguntas actuales.
