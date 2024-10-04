@@ -22,7 +22,7 @@
 
             <div class="form-group">
               <label for="img">Imagen</label>
-              <input type="file" id="img" @change="handleFileUpload" accept="image/*" />
+              <input type="file" id="img" @change="handleFileUpload" accept="image/*" ref="fileInput" />
               <span v-if="!currentNoticia.img && showErrors && !isEditing" class="error-message">La imagen es obligatoria.</span>
               <div v-if="currentNoticia.img && !currentNoticia.img.name">
                 Imagen actual: {{ currentNoticia.img }}
@@ -175,6 +175,22 @@ export default {
         console.error("Error al cargar las noticias:", error);
       }
     },
+    resetForm() {
+  this.currentNoticia = {
+    titulo: '',
+    descripcion: '',
+    img: null,
+    estado: 'publicado',
+    fechaModificado: new Date().toISOString().split('T')[0],
+  };
+  this.isEditing = false;
+
+  // Limpiar el campo de archivo (imagen)
+  if (this.$refs.fileInput) {
+    this.$refs.fileInput.value = null;
+  }
+},
+
     async fetchNoticiasArchivadas() {
       try {
         const response = await axios.get('http://localhost:8082/noticia/archivadas');
@@ -224,6 +240,7 @@ export default {
       },
     });
 
+    // Limpiar el formulario tras añadir la noticia
     this.resetForm();
     this.fetchNoticias();
 
@@ -242,6 +259,7 @@ export default {
     });
   }
 },
+
 
 async updateNoticia() {
   // Verificar si el título está vacío (la imagen puede ser opcional si ya tiene una)
@@ -382,30 +400,26 @@ async updateNoticia() {
       this.isEditing = true;
       this.editNoticiaId = noticia.idNoticia;
     },
-    resetForm() {
-      this.currentNoticia = {
-        titulo: '',
-        descripcion: '',
-        img: null,
-        estado: 'publicado',
-        fechaModificado: new Date().toISOString().split('T')[0],
-      };
-      this.isEditing = false;
-    },
+    
     formatDate(fechaModificado) {
-      if (!fechaModificado) return 'Fecha no disponible'; // Manejo de fechas nulas o no definidas
+  if (!fechaModificado) return 'Fecha no disponible'; // Manejo de fechas nulas o no definidas
 
-      const date = new Date(fechaModificado);
-      if (isNaN(date.getTime())) {
-        return 'Fecha inválida'; // Si no puede convertir la fecha, retorna un mensaje de error
-      }
+  // Crea un objeto de fecha considerando la zona horaria local
+  const date = new Date(fechaModificado);
 
-      return date.toLocaleDateString('es-ES', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      });
-    },
+  // Verifica si el formato de la fecha es válido
+  if (isNaN(date.getTime())) {
+    return 'Fecha inválida'; // Si no puede convertir la fecha, retorna un mensaje de error
+  }
+
+  // Retorna la fecha en formato legible, ajustada a la zona horaria local
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+},
+
     // Filtrar noticias para el carrusel
     getPublishedNoticias() {
       return this.noticias.filter(noticia => noticia.estado === 'publicado');
