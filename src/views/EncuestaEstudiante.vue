@@ -122,7 +122,6 @@ export default {
     }
   },
   methods: {
-
     validateTextInput(event, field) {
       const value = event.target.value.replace(/[^a-zA-Z\s]/g, ''); // Solo letras y espacios
       this.answers[field] = value;
@@ -168,7 +167,6 @@ export default {
       });
     },
 
-
     async fetchQuestions() {
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
@@ -197,8 +195,7 @@ export default {
         console.error('Error al obtener las preguntas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
       }
-    }
-
+    },
 
     syncAnswersWithQuestions() {
       // Si volvemos del resumen, asegurarnos de que las respuestas ya guardadas se sincronicen con las preguntas actuales.
@@ -248,7 +245,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
