@@ -6,38 +6,28 @@
 
     <main class="user-management-container">
       <h1 class="user-management-title">{{ isEditing ? "EDITAR NOTICIA" : "AGREGAR NUEVA NOTICIA" }}</h1>
-
-      <!-- Contenedor para el formulario y la tabla de noticias -->
+      <button @click="showArchivedModal = true" class="show-archived-button">Ver Noticias Archivadas</button>
       <div class="user-form-and-table">
-        <!-- Formulario para añadir/editar noticias -->
         <div class="user-form-container">
           <form @submit.prevent="isEditing ? updateNoticia() : addNoticia()">
-            <!-- Título -->
             <div class="form-group">
               <label for="titulo">Título</label>
               <input type="text" id="titulo" v-model="currentNoticia.titulo" required />
+              <span v-if="!currentNoticia.titulo && showErrors" class="error-message">El título es obligatorio.</span>
             </div>
-
-            <!-- Descripción -->
             <div class="form-group">
               <label for="descripcion">Descripción</label>
               <textarea id="descripcion" v-model="currentNoticia.descripcion" required></textarea>
             </div>
 
-            <!-- Imagen -->
-            <!-- Imagen -->
-<div class="form-group">
-  <label for="img">Imagen</label>
-  <input type="file" id="img" @change="handleFileUpload" accept="image/*" />
-  
-  <!-- Mostrar el nombre de la imagen actual si ya existe una -->
-  <div v-if="currentNoticia.img && !currentNoticia.img.name">
-    Imagen actual: {{ currentNoticia.img }}
-  </div>
-</div>
-
-
-            <!-- Estado -->
+            <div class="form-group">
+              <label for="img">Imagen</label>
+              <input type="file" id="img" @change="handleFileUpload" accept="image/*" />
+              <span v-if="!currentNoticia.img && showErrors && !isEditing" class="error-message">La imagen es obligatoria.</span>
+              <div v-if="currentNoticia.img && !currentNoticia.img.name">
+                Imagen actual: {{ currentNoticia.img }}
+              </div>
+            </div>
             <div class="form-group">
               <label for="estado">Estado</label>
               <select v-model="currentNoticia.estado" id="estado" required>
@@ -46,7 +36,12 @@
               </select>
             </div>
 
-            <!-- Botones de acción -->
+            <!-- Campo de fecha de modificación solo de lectura -->
+            <div class="form-group">
+              <label for="fechaModificado">Fecha</label>
+              <input type="text" id="fechaModificado" v-model="currentNoticia.fechaModificado" readonly />
+            </div>
+
             <div class="form-actions">
               <button type="submit" class="submit-button">{{ isEditing ? "Actualizar" : "Añadir" }}</button>
               <!-- Botón de cancelar visible solo en modo de edición -->
@@ -55,7 +50,7 @@
           </form>
         </div>
 
-        <!-- Tabla de noticias existentes -->
+        <!-- Noticias activas -->
         <div class="user-table-container">
           <h2>Noticias Existentes</h2>
           <table class="noticias-table">
@@ -64,28 +59,62 @@
                 <th>Título</th>
                 <th>Descripción</th>
                 <th>Estado</th>
+                <th>Última Modificación</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="noticia in noticias" :key="noticia.idNoticia">
-  <td>{{ noticia.titulo }}</td>
-  <td>{{ noticia.descripcion }}</td>
-  <td>{{ noticia.estado }}</td>
-  <td class="action-buttons">
-    <button class="edit-button" @click="editNoticia(noticia)">
-      <i class="fas fa-pencil-alt"></i>
-    </button>
-    <button class="delete-button" @click="deleteNoticia(noticia.idNoticia)">
-      <i class="fas fa-trash-alt"></i>
-    </button>
-  </td>
-</tr>
-
-
-
+                <td>{{ noticia.titulo }}</td>
+                <td>{{ noticia.descripcion }}</td>
+                <td>{{ noticia.estado }}</td>
+                <td>{{ formatDate(noticia.fechaModificado) }}</td>
+                <td class="action-buttons">
+                  <button class="edit-button" @click="editNoticia(noticia)">
+                    <i class="fas fa-pencil-alt"></i>
+                  </button>
+                  <button class="delete-button" @click="deleteNoticia(noticia.idNoticia)">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                  <button v-if="noticia.estado !== 'archivado'" class="edit-button" @click="archiveNoticia(noticia.idNoticia)">
+                    <i class="fas fa-archive"></i>
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Modal para Noticias Archivadas -->
+        <div v-if="showArchivedModal" class="modal">
+          <div class="modal-content">
+            <span class="close" @click="showArchivedModal = false">&times;</span>
+            <h2>Noticias Archivadas</h2>
+            <table class="noticias-table">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
+                  <th>Última Modificación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="noticia in noticiasArchivadas" :key="noticia.idNoticia">
+                  <td>{{ noticia.titulo }}</td>
+                  <td>{{ noticia.descripcion }}</td>
+                  <td>{{ noticia.estado }}</td>
+                  <td>{{ formatDate(noticia.fechaModificado) }}</td>
+                  <td class="action-buttons">
+                    <button class="delete-button" @click="unarchiveNoticia(noticia.idNoticia)">
+                      <i class="fas fa-box-open"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
@@ -104,160 +133,255 @@ export default {
   name: 'NoticiaForm',
   components: {
     NavBar,
-    FooterComponent
+    FooterComponent,
   },
   data() {
-    return {
-      userRole: '', 
-      noticias: [], // Lista de noticias existentes
-      currentNoticia: {
-        titulo: '',
-        descripcion: '',
-        img: null, 
-        estado: 'publicado', 
-        fechaModificado: new Date().toISOString().split('T')[0], 
-      },
-      isEditing: false, 
-      editNoticiaId: null 
-    };
-  },
+  return {
+    userRole: '',
+    noticias: [],
+    noticiasArchivadas: [],
+    currentNoticia: {
+      titulo: '',
+      descripcion: '',
+      img: null,
+      estado: 'publicado',
+      fechaModificado: new Date().toISOString().split('T')[0],
+    },
+    isEditing: false,
+    editNoticiaId: null,
+    showArchivedModal: false,
+    showErrors: false, // Para controlar cuándo mostrar los mensajes de error
+  };
+},
+
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchNoticias(); // Cargar noticias existentes cuando se monta el componente
+    this.fetchNoticias();
+    this.fetchNoticiasArchivadas();
   },
   methods: {
-    // Cargar noticias existentes
     async fetchNoticias() {
       try {
         const response = await axios.get('http://localhost:8082/noticia');
-        this.noticias = response.data;
+        this.noticias = response.data
+          .filter(noticia => noticia.estado !== 'archivado') // Excluir noticias archivadas
+          .map(noticia => {
+            return {
+              ...noticia,
+              fechaModificado: noticia.fechaModificado ? new Date(noticia.fechaModificado) : null
+            };
+          });
       } catch (error) {
         console.error("Error al cargar las noticias:", error);
       }
     },
-
-    // Manejar la subida de archivos (imagen)
-    handleFileUpload(event) {
-      this.currentNoticia.img = event.target.files[0]; 
-    },
-
-    // Añadir noticia
-    async addNoticia() {
+    async fetchNoticiasArchivadas() {
       try {
-        const formData = new FormData();
-        formData.append('titulo', this.currentNoticia.titulo);
-        formData.append('descripcion', this.currentNoticia.descripcion);
-        formData.append('img', this.currentNoticia.img);
-        formData.append('estado', this.currentNoticia.estado);
-        formData.append('fechaModificado', this.currentNoticia.fechaModificado);
-        formData.append('UsuarioIdUsuario', 1); 
-
-        await axios.post('http://localhost:8082/noticia', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        });
-        this.resetForm();
-        this.fetchNoticias(); // Recargar la lista de noticias
-
-        // Mostrar SweetAlert2 de éxito
-        Swal.fire({
-          title: 'Noticia Agregada',
-          text: 'La noticia se agregó correctamente.',
-          icon: 'success',
-          confirmButtonText: 'Aceptar'
-        });
+        const response = await axios.get('http://localhost:8082/noticia/archivadas');
+        this.noticiasArchivadas = response.data;
       } catch (error) {
-        console.error('Error al agregar noticia:', error);
+        console.error("Error al cargar las noticias archivadas:", error);
       }
     },
+    handleFileUpload(event) {
+      this.currentNoticia.img = event.target.files[0];
+    },
+    async addNoticia() {
+  // Verificar si el título y la imagen están vacíos
+  if (!this.currentNoticia.titulo) {
+    Swal.fire({
+      title: 'Error',
+      text: 'El título es obligatorio.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+    });
+    return;
+  }
+  if (!this.currentNoticia.img) {
+    Swal.fire({
+      title: 'Error',
+      text: 'La imagen es obligatoria.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+    });
+    return;
+  }
 
-    async updateNoticia() {
+  try {
+    const formData = new FormData();
+    formData.append('titulo', this.currentNoticia.titulo);
+    formData.append('descripcion', this.currentNoticia.descripcion);
+    formData.append('img', this.currentNoticia.img);
+    formData.append('estado', this.currentNoticia.estado);
+
+    const fechaActual = new Date().toISOString().split('T')[0]; // Solo la fecha
+    formData.append('fechaModificado', fechaActual);
+    formData.append('UsuarioIdUsuario', 1);
+
+    await axios.post('http://localhost:8082/noticia', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    this.resetForm();
+    this.fetchNoticias();
+
+    Swal.fire({
+      title: 'Noticia Agregada',
+      text: 'La noticia se agregó correctamente.',
+      icon: 'success',
+      confirmButtonText: 'Aceptar',
+    });
+  } catch (error) {
+    Swal.fire({
+      title: 'Error',
+      text: `Error al agregar noticia: ${error.response?.data?.message || error.message}`,
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+    });
+  }
+},
+
+async updateNoticia() {
+  // Verificar si el título está vacío (la imagen puede ser opcional si ya tiene una)
+  if (!this.currentNoticia.titulo) {
+    Swal.fire({
+      title: 'Error',
+      text: 'El título es obligatorio.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
+    });
+    return;
+  }
+
   try {
     const formData = new FormData();
     formData.append('titulo', this.currentNoticia.titulo);
     formData.append('descripcion', this.currentNoticia.descripcion);
 
-    // Solo agrega la imagen si se ha seleccionado una nueva
     if (this.currentNoticia.img) {
       formData.append('img', this.currentNoticia.img);
     }
 
-    // Formatear la fecha correctamente
-    const formattedDate = new Date(this.currentNoticia.fechaModificado).toISOString().split('T')[0];
-    formData.append('fechaModificado', formattedDate);
-
+    const fechaActual = new Date().toISOString().split('T')[0]; // Solo la fecha
+    formData.append('fechaModificado', fechaActual);
     formData.append('estado', this.currentNoticia.estado);
-    formData.append('UsuarioIdUsuario', 1); // ID del usuario, ajustar si es necesario
+    formData.append('UsuarioIdUsuario', 1);
 
-    // Verifica que el ID de la noticia esté definido
     if (!this.editNoticiaId) {
-      console.error("El ID de la noticia no está definido");
+      console.error('El ID de la noticia no está definido');
       return;
     }
 
-    // Realiza la llamada PUT
     await axios.put(`http://localhost:8082/noticia/${this.editNoticiaId}`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
 
-    // Resetear formulario y actualizar la lista de noticias
     this.resetForm();
     this.isEditing = false;
     this.fetchNoticias();
 
-    // Mostrar notificación de éxito
     Swal.fire({
       title: 'Noticia Actualizada',
       text: 'La noticia se actualizó correctamente.',
       icon: 'success',
-      confirmButtonText: 'Aceptar'
+      confirmButtonText: 'Aceptar',
     });
   } catch (error) {
-    console.error('Error al actualizar la noticia:', error);
-  }
-},
-
-async deleteNoticia(idNoticia) {
-  if (!idNoticia) {
-    console.error('El ID de la noticia no está definido.');
-    return;
-  }
-  try {
-    console.log("ID de la noticia a eliminar:", idNoticia);
-    await axios.delete(`http://localhost:8082/noticia/${idNoticia}`);
-    this.fetchNoticias();
     Swal.fire({
-      title: 'Noticia Eliminada',
-      text: 'La noticia ha sido eliminada correctamente.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar'
+      title: 'Error',
+      text: `Error al actualizar noticia: ${error.response?.data?.message || error.message}`,
+      icon: 'error',
+      confirmButtonText: 'Aceptar',
     });
-  } catch (error) {
-    console.error('Error al eliminar la noticia:', error);
   }
 },
 
+    async deleteNoticia(idNoticia) {
+      if (!idNoticia) {
+        console.error('El ID de la noticia no está definido.');
+        return;
+      }
+      try {
+        await axios.delete(`http://localhost:8082/noticia/${idNoticia}`);
+        this.fetchNoticias();
+        Swal.fire({
+          title: 'Noticia Eliminada',
+          text: 'La noticia ha sido eliminada correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        });
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: `Error al eliminar noticia: ${error.response?.data?.message || error.message}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
+    async archiveNoticia(idNoticia) {
+      if (!idNoticia) {
+        console.error('El ID de la noticia no está definido.');
+        return;
+      }
+      try {
+        await axios.put(`http://localhost:8082/noticia/archivar/${idNoticia}`);
+        this.fetchNoticias();
+        this.fetchNoticiasArchivadas();
 
+        Swal.fire({
+          title: 'Noticia Archivada',
+          text: 'La noticia ha sido archivada correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        });
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: `Error al archivar noticia: ${error.response?.data?.message || error.message}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
+    async unarchiveNoticia(idNoticia) {
+      if (!idNoticia) {
+        console.error('El ID de la noticia no está definido.');
+        return;
+      }
+      try {
+        await axios.put(`http://localhost:8082/noticia/desarchivar/${idNoticia}`);
+        this.fetchNoticias();
+        this.fetchNoticiasArchivadas();
 
-
-
-
-    // Editar noticia: llenar el formulario con los datos de la noticia seleccionada
-editNoticia(noticia) {
-  console.log(noticia); // Verifica que el ID esté presente
-  this.currentNoticia = { 
-    ...noticia, 
-    img: noticia.img ? noticia.img : null // Asegurar que el nombre de la imagen se cargue si ya existe
-  };
-  this.isEditing = true;
-  this.editNoticiaId = noticia.idNoticia;
-},
-
-
-    // Resetear formulario
+        Swal.fire({
+          title: 'Noticia Desarchivada',
+          text: 'La noticia ha sido desarchivada correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        });
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: `Error al desarchivar noticia: ${error.response?.data?.message || error.message}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
+    editNoticia(noticia) {
+      this.currentNoticia = {
+        ...noticia,
+        img: noticia.img ? noticia.img : null,
+        fechaModificado: this.formatDate(noticia.fechaModificado),
+      };
+      this.isEditing = true;
+      this.editNoticiaId = noticia.idNoticia;
+    },
     resetForm() {
       this.currentNoticia = {
         titulo: '',
@@ -268,12 +392,30 @@ editNoticia(noticia) {
       };
       this.isEditing = false;
     },
+    formatDate(fechaModificado) {
+      if (!fechaModificado) return 'Fecha no disponible'; // Manejo de fechas nulas o no definidas
+
+      const date = new Date(fechaModificado);
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida'; // Si no puede convertir la fecha, retorna un mensaje de error
+      }
+
+      return date.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    },
+    // Filtrar noticias para el carrusel
+    getPublishedNoticias() {
+      return this.noticias.filter(noticia => noticia.estado === 'publicado');
+    }
   },
 };
 </script>
 
+
 <style scoped>
-/* Estilos para el contenedor del formulario y la tabla */
 .user-form-and-table {
   display: flex;
   justify-content: space-between;
@@ -317,7 +459,9 @@ editNoticia(noticia) {
   color: #000000;
 }
 
-.form-group input, .form-group textarea, .form-group select {
+.form-group input,
+.form-group textarea,
+.form-group select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #929292;
@@ -349,8 +493,6 @@ textarea {
   background-color: #63C7B2;
 }
 
-
-/* Botón de cancelar (visible en modo de edición) */
 .cancel-button {
   background-color: #8E6C88;
   color: white;
@@ -367,7 +509,6 @@ textarea {
   background-color: #80CED7;
 }
 
-/* Estilos de la tabla de noticias */
 .user-table-container {
   background-color: #CCDBDC;
   padding: 1rem;
@@ -383,7 +524,8 @@ textarea {
   margin-bottom: 1.5rem;
 }
 
-.noticias-table th, .noticias-table td {
+.noticias-table th,
+.noticias-table td {
   border: 1px solid #263D42;
   padding: 14px;
   text-align: left;
@@ -406,7 +548,8 @@ textarea {
   height: 80px;
 }
 
-.edit-button, .delete-button {
+.edit-button,
+.delete-button {
   background-color: #263D42;
   color: #fff;
   border: none;
@@ -418,7 +561,7 @@ textarea {
 }
 
 .edit-button i {
-  color: #63c7b2;
+  color: #63C7B2;
 }
 
 .delete-button i {
@@ -431,5 +574,56 @@ textarea {
 
 .delete-button:hover {
   background-color: #5a4766;
+}
+
+/* Botón para abrir modal */
+.show-archived-button {
+  background-color: #63C7B2;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: absolute;
+  right: 200px;
+}
+
+.show-archived-button:hover {
+  background-color: #263D42;
+}
+
+/* Modal de noticias archivadas */
+.modal {
+  display: flex;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.5rem;
+  color: #000;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #ff0000;
 }
 </style>
