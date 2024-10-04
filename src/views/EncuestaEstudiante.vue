@@ -122,7 +122,6 @@ export default {
     }
   },
   methods: {
-
     validateTextInput(event, field) {
       const value = event.target.value.replace(/[^a-zA-Z\s]/g, ''); // Solo letras y espacios
       this.answers[field] = value;
@@ -168,12 +167,13 @@ export default {
       });
     },
 
-
     async fetchQuestions() {
-
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
-        const questions = response.data;
+        let questions = response.data;
+
+        // Filtrar solo preguntas con estado ACTIVO
+        questions = questions.filter(question => question.estado === 'ACTIVO');
 
         // Para cada pregunta, obtener sus opciones (si aplica)
         for (let question of questions) {
@@ -245,7 +245,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');

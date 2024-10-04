@@ -94,7 +94,7 @@ export default {
 
         // Cambiar el estado de la encuesta a "Completada"
         const estadoEncuesta = {
-          estado: 'completado',
+          estado: 'Completado',
           fechaEstado: new Date().toISOString(), // Fecha actual
           estudianteIdEstudiante: { idEstudiante: estudianteId },
           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
