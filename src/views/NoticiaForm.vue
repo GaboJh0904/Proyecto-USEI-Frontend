@@ -37,10 +37,10 @@
             </div>
 
             <!-- Campo de fecha de modificación solo de lectura -->
-          <div class="form-group">
-            <label for="fechaModificado">Fecha</label>
-            <input type="text" id="fechaModificado" :value="formatDate(currentNoticia.fechaModificado)" readonly />
-          </div>
+            <div class="form-group">
+              <label for="fechaModificado">Fecha</label>
+              <input type="text" id="fechaModificado" :value="formatDate(currentNoticia.fechaModificado)" readonly />
+            </div>
 
             <div class="form-actions">
               <button type="submit" class="submit-button">{{ isEditing ? "Actualizar" : "Añadir" }}</button>
@@ -50,7 +50,7 @@
           </form>
         </div>
 
-        <!-- Noticias activas -->
+        <!-- Noticias activas con paginación -->
         <div class="user-table-container">
           <h2>Noticias Existentes</h2>
           <table class="noticias-table">
@@ -64,7 +64,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="noticia in noticias" :key="noticia.idNoticia">
+              <tr v-for="noticia in noticiasPaginadas" :key="noticia.idNoticia">
                 <td>{{ noticia.titulo }}</td>
                 <td>{{ noticia.descripcion }}</td>
                 <td>{{ noticia.estado }}</td>
@@ -83,8 +83,8 @@
               </tr>
             </tbody>
           </table>
+          <PaginationComponent :page-count="totalPages" @page-changed="handlePageClick" />
         </div>
-
         <!-- Modal para Noticias Archivadas -->
         <div v-if="showArchivedModal" class="modal">
           <div class="modal-content">
@@ -128,12 +128,14 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
+import PaginationComponent from '@/components/PaginationComponent.vue';
 
 export default {
   name: 'NoticiaForm',
   components: {
     NavBar,
     FooterComponent,
+    PaginationComponent,
   },
   data() {
     return {
@@ -151,7 +153,20 @@ export default {
       editNoticiaId: null,
       showArchivedModal: false,
       showErrors: false, // Para controlar cuándo mostrar los mensajes de error
+      perPage: 5, // Mostrar 10 noticias por página
+      currentPage: 1,
     };
+  },
+
+  computed: {
+    noticiasPaginadas() {
+      const start = (this.currentPage - 1) * this.perPage;
+      const end = start + this.perPage;
+      return this.noticias.slice(start, end);
+    },
+    totalPages() {
+      return Math.ceil(this.noticias.length / this.perPage);
+    },
   },
 
   mounted() {
@@ -159,6 +174,7 @@ export default {
     this.fetchNoticias();
     this.fetchNoticiasArchivadas();
   },
+
   methods: {
     async fetchNoticias() {
       try {
@@ -168,13 +184,18 @@ export default {
           .map(noticia => {
             return {
               ...noticia,
-              fechaModificado: noticia.fechaModificado ? new Date(noticia.fechaModificado) : null
+              fechaModificado: noticia.fechaModificado ? new Date(noticia.fechaModificado) : null,
             };
           });
       } catch (error) {
-        console.error("Error al cargar las noticias:", error);
+        console.error('Error al cargar las noticias:', error);
       }
     },
+    
+    handlePageClick(pageNumber) {
+      this.currentPage = pageNumber;
+    },
+
     resetForm() {
       this.currentNoticia = {
         titulo: '',
@@ -196,12 +217,14 @@ export default {
         const response = await axios.get('http://localhost:8082/noticia/archivadas');
         this.noticiasArchivadas = response.data;
       } catch (error) {
-        console.error("Error al cargar las noticias archivadas:", error);
+        console.error('Error al cargar las noticias archivadas:', error);
       }
     },
+
     handleFileUpload(event) {
       this.currentNoticia.img = event.target.files[0];
     },
+
     async addNoticia() {
       // Verificar si el título y la imagen están vacíos
       if (!this.currentNoticia.titulo) {
@@ -265,7 +288,6 @@ export default {
         });
       }
     },
-
 
     async updateNoticia() {
       // Verificar si el título está vacío (la imagen puede ser opcional si ya tiene una)
@@ -353,6 +375,7 @@ export default {
         });
       }
     },
+
     async archiveNoticia(idNoticia) {
       if (!idNoticia) {
         console.error('El ID de la noticia no está definido.');
@@ -378,6 +401,7 @@ export default {
         });
       }
     },
+
     async unarchiveNoticia(idNoticia) {
       if (!idNoticia) {
         console.error('El ID de la noticia no está definido.');
@@ -403,6 +427,7 @@ export default {
         });
       }
     },
+
     editNoticia(noticia) {
       this.currentNoticia = {
         ...noticia,
@@ -429,19 +454,14 @@ export default {
 
       return `${day}-${month}-${year}`;
     },
-
-    // Filtrar noticias para el carrusel
-    getPublishedNoticias() {
-      return this.noticias.filter(noticia => noticia.estado === 'publicado');
-    }
   },
 };
 </script>
 
+
 <style scoped>
 .user-form-and-table {
   display: flex;
-  
   gap: 1rem;
   width: 100%;
 }
@@ -470,7 +490,7 @@ export default {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 450px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 50px;
   margin-left: 15px;
 }
 
@@ -540,7 +560,7 @@ textarea {
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-
+  margin-bottom: 50px;
 }
 
 .noticias-table {
@@ -601,20 +621,12 @@ textarea {
   background-color: #5a4766;
 }
 
-/* Botón para abrir modal */
-.show-archived-button {
-  background-color: #63C7B2;
-  color: white;
-  border: none;
-  padding: 10px 15px;
-  border-radius: 8px;
-  cursor: pointer;
-  position: absolute;
-  right: 200px;
-}
-
-.show-archived-button:hover {
-  background-color: #263D42;
+/* Paginación */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px; /* Añadir espacio entre la tabla y la paginación */
+  margin-bottom: 50px; 
 }
 
 /* Modal de noticias archivadas */
@@ -650,5 +662,21 @@ textarea {
 
 .close:hover {
   color: #ff0000;
+}
+
+/* Botón para abrir modal */
+.show-archived-button {
+  background-color: #63C7B2;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  position: absolute;
+  right: 20px;
+}
+
+.show-archived-button:hover {
+  background-color: #263D42;
 }
 </style>
