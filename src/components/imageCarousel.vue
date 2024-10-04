@@ -58,19 +58,22 @@ export default {
     }
   },
   async mounted() {
-    try {
-      const response = await axios.get('http://localhost:8082/noticia');
-      this.noticias = response.data;
-      console.log(this.noticias); 
+  try {
+    const response = await axios.get('http://localhost:8082/noticia');
+    
+    // Filtra solo las noticias con estado 'publicado'
+    this.noticias = response.data.filter(noticia => noticia.estado === 'publicado');
 
+    console.log(this.noticias); 
 
-      this.$nextTick(() => {
-        this.initFlickity(); 
-      });
-    } catch (error) {
-      console.error("Error al cargar las noticias:", error);
-    }
+    this.$nextTick(() => {
+      this.initFlickity(); 
+    });
+  } catch (error) {
+    console.error("Error al cargar las noticias:", error);
   }
+}
+
 };
 </script>
 
