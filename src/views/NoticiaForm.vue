@@ -37,10 +37,10 @@
             </div>
 
             <!-- Campo de fecha de modificación solo de lectura -->
-            <div class="form-group">
-              <label for="fechaModificado">Fecha</label>
-              <input type="text" id="fechaModificado" v-model="currentNoticia.fechaModificado" readonly />
-            </div>
+          <div class="form-group">
+            <label for="fechaModificado">Fecha</label>
+            <input type="text" id="fechaModificado" :value="formatDate(currentNoticia.fechaModificado)" readonly />
+          </div>
 
             <div class="form-actions">
               <button type="submit" class="submit-button">{{ isEditing ? "Actualizar" : "Añadir" }}</button>
@@ -136,23 +136,23 @@ export default {
     FooterComponent,
   },
   data() {
-  return {
-    userRole: '',
-    noticias: [],
-    noticiasArchivadas: [],
-    currentNoticia: {
-      titulo: '',
-      descripcion: '',
-      img: null,
-      estado: 'publicado',
-      fechaModificado: new Date().toISOString().split('T')[0],
-    },
-    isEditing: false,
-    editNoticiaId: null,
-    showArchivedModal: false,
-    showErrors: false, // Para controlar cuándo mostrar los mensajes de error
-  };
-},
+    return {
+      userRole: '',
+      noticias: [],
+      noticiasArchivadas: [],
+      currentNoticia: {
+        titulo: '',
+        descripcion: '',
+        img: null,
+        estado: 'publicado',
+        fechaModificado: new Date().toISOString().split('T')[0],
+      },
+      isEditing: false,
+      editNoticiaId: null,
+      showArchivedModal: false,
+      showErrors: false, // Para controlar cuándo mostrar los mensajes de error
+    };
+  },
 
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
@@ -176,20 +176,20 @@ export default {
       }
     },
     resetForm() {
-  this.currentNoticia = {
-    titulo: '',
-    descripcion: '',
-    img: null,
-    estado: 'publicado',
-    fechaModificado: new Date().toISOString().split('T')[0],
-  };
-  this.isEditing = false;
+      this.currentNoticia = {
+        titulo: '',
+        descripcion: '',
+        img: null,
+        estado: 'publicado',
+        fechaModificado: new Date().toISOString().split('T')[0],
+      };
+      this.isEditing = false;
 
-  // Limpiar el campo de archivo (imagen)
-  if (this.$refs.fileInput) {
-    this.$refs.fileInput.value = null;
-  }
-},
+      // Limpiar el campo de archivo (imagen)
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = null;
+      }
+    },
 
     async fetchNoticiasArchivadas() {
       try {
@@ -203,120 +203,132 @@ export default {
       this.currentNoticia.img = event.target.files[0];
     },
     async addNoticia() {
-  // Verificar si el título y la imagen están vacíos
-  if (!this.currentNoticia.titulo) {
-    Swal.fire({
-      title: 'Error',
-      text: 'El título es obligatorio.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-    });
-    return;
-  }
-  if (!this.currentNoticia.img) {
-    Swal.fire({
-      title: 'Error',
-      text: 'La imagen es obligatoria.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-    });
-    return;
-  }
+      // Verificar si el título y la imagen están vacíos
+      if (!this.currentNoticia.titulo) {
+        Swal.fire({
+          title: 'Error',
+          text: 'El título es obligatorio.',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+        return;
+      }
+      if (!this.currentNoticia.img) {
+        Swal.fire({
+          title: 'Error',
+          text: 'La imagen es obligatoria.',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+        return;
+      }
 
-  try {
-    const formData = new FormData();
-    formData.append('titulo', this.currentNoticia.titulo);
-    formData.append('descripcion', this.currentNoticia.descripcion);
-    formData.append('img', this.currentNoticia.img);
-    formData.append('estado', this.currentNoticia.estado);
+      try {
+        const formData = new FormData();
+        formData.append('titulo', this.currentNoticia.titulo);
+        formData.append('descripcion', this.currentNoticia.descripcion);
+        formData.append('img', this.currentNoticia.img);
+        formData.append('estado', this.currentNoticia.estado);
 
-    const fechaActual = new Date().toISOString().split('T')[0]; // Solo la fecha
-    formData.append('fechaModificado', fechaActual);
-    formData.append('UsuarioIdUsuario', 1);
+        // Formatear la fecha en formato DD-MM-YYYY
+        const fechaActual = new Date();
+        const day = String(fechaActual.getDate()).padStart(2, '0');
+        const month = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
+        const year = fechaActual.getFullYear();
+        const formattedDate = `${day}-${month}-${year}`;
+        formData.append('fechaModificado', formattedDate);
 
-    await axios.post('http://localhost:8082/noticia', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+        formData.append('UsuarioIdUsuario', 1);
 
-    // Limpiar el formulario tras añadir la noticia
-    this.resetForm();
-    this.fetchNoticias();
+        await axios.post('http://localhost:8082/noticia', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-    Swal.fire({
-      title: 'Noticia Agregada',
-      text: 'La noticia se agregó correctamente.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-    });
-  } catch (error) {
-    Swal.fire({
-      title: 'Error',
-      text: `Error al agregar noticia: ${error.response?.data?.message || error.message}`,
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-    });
-  }
-},
+        // Limpiar el formulario tras añadir la noticia
+        this.resetForm();
+        this.fetchNoticias();
+
+        Swal.fire({
+          title: 'Noticia Agregada',
+          text: 'La noticia se agregó correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        });
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: `Error al agregar noticia: ${error.response?.data?.message || error.message}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
 
 
-async updateNoticia() {
-  // Verificar si el título está vacío (la imagen puede ser opcional si ya tiene una)
-  if (!this.currentNoticia.titulo) {
-    Swal.fire({
-      title: 'Error',
-      text: 'El título es obligatorio.',
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-    });
-    return;
-  }
+    async updateNoticia() {
+      // Verificar si el título está vacío (la imagen puede ser opcional si ya tiene una)
+      if (!this.currentNoticia.titulo) {
+        Swal.fire({
+          title: 'Error',
+          text: 'El título es obligatorio.',
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+        return;
+      }
 
-  try {
-    const formData = new FormData();
-    formData.append('titulo', this.currentNoticia.titulo);
-    formData.append('descripcion', this.currentNoticia.descripcion);
+      try {
+        const formData = new FormData();
+        formData.append('titulo', this.currentNoticia.titulo);
+        formData.append('descripcion', this.currentNoticia.descripcion);
 
-    if (this.currentNoticia.img) {
-      formData.append('img', this.currentNoticia.img);
-    }
+        if (this.currentNoticia.img) {
+          formData.append('img', this.currentNoticia.img);
+        }
 
-    const fechaActual = new Date().toISOString().split('T')[0]; // Solo la fecha
-    formData.append('fechaModificado', fechaActual);
-    formData.append('estado', this.currentNoticia.estado);
-    formData.append('UsuarioIdUsuario', 1);
+        // Formatear la fecha en formato DD-MM-YYYY
+        const fechaActual = new Date();
+        const day = String(fechaActual.getDate()).padStart(2, '0');
+        const month = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
+        const year = fechaActual.getFullYear();
+        const formattedDate = `${day}-${month}-${year}`;
+        formData.append('fechaModificado', formattedDate);
 
-    if (!this.editNoticiaId) {
-      console.error('El ID de la noticia no está definido');
-      return;
-    }
+        formData.append('estado', this.currentNoticia.estado);
+        formData.append('UsuarioIdUsuario', 1);
 
-    await axios.put(`http://localhost:8082/noticia/${this.editNoticiaId}`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+        if (!this.editNoticiaId) {
+          console.error('El ID de la noticia no está definido');
+          return;
+        }
 
-    this.resetForm();
-    this.isEditing = false;
-    this.fetchNoticias();
+        await axios.put(`http://localhost:8082/noticia/${this.editNoticiaId}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
 
-    Swal.fire({
-      title: 'Noticia Actualizada',
-      text: 'La noticia se actualizó correctamente.',
-      icon: 'success',
-      confirmButtonText: 'Aceptar',
-    });
-  } catch (error) {
-    Swal.fire({
-      title: 'Error',
-      text: `Error al actualizar noticia: ${error.response?.data?.message || error.message}`,
-      icon: 'error',
-      confirmButtonText: 'Aceptar',
-    });
-  }
-},
+        this.resetForm();
+        this.isEditing = false;
+        this.fetchNoticias();
+
+        Swal.fire({
+          title: 'Noticia Actualizada',
+          text: 'La noticia se actualizó correctamente.',
+          icon: 'success',
+          confirmButtonText: 'Aceptar',
+        });
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: `Error al actualizar noticia: ${error.response?.data?.message || error.message}`,
+          icon: 'error',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
 
     async deleteNoticia(idNoticia) {
       if (!idNoticia) {
@@ -400,25 +412,23 @@ async updateNoticia() {
       this.isEditing = true;
       this.editNoticiaId = noticia.idNoticia;
     },
-    
+
     formatDate(fechaModificado) {
-  if (!fechaModificado) return 'Fecha no disponible'; // Manejo de fechas nulas o no definidas
+      if (!fechaModificado) return 'Fecha no disponible'; // Manejo de fechas nulas o no definidas
 
-  // Crea un objeto de fecha considerando la zona horaria local
-  const date = new Date(fechaModificado);
+      const date = new Date(fechaModificado);
 
-  // Verifica si el formato de la fecha es válido
-  if (isNaN(date.getTime())) {
-    return 'Fecha inválida'; // Si no puede convertir la fecha, retorna un mensaje de error
-  }
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
 
-  // Retorna la fecha en formato legible, ajustada a la zona horaria local
-  return date.toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-},
+      // Ajusta la fecha al formato `DD-MM-YYYY`
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses en JavaScript son 0 indexados
+      const year = date.getFullYear();
+
+      return `${day}-${month}-${year}`;
+    },
 
     // Filtrar noticias para el carrusel
     getPublishedNoticias() {
@@ -428,12 +438,12 @@ async updateNoticia() {
 };
 </script>
 
-
 <style scoped>
 .user-form-and-table {
   display: flex;
-  justify-content: space-between;
-  gap: 2rem;
+  
+  gap: 1rem;
+  width: 100%;
 }
 
 .user-management-container {
@@ -443,7 +453,7 @@ async updateNoticia() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 15px;
+  margin-right: 10px;
 }
 
 .user-management-title {
@@ -459,8 +469,9 @@ async updateNoticia() {
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 48rem;
+  max-width: 450px;
   margin-bottom: 1.5rem;
+  margin-left: 15px;
 }
 
 .form-group {
@@ -529,7 +540,7 @@ textarea {
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 40rem;
+
 }
 
 .noticias-table {
