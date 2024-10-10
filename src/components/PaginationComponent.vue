@@ -1,45 +1,50 @@
 <template>
-    <div class="pagination-container">
-      <paginate
-        :page-count="pageCount"
-        :click-handler="onPageClick"
-        :prev-text="'«'"
-        :next-text="'»'"
-        :container-class="'pagination'"
-        :page-class="'page-item'"
-        :page-link-class="'page-link'"
-        :prev-class="'page-item'"
-        :next-class="'page-item'"
-        :prev-link-class="'page-link'"
-        :next-link-class="'page-link'"
-        :active-class="'active'"
-      />
-    </div>
-  </template>
-  
-  <script>
-  import Paginate from 'vuejs-paginate-next';
-  
-  export default {
-    name: 'PaginationComponent',
-    components: {
-      Paginate,
+  <div class="pagination-container">
+    <paginate
+      :page-count="pageCount"
+      :click-handler="onPageClick"
+      :prev-text="'«'"
+      :next-text="'»'"
+      :container-class="'pagination'"
+      :page-class="'page-item'"
+      :page-link-class="'page-link'"
+      :prev-class="'page-item'"
+      :next-class="'page-item'"
+      :prev-link-class="'page-link'"
+      :next-link-class="'page-link'"
+      :active-class="'active'"
+      :force-page="currentPage - 1"
+    />
+  </div>
+</template>
+
+<script>
+import Paginate from 'vuejs-paginate-next';
+
+export default {
+  name: 'PaginationComponent',
+  components: {
+    Paginate,
+  },
+  props: {
+    pageCount: {
+      type: Number,
+      required: true,
     },
-    props: {
-      pageCount: {
-        type: Number,
-        required: true,
-      },
+    currentPage: {
+      type: Number,
+      default: 1, 
     },
-    methods: {
-      onPageClick(pageNumber) {
-        this.$emit('page-changed', pageNumber); // Emite el número de la página seleccionada al componente padre
-      },
+  },
+  methods: {
+    onPageClick(pageNumber) {
+      this.$emit('page-changed', pageNumber + 1); 
     },
-  };
-  </script>
-  
-  <style scoped>
+  },
+};
+</script>
+
+<style scoped>
 .pagination-container {
   margin-top: 20px;
   display: flex;
@@ -60,7 +65,6 @@
   margin: 0 5px;
 }
 
-/* Selector profundo de Vue para asegurarse de que se aplique a los elementos hijos */
 ::v-deep .page-link {
   padding: 8px 12px;
   background-color: #ffffff;
@@ -73,14 +77,14 @@
 
 ::v-deep .active .page-link,
 ::v-deep .page-link.active {
-  background-color: #8E6C88 !important; /* Cambiar el color activo a morado */
+  background-color: #8E6C88 !important; 
   color: white !important;
-  border: 1px solid #8E6C88 !important; /* Mantener el borde morado */
+  border: 1px solid #8E6C88 !important; 
 }
 
 ::v-deep .page-link:hover {
-  background-color: #8E6C88 !important; /* Cambiar color de fondo al hacer hover */
-  color: white !important; /* Cambiar color de texto a blanco al hacer hover */
+  background-color: #8E6C88 !important; 
+  color: white !important; 
 }
 
 ::v-deep .page-prev,
@@ -97,9 +101,7 @@
 
 ::v-deep .page-prev:hover,
 ::v-deep .page-next:hover {
-  background-color: #8E6C88 !important; /* Cambiar color de fondo al hacer hover en anterior/siguiente */
-  color: #263d42 !important; /* Cambiar color de texto al hacer hover en anterior/siguiente */
+  background-color: #8E6C88 !important; 
+  color: #263d42 !important; 
 }
-
-  </style>
-  
+</style>

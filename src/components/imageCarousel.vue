@@ -26,8 +26,9 @@ export default {
   },
   methods: {
     getImageUrl(imageFileName) {
-      console.log(`Cargando imagen: http://localhost:8082/imagenes/${imageFileName}`);
-      return `http://localhost:8082/imagenes/${imageFileName}`;
+      const imageUrl = `http://localhost:8082/imagenes/${imageFileName}`;
+      console.log(`Cargando imagen desde: ${imageUrl}`); 
+      return imageUrl;
     },
     
     imagenNoCargada(imageFileName) {
@@ -35,44 +36,40 @@ export default {
     },
 
     initFlickity() {
-      if (this.flickity) {
-        console.log("Destruyendo Flickity...");
-        this.flickity.destroy();
-      }
+  if (this.flickity) {
+    this.flickity.destroy();
+  }
 
-      imagesLoaded(this.$refs.carousel, () => {
-        console.log("Todas las imágenes han sido cargadas, inicializando Flickity...");
-        this.flickity = new Flickity(this.$refs.carousel, {
-          wrapAround: true,
-          prevNextButtons: true, 
-          pageDots: true,        
-          cellAlign: 'center',
-          contain: true,
-          lazyLoad: 2
-        });
+  imagesLoaded(this.$refs.carousel, () => {
+    this.flickity = new Flickity(this.$refs.carousel, {
+      wrapAround: true,
+      prevNextButtons: true,
+      pageDots: true,
+      cellAlign: 'center',
+      contain: true,
+      lazyLoad: 2,
+    });
 
-        console.log("Flickity inicializado con éxito.");
-        this.flickity.reloadCells();
-        this.flickity.resize(); 
-      });
-    }
+    this.flickity.reloadCells();
+    this.flickity.resize();
+  });
+}
   },
   async mounted() {
   try {
-    const response = await axios.get('http://localhost:8082/noticia');
-    
-    // Filtra solo las noticias con estado 'publicado'
-    this.noticias = response.data.filter(noticia => noticia.estado === 'publicado');
-
-    console.log(this.noticias); 
-
+    const response = await axios.get('http://localhost:8082/noticia/carrusel');
+    this.noticias = response.data;
+    console.log(this.noticias);
     this.$nextTick(() => {
-      this.initFlickity(); 
+      this.initFlickity();
     });
   } catch (error) {
-    console.error("Error al cargar las noticias:", error);
+    console.error("Error al cargar las noticias del carrusel:", error);
   }
-}
+},
+
+
+
 
 };
 </script>
@@ -84,6 +81,9 @@ export default {
 }
 
 .gallery {
+  display: block; 
+    height: 500px;
+    position: relative;
   background: #EEE;
   width: 100%;
   overflow: hidden;

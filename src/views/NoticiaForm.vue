@@ -6,7 +6,7 @@
 
     <main class="user-management-container">
       <h1 class="user-management-title">{{ isEditing ? "EDITAR NOTICIA" : "AGREGAR NUEVA NOTICIA" }}</h1>
-      <button @click="showArchivedModal = true" class="show-archived-button">Ver Noticias Archivadas</button>
+      <button @click="showArchivedNoticias" class="show-archived-button">Ver Noticias Archivadas</button>
       <div class="user-form-and-table">
         <div class="user-form-container">
           <form @submit.prevent="isEditing ? updateNoticia() : addNoticia()">
@@ -44,7 +44,6 @@
 
             <div class="form-actions">
               <button type="submit" class="submit-button">{{ isEditing ? "Actualizar" : "Añadir" }}</button>
-              <!-- Botón de cancelar visible solo en modo de edición -->
               <button v-if="isEditing" type="button" class="cancel-button" @click="resetForm">Cancelar</button>
             </div>
           </form>
@@ -64,7 +63,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="noticia in noticiasPaginadas" :key="noticia.idNoticia">
+              <tr v-for="noticia in noticias" :key="noticia.idNoticia">
                 <td>{{ noticia.titulo }}</td>
                 <td>{{ noticia.descripcion }}</td>
                 <td>{{ noticia.estado }}</td>
@@ -83,39 +82,44 @@
               </tr>
             </tbody>
           </table>
-          <PaginationComponent :page-count="totalPages" @page-changed="handlePageClick" />
+          <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
         </div>
+
         <!-- Modal para Noticias Archivadas -->
-        <div v-if="showArchivedModal" class="modal">
-          <div class="modal-content">
-            <span class="close" @click="showArchivedModal = false">&times;</span>
-            <h2>Noticias Archivadas</h2>
-            <table class="noticias-table">
-              <thead>
-                <tr>
-                  <th>Título</th>
-                  <th>Descripción</th>
-                  <th>Estado</th>
-                  <th>Última Modificación</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="noticia in noticiasArchivadas" :key="noticia.idNoticia">
-                  <td>{{ noticia.titulo }}</td>
-                  <td>{{ noticia.descripcion }}</td>
-                  <td>{{ noticia.estado }}</td>
-                  <td>{{ formatDate(noticia.fechaModificado) }}</td>
-                  <td class="action-buttons">
-                    <button class="delete-button" @click="unarchiveNoticia(noticia.idNoticia)">
-                      <i class="fas fa-box-open"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+<div v-if="showArchivedModal" class="modal">
+  <div class="modal-content">
+    <span class="close" @click="showArchivedModal = false">&times;</span>
+    <h2>Noticias Archivadas</h2>
+    <table class="noticias-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          <th>Descripción</th>
+          <th>Estado</th>
+          <th>Última Modificación</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="noticia in noticiasArchivadas" :key="noticia.idNoticia">
+          <td>{{ noticia.titulo }}</td>
+          <td>{{ noticia.descripcion }}</td>
+          <td>{{ noticia.estado }}</td>
+          <td>{{ formatDate(noticia.fechaModificado) }}</td>
+          <td class="action-buttons">
+            <button class="delete-button" @click="unarchiveNoticia(noticia.idNoticia)">
+              <i class="fas fa-box-open"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <!-- Paginación para Noticias Archivadas -->
+    <PaginationComponent :page-count="totalArchivedPages" :current-page="currentArchivedPage" @page-changed="handleArchivedPageClick" />
+  </div>
+</div>
+
       </div>
     </main>
 
@@ -152,48 +156,37 @@ export default {
       isEditing: false,
       editNoticiaId: null,
       showArchivedModal: false,
-      showErrors: false, // Para controlar cuándo mostrar los mensajes de error
-      perPage: 5, // Mostrar 10 noticias por página
-      currentPage: 1,
-    };
-  },
-
-  computed: {
-    noticiasPaginadas() {
-      const start = (this.currentPage - 1) * this.perPage;
-      const end = start + this.perPage;
-      return this.noticias.slice(start, end);
-    },
-    totalPages() {
-      return Math.ceil(this.noticias.length / this.perPage);
-    },
+      showErrors: false, 
+      currentPage: 1, 
+      totalPages: 1, 
+      perPage: 5, 
+      noticiasArchivadas: [],
+      currentArchivedPage: 1,  
+      totalArchivedPages: 1,   
+      perPage: 3,  
+      };
   },
 
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchNoticias();
+    this.fetchNoticias(); 
     this.fetchNoticiasArchivadas();
   },
 
   methods: {
-    async fetchNoticias() {
+    async fetchNoticias(page = 1) {
       try {
-        const response = await axios.get('http://localhost:8082/noticia');
-        this.noticias = response.data
-          .filter(noticia => noticia.estado !== 'archivado') // Excluir noticias archivadas
-          .map(noticia => {
-            return {
-              ...noticia,
-              fechaModificado: noticia.fechaModificado ? new Date(noticia.fechaModificado) : null,
-            };
-          });
+        const response = await axios.get(`http://localhost:8082/noticia?page=${page - 1}&size=${this.perPage}`);
+        this.noticias = response.data.content;
+        this.totalPages = response.data.totalPages;
+        this.currentPage = page;
       } catch (error) {
         console.error('Error al cargar las noticias:', error);
       }
     },
-    
+
     handlePageClick(pageNumber) {
-      this.currentPage = pageNumber;
+      this.fetchNoticias(pageNumber); 
     },
 
     resetForm() {
@@ -212,34 +205,30 @@ export default {
       }
     },
 
-    async fetchNoticiasArchivadas() {
-      try {
-        const response = await axios.get('http://localhost:8082/noticia/archivadas');
-        this.noticiasArchivadas = response.data;
-      } catch (error) {
-        console.error('Error al cargar las noticias archivadas:', error);
-      }
-    },
+    async fetchNoticiasArchivadas(page = 1) {
+    try {
+      const response = await axios.get(`http://localhost:8082/noticia/archivadas/paginadas?page=${page - 1}&size=${this.perPage}`);
+      this.noticiasArchivadas = response.data.content;
+      this.totalArchivedPages = response.data.totalPages; 
+      this.currentArchivedPage = page;  
+    } catch (error) {
+      console.error('Error al cargar las noticias archivadas:', error);
+    }
+  },
+  
+  handleArchivedPageClick(pageNumber) {
+    this.fetchNoticiasArchivadas(pageNumber);  
+  },
 
     handleFileUpload(event) {
       this.currentNoticia.img = event.target.files[0];
     },
 
     async addNoticia() {
-      // Verificar si el título y la imagen están vacíos
-      if (!this.currentNoticia.titulo) {
+      if (!this.currentNoticia.titulo || !this.currentNoticia.img) {
         Swal.fire({
           title: 'Error',
-          text: 'El título es obligatorio.',
-          icon: 'error',
-          confirmButtonText: 'Aceptar',
-        });
-        return;
-      }
-      if (!this.currentNoticia.img) {
-        Swal.fire({
-          title: 'Error',
-          text: 'La imagen es obligatoria.',
+          text: 'El título y la imagen son obligatorios.',
           icon: 'error',
           confirmButtonText: 'Aceptar',
         });
@@ -253,14 +242,8 @@ export default {
         formData.append('img', this.currentNoticia.img);
         formData.append('estado', this.currentNoticia.estado);
 
-        // Formatear la fecha en formato DD-MM-YYYY
-        const fechaActual = new Date();
-        const day = String(fechaActual.getDate()).padStart(2, '0');
-        const month = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
-        const year = fechaActual.getFullYear();
-        const formattedDate = `${day}-${month}-${year}`;
+        const formattedDate = this.formatDate(new Date());
         formData.append('fechaModificado', formattedDate);
-
         formData.append('UsuarioIdUsuario', 1);
 
         await axios.post('http://localhost:8082/noticia', formData, {
@@ -269,7 +252,6 @@ export default {
           },
         });
 
-        // Limpiar el formulario tras añadir la noticia
         this.resetForm();
         this.fetchNoticias();
 
@@ -290,7 +272,6 @@ export default {
     },
 
     async updateNoticia() {
-      // Verificar si el título está vacío (la imagen puede ser opcional si ya tiene una)
       if (!this.currentNoticia.titulo) {
         Swal.fire({
           title: 'Error',
@@ -310,14 +291,8 @@ export default {
           formData.append('img', this.currentNoticia.img);
         }
 
-        // Formatear la fecha en formato DD-MM-YYYY
-        const fechaActual = new Date();
-        const day = String(fechaActual.getDate()).padStart(2, '0');
-        const month = String(fechaActual.getMonth() + 1).padStart(2, '0'); // Los meses son indexados desde 0
-        const year = fechaActual.getFullYear();
-        const formattedDate = `${day}-${month}-${year}`;
+        const formattedDate = this.formatDate(new Date());
         formData.append('fechaModificado', formattedDate);
-
         formData.append('estado', this.currentNoticia.estado);
         formData.append('UsuarioIdUsuario', 1);
 
@@ -439,7 +414,7 @@ export default {
     },
 
     formatDate(fechaModificado) {
-      if (!fechaModificado) return 'Fecha no disponible'; // Manejo de fechas nulas o no definidas
+      if (!fechaModificado) return 'Fecha no disponible';
 
       const date = new Date(fechaModificado);
 
@@ -447,12 +422,16 @@ export default {
         return 'Fecha inválida';
       }
 
-      // Ajusta la fecha al formato `DD-MM-YYYY`
       const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses en JavaScript son 0 indexados
+      const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
 
       return `${day}-${month}-${year}`;
+    },
+
+    showArchivedNoticias() {
+    this.showArchivedModal = true;
+    this.fetchNoticiasArchivadas();  
     },
   },
 };
@@ -625,7 +604,7 @@ textarea {
 .pagination-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px; /* Añadir espacio entre la tabla y la paginación */
+  margin-top: 20px; 
   margin-bottom: 50px; 
 }
 
