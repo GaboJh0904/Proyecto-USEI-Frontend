@@ -36,7 +36,6 @@
               </select>
             </div>
 
-            <!-- Campo de fecha de modificación solo de lectura -->
             <div class="form-group">
               <label for="fechaModificado">Fecha</label>
               <input type="text" id="fechaModificado" :value="formatDate(currentNoticia.fechaModificado)" readonly />
@@ -49,26 +48,70 @@
           </form>
         </div>
 
-        <!-- Noticias activas con paginación -->
+        <!-- Noticias activas con paginación, filtro y ordenación -->
         <div class="user-table-container">
           <h2>Noticias Existentes</h2>
+
+          <div class="filter-sort-container">
+            <!-- Filtro por título o descripción -->
+            <input type="text" v-model="filterTerm" placeholder="Buscar por título o descripción..." @input="fetchNoticias(1)" />
+            
+            <!-- Filtro por estado -->
+            <select v-model="selectedStatus" @change="fetchNoticias(1)">
+              <option value="">Todos los estados</option>
+              <option value="publicado">Publicado</option>
+              <option value="revision">En Revisión</option>
+            </select>
+            
+            <!-- Selección de cantidad de elementos por página -->
+            <select v-model="perPage" @change="fetchNoticias(1)">
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+            </select>
+            
+            <!-- Botón para seleccionar orden ascendente/descendente -->
+            <button class="sort-button" @click="toggleSortDirection">
+              <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+            </button>
+
+            <div class="columns-menu">
+            <button @click="toggleColumnsMenu">Columns</button>
+            <div v-if="showColumnsMenu" class="columns-dropdown">
+              <div v-for="(visible, key) in visibleColumns" :key="key" @click="toggleColumn(key)" class="column-option">
+                <span>{{ getColumnLabel(key) }}</span>
+                <i v-if="visible" class="fas fa-check"></i> <!-- Muestra el icono si está activada -->
+              </div>
+            </div>
+          </div>
+
+          </div>
+
           <table class="noticias-table">
             <thead>
               <tr>
-                <th>Título</th>
-                <th>Descripción</th>
-                <th>Estado</th>
-                <th>Última Modificación</th>
-                <th>Acciones</th>
+                <th v-if="visibleColumns.title">
+                  Título
+                </th>
+                <th v-if="visibleColumns.description">
+                  Descripción
+                </th>
+                <th v-if="visibleColumns.estado">
+                  Estado
+                </th>
+                <th v-if="visibleColumns.fechaModificado">
+                  Última Modificación
+                </th>
+                <th v-if="visibleColumns.acciones">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="noticia in noticias" :key="noticia.idNoticia">
-                <td>{{ noticia.titulo }}</td>
-                <td>{{ noticia.descripcion }}</td>
-                <td>{{ noticia.estado }}</td>
-                <td>{{ formatDate(noticia.fechaModificado) }}</td>
-                <td class="action-buttons">
+                <td v-if="visibleColumns.title">{{ noticia.titulo }}</td>
+                <td v-if="visibleColumns.description">{{ noticia.descripcion }}</td>
+                <td v-if="visibleColumns.estado">{{ noticia.estado }}</td>
+                <td v-if="visibleColumns.fechaModificado">{{ formatDate(noticia.fechaModificado) }}</td>
+                <td v-if="visibleColumns.acciones" class="action-buttons">
                   <button class="edit-button" @click="editNoticia(noticia)">
                     <i class="fas fa-pencil-alt"></i>
                   </button>
@@ -82,44 +125,42 @@
               </tr>
             </tbody>
           </table>
+
           <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
         </div>
 
         <!-- Modal para Noticias Archivadas -->
-<div v-if="showArchivedModal" class="modal">
-  <div class="modal-content">
-    <span class="close" @click="showArchivedModal = false">&times;</span>
-    <h2>Noticias Archivadas</h2>
-    <table class="noticias-table">
-      <thead>
-        <tr>
-          <th>Título</th>
-          <th>Descripción</th>
-          <th>Estado</th>
-          <th>Última Modificación</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="noticia in noticiasArchivadas" :key="noticia.idNoticia">
-          <td>{{ noticia.titulo }}</td>
-          <td>{{ noticia.descripcion }}</td>
-          <td>{{ noticia.estado }}</td>
-          <td>{{ formatDate(noticia.fechaModificado) }}</td>
-          <td class="action-buttons">
-            <button class="delete-button" @click="unarchiveNoticia(noticia.idNoticia)">
-              <i class="fas fa-box-open"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    
-    <!-- Paginación para Noticias Archivadas -->
-    <PaginationComponent :page-count="totalArchivedPages" :current-page="currentArchivedPage" @page-changed="handleArchivedPageClick" />
-  </div>
-</div>
-
+        <div v-if="showArchivedModal" class="modal">
+          <div class="modal-content">
+            <span class="close" @click="showArchivedModal = false">&times;</span>
+            <h2>Noticias Archivadas</h2>
+            <table class="noticias-table">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
+                  <th>Última Modificación</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="noticia in noticiasArchivadas" :key="noticia.idNoticia">
+                  <td>{{ noticia.titulo }}</td>
+                  <td>{{ noticia.descripcion }}</td>
+                  <td>{{ noticia.estado }}</td>
+                  <td>{{ formatDate(noticia.fechaModificado) }}</td>
+                  <td class="action-buttons">
+                    <button class="delete-button" @click="unarchiveNoticia(noticia.idNoticia)">
+                      <i class="fas fa-box-open"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <PaginationComponent :page-count="totalArchivedPages" :current-page="currentArchivedPage" @page-changed="handleArchivedPageClick" />
+          </div>
+        </div>
       </div>
     </main>
 
@@ -156,27 +197,75 @@ export default {
       isEditing: false,
       editNoticiaId: null,
       showArchivedModal: false,
-      showErrors: false, 
-      currentPage: 1, 
-      totalPages: 1, 
-      perPage: 5, 
-      noticiasArchivadas: [],
-      currentArchivedPage: 1,  
-      totalArchivedPages: 1,   
-      perPage: 3,  
-      };
+      showErrors: false,
+
+      // Parámetros para paginación, ordenación y filtro
+      currentPage: 1,
+      totalPages: 1,
+      perPage: 5, // Cantidad de elementos por página
+      filterTerm: '',
+      sortBy: 'titulo', // Columna por defecto para ordenar
+      sortDirection: 'asc', // Dirección de orden por defecto
+      currentArchivedPage: 1,
+      totalArchivedPages: 1,
+
+      // Estado seleccionado para el filtro
+      selectedStatus: '',
+
+      // Estado de visibilidad de las columnas
+      visibleColumns: {
+        title: true,
+        description: true,
+        estado: true,
+        fechaModificado: true,
+        acciones: true,
+      },
+      showColumnsMenu: false,
+    };
   },
 
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchNoticias(); 
+    this.fetchNoticias();
     this.fetchNoticiasArchivadas();
   },
 
   methods: {
+    // Alternar el menú de selección de columnas
+    toggleColumnsMenu() {
+    this.showColumnsMenu = !this.showColumnsMenu;
+    },
+
+  // Alternar visibilidad de una columna específica
+    toggleColumn(columnKey) {
+      this.visibleColumns[columnKey] = !this.visibleColumns[columnKey];
+    },
+
+    // Obtener el label de las columnas basado en la key
+  getColumnLabel(key) {
+    const labels = {
+      title: 'Título',
+      description: 'Descripción',
+      estado: 'Estado',
+      fechaModificado: 'Fecha Modificado',
+      acciones: 'Acciones',
+    };
+    return labels[key];
+  },
+
+    // Método para obtener noticias con paginación, filtro y ordenación
     async fetchNoticias(page = 1) {
       try {
-        const response = await axios.get(`http://localhost:8082/noticia?page=${page - 1}&size=${this.perPage}`);
+        const response = await axios.get(`http://localhost:8082/noticia`, {
+          params: {
+            page: page - 1,
+            size: this.perPage, // Cantidad de noticias a mostrar
+            sortBy: this.sortBy,
+            sortDirection: this.sortDirection,
+            filter: this.filterTerm,
+            estado: this.selectedStatus, // Filtro por estado
+          },
+        });
         this.noticias = response.data.content;
         this.totalPages = response.data.totalPages;
         this.currentPage = page;
@@ -185,45 +274,59 @@ export default {
       }
     },
 
-    handlePageClick(pageNumber) {
-      this.fetchNoticias(pageNumber); 
-    },
-
-    resetForm() {
-      this.currentNoticia = {
-        titulo: '',
-        descripcion: '',
-        img: null,
-        estado: 'publicado',
-        fechaModificado: new Date().toISOString().split('T')[0],
-      };
-      this.isEditing = false;
-
-      // Limpiar el campo de archivo (imagen)
-      if (this.$refs.fileInput) {
-        this.$refs.fileInput.value = null;
+    // Método para obtener noticias archivadas
+    async fetchNoticiasArchivadas(page = 1) {
+      try {
+        const response = await axios.get(`http://localhost:8082/noticia/archivadas/paginadas`, {
+          params: {
+            page: page - 1,
+            size: this.perPage, // Cantidad de noticias archivadas a mostrar
+            sortBy: this.sortBy,
+            sortDirection: this.sortDirection,
+            filter: this.filterTerm,
+          },
+        });
+        this.noticiasArchivadas = response.data.content;
+        this.totalArchivedPages = response.data.totalPages;
+        this.currentArchivedPage = page;
+      } catch (error) {
+        console.error('Error al cargar las noticias archivadas:', error);
       }
     },
 
-    async fetchNoticiasArchivadas(page = 1) {
-    try {
-      const response = await axios.get(`http://localhost:8082/noticia/archivadas/paginadas?page=${page - 1}&size=${this.perPage}`);
-      this.noticiasArchivadas = response.data.content;
-      this.totalArchivedPages = response.data.totalPages; 
-      this.currentArchivedPage = page;  
-    } catch (error) {
-      console.error('Error al cargar las noticias archivadas:', error);
-    }
-  },
-  
-  handleArchivedPageClick(pageNumber) {
-    this.fetchNoticiasArchivadas(pageNumber);  
-  },
+    // Formatear fecha
+    formatDate(fechaModificado) {
+      if (!fechaModificado) return 'Fecha no disponible';
 
+      const date = new Date(fechaModificado);
+
+      if (isNaN(date.getTime())) {
+        return 'Fecha inválida';
+      }
+
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+
+      return `${day}-${month}-${year}`;
+    },
+
+    // Manejar el cambio de página en las noticias
+    handlePageClick(pageNumber) {
+      this.fetchNoticias(pageNumber);
+    },
+
+    // Manejar el cambio de página en las noticias archivadas
+    handleArchivedPageClick(pageNumber) {
+      this.fetchNoticiasArchivadas(pageNumber);
+    },
+
+    // Subir la imagen
     handleFileUpload(event) {
       this.currentNoticia.img = event.target.files[0];
     },
 
+    // Añadir nueva noticia
     async addNoticia() {
       if (!this.currentNoticia.titulo || !this.currentNoticia.img) {
         Swal.fire({
@@ -271,6 +374,7 @@ export default {
       }
     },
 
+    // Actualizar una noticia existente
     async updateNoticia() {
       if (!this.currentNoticia.titulo) {
         Swal.fire({
@@ -327,6 +431,7 @@ export default {
       }
     },
 
+    // Eliminar una noticia
     async deleteNoticia(idNoticia) {
       if (!idNoticia) {
         console.error('El ID de la noticia no está definido.');
@@ -351,6 +456,7 @@ export default {
       }
     },
 
+    // Archivar una noticia
     async archiveNoticia(idNoticia) {
       if (!idNoticia) {
         console.error('El ID de la noticia no está definido.');
@@ -377,6 +483,7 @@ export default {
       }
     },
 
+    // Desarchivar una noticia
     async unarchiveNoticia(idNoticia) {
       if (!idNoticia) {
         console.error('El ID de la noticia no está definido.');
@@ -403,40 +510,20 @@ export default {
       }
     },
 
-    editNoticia(noticia) {
-      this.currentNoticia = {
-        ...noticia,
-        img: noticia.img ? noticia.img : null,
-        fechaModificado: this.formatDate(noticia.fechaModificado),
-      };
-      this.isEditing = true;
-      this.editNoticiaId = noticia.idNoticia;
-    },
-
-    formatDate(fechaModificado) {
-      if (!fechaModificado) return 'Fecha no disponible';
-
-      const date = new Date(fechaModificado);
-
-      if (isNaN(date.getTime())) {
-        return 'Fecha inválida';
-      }
-
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
-
-      return `${day}-${month}-${year}`;
-    },
-
+    // Mostrar el modal de noticias archivadas
     showArchivedNoticias() {
-    this.showArchivedModal = true;
-    this.fetchNoticiasArchivadas();  
+      this.showArchivedModal = true;
+      this.fetchNoticiasArchivadas();
     },
+
+    // Alternar la dirección de orden (ascendente/descendente)
+    toggleSortDirection() {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      this.fetchNoticias(1); // Refrescar la tabla
+    }
   },
 };
 </script>
-
 
 <style scoped>
 .user-form-and-table {
@@ -658,4 +745,98 @@ textarea {
 .show-archived-button:hover {
   background-color: #263D42;
 }
+
+.filter-sort-container {
+  display: flex;
+  gap: 22px;
+  margin-bottom: 20px;
+}
+
+.filter-sort-container input {
+  width: 40%;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.filter-sort-container select {
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.columns-dropdown {
+  display: block;
+  position: absolute;
+  background-color: #1c1c1e; /* Color oscuro */
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  padding: 10px;
+  border-radius: 8px;
+  color: #ffffff; /* Texto en blanco */
+  width: 150px;
+}
+
+.column-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.column-option:hover {
+  background-color: #3a3a3c;
+  border-radius: 4px;
+}
+
+.columns-menu button {
+  background-color: #263d42; /* Color del botón */
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.columns-menu button:hover {
+  background-color: #3a3a3c; /* Color oscuro en hover */
+}
+
+
+
+/* Estilo para el botón de flecha */
+.sort-button {
+  background-color: #263D42; /* Mismo color que los demás botones */
+  color: white;
+  border: none;
+  padding: 10px 15px; /* Ajusta el tamaño al estilo de los otros botones */
+  border-radius: 8px; /* Bordes redondeados para consistencia */
+  cursor: pointer;
+}
+
+.sort-button i {
+  color: white; /* Color del ícono */
+}
+
+.sort-button:hover {
+  background-color: #63C7B2; /* Color de hover similar a otros botones */
+}
+
+/* Estilo para el botón de Columns */
+.columns-button {
+  background-color: #263D42; /* Mismo color que los otros botones */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.columns-button:hover {
+  background-color: #63C7B2; /* Hover con el mismo estilo */
+}
+
+
 </style>
