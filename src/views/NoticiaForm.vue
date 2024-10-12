@@ -32,7 +32,7 @@
               <label for="estado">Estado</label>
               <select v-model="currentNoticia.estado" id="estado" required>
                 <option value="publicado">Publicado</option>
-                <option value="revision">En Revisión</option>
+                <option value="En revision">En Revisión</option>
               </select>
             </div>
 
@@ -60,9 +60,9 @@
             <select v-model="selectedStatus" @change="fetchNoticias(1)">
               <option value="">Todos los estados</option>
               <option value="publicado">Publicado</option>
-              <option value="revision">En Revisión</option>
+              <option value="En revision">En Revisión</option>
             </select>
-            
+
             <!-- Selección de cantidad de elementos por página -->
             <select v-model="perPage" @change="fetchNoticias(1)">
               <option value="5">5</option>
@@ -76,32 +76,23 @@
             </button>
 
             <div class="columns-menu">
-            <button @click="toggleColumnsMenu">Columns</button>
-            <div v-if="showColumnsMenu" class="columns-dropdown">
-              <div v-for="(visible, key) in visibleColumns" :key="key" @click="toggleColumn(key)" class="column-option">
-                <span>{{ getColumnLabel(key) }}</span>
-                <i v-if="visible" class="fas fa-check"></i> <!-- Muestra el icono si está activada -->
+              <button @click="toggleColumnsMenu">Columnas</button>
+              <div v-if="showColumnsMenu" class="columns-dropdown">
+                <div v-for="(visible, key) in visibleColumns" :key="key" @click="toggleColumn(key)" class="column-option">
+                  <span>{{ getColumnLabel(key) }}</span>
+                  <i v-if="visible" class="fas fa-check"></i> <!-- Muestra el icono si está activada -->
+                </div>
               </div>
             </div>
-          </div>
-
           </div>
 
           <table class="noticias-table">
             <thead>
               <tr>
-                <th v-if="visibleColumns.title">
-                  Título
-                </th>
-                <th v-if="visibleColumns.description">
-                  Descripción
-                </th>
-                <th v-if="visibleColumns.estado">
-                  Estado
-                </th>
-                <th v-if="visibleColumns.fechaModificado">
-                  Última Modificación
-                </th>
+                <th v-if="visibleColumns.title">Título</th>
+                <th v-if="visibleColumns.description">Descripción</th>
+                <th v-if="visibleColumns.estado">Estado</th>
+                <th v-if="visibleColumns.fechaModificado">Última Modificación</th>
                 <th v-if="visibleColumns.acciones">Acciones</th>
               </tr>
             </thead>
@@ -115,7 +106,7 @@
                   <button class="edit-button" @click="editNoticia(noticia)">
                     <i class="fas fa-pencil-alt"></i>
                   </button>
-                  <button class="delete-button" @click="deleteNoticia(noticia.idNoticia)">
+                  <button class="delete-button" @click="confirmDeleteNoticia(noticia.idNoticia)">
                     <i class="fas fa-trash-alt"></i>
                   </button>
                   <button v-if="noticia.estado !== 'archivado'" class="edit-button" @click="archiveNoticia(noticia.idNoticia)">
@@ -202,10 +193,10 @@ export default {
       // Parámetros para paginación, ordenación y filtro
       currentPage: 1,
       totalPages: 1,
-      perPage: 5, // Cantidad de elementos por página
+      perPage: 5, 
       filterTerm: '',
-      sortBy: 'titulo', // Columna por defecto para ordenar
-      sortDirection: 'asc', // Dirección de orden por defecto
+      sortBy: 'titulo', 
+      sortDirection: 'asc',
       currentArchivedPage: 1,
       totalArchivedPages: 1,
 
@@ -231,42 +222,38 @@ export default {
   },
 
   methods: {
-    // Alternar el menú de selección de columnas
     toggleColumnsMenu() {
-    this.showColumnsMenu = !this.showColumnsMenu;
+      this.showColumnsMenu = !this.showColumnsMenu;
     },
-
-  // Alternar visibilidad de una columna específica
     toggleColumn(columnKey) {
       this.visibleColumns[columnKey] = !this.visibleColumns[columnKey];
     },
-
-    // Obtener el label de las columnas basado en la key
-  getColumnLabel(key) {
-    const labels = {
-      title: 'Título',
-      description: 'Descripción',
-      estado: 'Estado',
-      fechaModificado: 'Fecha Modificado',
-      acciones: 'Acciones',
-    };
-    return labels[key];
-  },
-
+    getColumnLabel(key) {
+      const labels = {
+        title: 'Título',
+        description: 'Descripción',
+        estado: 'Estado',
+        fechaModificado: 'Fecha Modificado',
+        acciones: 'Acciones',
+      };
+      return labels[key];
+    },
     // Método para obtener noticias con paginación, filtro y ordenación
     async fetchNoticias(page = 1) {
       try {
+        const estadoFilter = this.selectedStatus ? this.selectedStatus : ''; 
+
         const response = await axios.get(`http://localhost:8082/noticia`, {
           params: {
             page: page - 1,
-            size: this.perPage, // Cantidad de noticias a mostrar
+            size: this.perPage,
             sortBy: this.sortBy,
             sortDirection: this.sortDirection,
             filter: this.filterTerm,
-            estado: this.selectedStatus, // Filtro por estado
+            estado: estadoFilter,
           },
         });
-        this.noticias = response.data.content;
+        this.noticias = response.data.content.filter(noticia => noticia.estado !== 'archivado');
         this.totalPages = response.data.totalPages;
         this.currentPage = page;
       } catch (error) {
@@ -274,13 +261,14 @@ export default {
       }
     },
 
+
     // Método para obtener noticias archivadas
     async fetchNoticiasArchivadas(page = 1) {
       try {
         const response = await axios.get(`http://localhost:8082/noticia/archivadas/paginadas`, {
           params: {
             page: page - 1,
-            size: this.perPage, // Cantidad de noticias archivadas a mostrar
+            size: this.perPage, 
             sortBy: this.sortBy,
             sortDirection: this.sortDirection,
             filter: this.filterTerm,
@@ -310,18 +298,12 @@ export default {
 
       return `${day}-${month}-${year}`;
     },
-
-    // Manejar el cambio de página en las noticias
     handlePageClick(pageNumber) {
       this.fetchNoticias(pageNumber);
     },
-
-    // Manejar el cambio de página en las noticias archivadas
     handleArchivedPageClick(pageNumber) {
       this.fetchNoticiasArchivadas(pageNumber);
     },
-
-    // Subir la imagen
     handleFileUpload(event) {
       this.currentNoticia.img = event.target.files[0];
     },
@@ -431,6 +413,24 @@ export default {
       }
     },
 
+    // Eliminar una noticia con confirmación
+    confirmDeleteNoticia(idNoticia) {
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: "No podrás revertir esta acción.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.deleteNoticia(idNoticia);
+        }
+      });
+    },
+
     // Eliminar una noticia
     async deleteNoticia(idNoticia) {
       if (!idNoticia) {
@@ -520,6 +520,34 @@ export default {
     toggleSortDirection() {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
       this.fetchNoticias(1); // Refrescar la tabla
+    },
+    
+    // Resetear formulario
+    resetForm() {
+      this.currentNoticia = {
+        titulo: '',
+        descripcion: '',
+        img: null,
+        estado: 'publicado',
+        fechaModificado: new Date().toISOString().split('T')[0],
+      };
+      this.isEditing = false;
+
+      // Limpiar el campo de archivo (imagen)
+      if (this.$refs.fileInput) {
+        this.$refs.fileInput.value = null;
+      }
+    },
+
+    // Editar noticia
+    editNoticia(noticia) {
+      this.currentNoticia = {
+        ...noticia,
+        img: noticia.img ? noticia.img : null,
+        fechaModificado: this.formatDate(noticia.fechaModificado),
+      };
+      this.isEditing = true;
+      this.editNoticiaId = noticia.idNoticia;
     }
   },
 };
@@ -691,7 +719,7 @@ textarea {
 .pagination-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px; 
+  margin-top: 20px;
   margin-bottom: 50px; 
 }
 
@@ -713,7 +741,7 @@ textarea {
   background-color: #f4f4f4;
   padding: 20px;
   border-radius: 10px;
-  max-width: 600px;
+  max-width: 800px;
   width: 100%;
 }
 
@@ -768,12 +796,12 @@ textarea {
 .columns-dropdown {
   display: block;
   position: absolute;
-  background-color: #1c1c1e; /* Color oscuro */
+  background-color: #1c1c1e; 
   box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
   z-index: 1;
   padding: 10px;
   border-radius: 8px;
-  color: #ffffff; /* Texto en blanco */
+  color: #ffffff; 
   width: 150px;
 }
 
@@ -791,7 +819,7 @@ textarea {
 }
 
 .columns-menu button {
-  background-color: #263d42; /* Color del botón */
+  background-color: #263d42; 
   color: #fff;
   padding: 10px 15px;
   border: none;
@@ -801,32 +829,30 @@ textarea {
 }
 
 .columns-menu button:hover {
-  background-color: #3a3a3c; /* Color oscuro en hover */
+  background-color: #3a3a3c; 
 }
-
-
 
 /* Estilo para el botón de flecha */
 .sort-button {
-  background-color: #263D42; /* Mismo color que los demás botones */
+  background-color: #263D42; 
   color: white;
   border: none;
-  padding: 10px 15px; /* Ajusta el tamaño al estilo de los otros botones */
-  border-radius: 8px; /* Bordes redondeados para consistencia */
+  padding: 10px 15px; 
+  border-radius: 8px; 
   cursor: pointer;
 }
 
 .sort-button i {
-  color: white; /* Color del ícono */
+  color: white; 
 }
 
 .sort-button:hover {
-  background-color: #63C7B2; /* Color de hover similar a otros botones */
+  background-color: #63C7B2; 
 }
 
 /* Estilo para el botón de Columns */
 .columns-button {
-  background-color: #263D42; /* Mismo color que los otros botones */
+  background-color: #263D42; 
   color: white;
   border: none;
   padding: 10px 15px;
@@ -835,8 +861,7 @@ textarea {
 }
 
 .columns-button:hover {
-  background-color: #63C7B2; /* Hover con el mismo estilo */
+  background-color: #63C7B2; 
 }
-
 
 </style>
