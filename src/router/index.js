@@ -13,6 +13,7 @@ import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
 import GestionOpcionesPregunta from '../views/GestionOpcionesPregunta.vue'
 import NoticiaForm from '@/views/NoticiaForm.vue'
 import GestionEncuestas from '@/views/GestionEncuestas.vue'
+import ContactoAdmin from '../views/ContactoAdmin.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -88,7 +89,12 @@ const router = createRouter({
       path: '/gestion-encuestas/:idUsuario',
       name: 'GestionEncuestas',
       component: GestionEncuestas
-    }
+    },
+    {
+      path: '/contacto-admin',
+      name: 'ContactoAdmin',
+      component: ContactoAdmin
+    },
   ],
   // Aquí es donde agregamos el comportamiento de desplazamiento
   scrollBehavior(to, from, savedPosition) {
