@@ -83,6 +83,19 @@ export default {
           throw new Error('El ID del estudiante no está disponible.');
         }
 
+        // Registrar notificación
+    const notification = {
+      titulo: "Encuesta completado exitosamente",
+      contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
+      fecha: new Date().toISOString(), // Fecha actual
+      estadoNotificacion: false, // Estado inicial como no leído
+      estudianteIdEstudiante: { idEstudiante: estudianteId }, // ID del estudiante corregido
+      tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+    };
+
+    // Enviar la notificación
+    await axios.post('http://localhost:8082/notificacion', notification);
+
         // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
           await axios.post('http://localhost:8082/respuesta', {

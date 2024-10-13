@@ -147,19 +147,6 @@ export default {
         confirmButtonText: 'Continuar'
       });
 
-      // Registrar notificación
-      const notification = {
-        titulo: "Encuesta completado exitosamente",
-        contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
-        fecha: new Date().toISOString(), // Fecha actual
-        estadoNotificacion: false, // Estado inicial como no leído
-        estudianteIdEstudiante: { idEstudiante }, // ID del estudiante
-        tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
-      };
-
-      // Enviar la notificación
-      await axios.post('http://localhost:8082/notificacion', notification);
-
       // Refrescar la lista de estudiantes
       this.fetchEstudiantes();
       
