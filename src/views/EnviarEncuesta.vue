@@ -126,33 +126,35 @@ export default {
       this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     },
 
-    enviarCertificado(idEstudiante) {
-  if (!idEstudiante) {
-    Swal.fire('Error', 'ID del estudiante no encontrado', 'error');
-    return;
-  }
-
-
-  axios.post('http://localhost:8082/certificado/enviar', null, {
-    params: {
-      idEstudiante: idEstudiante
+    async enviarCertificado(idEstudiante) {
+    if (!idEstudiante) {
+      Swal.fire('Error', 'ID del estudiante no encontrado', 'error');
+      return;
     }
-  })
-  .then(response => {
-    Swal.fire({
-      icon: 'success',
-      title: 'Certificado enviado correctamente',
-      // text: `Certificado enviado exitosamente para el estudiante`,
-      confirmButtonText: 'Continuar'
-    }).then(() => {
+
+    try {
+      // Enviar certificado
+      const response = await axios.post('http://localhost:8082/certificado/enviar', null, {
+        params: {
+          idEstudiante: idEstudiante
+        }
+      });
+
+      // Mostrar mensaje de éxito
+      await Swal.fire({
+        icon: 'success',
+        title: 'Certificado enviado correctamente',
+        confirmButtonText: 'Continuar'
+      });
+
+      // Refrescar la lista de estudiantes
       this.fetchEstudiantes();
-    });
-  })
-  .catch(error => {
-    Swal.fire('Error', 'No se pudo enviar el certificado', 'error');
-    console.error('Error al enviar el certificado:', error);
-  });
-}
+      
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo enviar el certificado o registrar la notificación', 'error');
+      console.error('Error al enviar el certificado o registrar la notificación:', error);
+    }
+  }
   }
 }
 </script>
