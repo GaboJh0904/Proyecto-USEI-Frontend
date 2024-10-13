@@ -126,33 +126,48 @@ export default {
       this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
     },
 
-    enviarCertificado(idEstudiante) {
-  if (!idEstudiante) {
-    Swal.fire('Error', 'ID del estudiante no encontrado', 'error');
-    return;
-  }
-
-
-  axios.post('http://localhost:8082/certificado/enviar', null, {
-    params: {
-      idEstudiante: idEstudiante
+    async enviarCertificado(idEstudiante) {
+    if (!idEstudiante) {
+      Swal.fire('Error', 'ID del estudiante no encontrado', 'error');
+      return;
     }
-  })
-  .then(response => {
-    Swal.fire({
-      icon: 'success',
-      title: 'Certificado enviado correctamente',
-      // text: `Certificado enviado exitosamente para el estudiante`,
-      confirmButtonText: 'Continuar'
-    }).then(() => {
+
+    try {
+      // Enviar certificado
+      const response = await axios.post('http://localhost:8082/certificado/enviar', null, {
+        params: {
+          idEstudiante: idEstudiante
+        }
+      });
+
+      // Mostrar mensaje de éxito
+      await Swal.fire({
+        icon: 'success',
+        title: 'Certificado enviado correctamente',
+        confirmButtonText: 'Continuar'
+      });
+
+      // Registrar notificación
+      const notification = {
+        titulo: "Encuesta completado exitosamente",
+        contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
+        fecha: new Date().toISOString(), // Fecha actual
+        estadoNotificacion: false, // Estado inicial como no leído
+        estudianteIdEstudiante: { idEstudiante }, // ID del estudiante
+        tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+      };
+
+      // Enviar la notificación
+      await axios.post('http://localhost:8082/notificacion', notification);
+
+      // Refrescar la lista de estudiantes
       this.fetchEstudiantes();
-    });
-  })
-  .catch(error => {
-    Swal.fire('Error', 'No se pudo enviar el certificado', 'error');
-    console.error('Error al enviar el certificado:', error);
-  });
-}
+      
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo enviar el certificado o registrar la notificación', 'error');
+      console.error('Error al enviar el certificado o registrar la notificación:', error);
+    }
+  }
   }
 }
 </script>

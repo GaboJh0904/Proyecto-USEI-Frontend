@@ -34,17 +34,26 @@
 
       <!-- Mostrar notificaciones y perfil si el usuario está logueado -->
       <template v-if="userRole">
-        <button @click="toggleNotifications" class="icon-button notification-icon">
+        <button @click="toggleNotifications" class="icon-button notification-icon" :class="{ 'has-unread': hasUnreadNotifications }">
           <i class="fas fa-bell"></i>
         </button>
         <div v-if="showNotifications" class="notification-menu">
           <h3>Notificaciones</h3>
-          <div class="notification-item" v-for="(notification, index) in notifications" :key="index">
-            <i class="fas fa-envelope notification-icon"></i>
-            <div class="notification-content">
-              <p><strong>{{ notification.title }}</strong></p>
-              <p>{{ notification.description }}</p>
-              <p>{{ notification.time }}</p>
+          <div class="scrollable">
+            <div
+              class="notification-item"
+              v-for="(notification, index) in notifications"
+              :key="index"
+              @click="markAsRead(notification, index)"
+              :class="{ clickable: true }"
+            >
+              <!-- Mostrar sobre cerrado si no está leída, sobre abierto si está leída -->
+              <i class="fas" :class="notification.read ? 'fa-envelope-open' : 'fa-envelope'"></i>
+              <div class="notification-content">
+                <p><strong>{{ notification.title }}</strong></p>
+                <p>{{ notification.description }}</p>
+                <p>{{ notification.time }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -85,6 +94,7 @@
 
 
 <script>
+import axios from 'axios';
 import LoginPopup from '@/components/LoginPopup.vue';
 import RegisterPopup from '@/components/RegisterPopup.vue';
 import UserProfilePopup from '@/components/UserProfilePopup.vue';
@@ -113,9 +123,7 @@ export default {
       showNotifications: false,
       username: '',
       role: '',
-      notifications: [
-        { title: 'Nueva notificación', description: 'Revisión de encuesta', time: 'Hace 6 horas' },
-      ],
+      notifications: [],
     };
   },
   computed: {
@@ -136,13 +144,19 @@ export default {
     },
     isNoticiaForm(){
       return this.$route.path === '/noticia-form'
+    },
+    // Detecta si hay notificaciones sin leer
+    hasUnreadNotifications() {
+      return this.notifications.some(notification => !notification.read);
     }
-
   },
   mounted() {
     // Set username and role from localStorage (or defaults)
     this.username = localStorage.getItem('nombre') || 'USERNAME';
     this.role = localStorage.getItem('rol') || 'ROL';
+
+    // Cargar las notificaciones desde el backend
+    this.loadNotifications();
   },
   methods: {
     switchToRegister() {
@@ -158,6 +172,32 @@ export default {
     switchToStudentLogin() {
       this.showAdminLoginPopup = false;
       this.showLoginPopup = true;
+    },
+    async loadNotifications() {
+      try {
+        const response = await axios.get('http://localhost:8082/notificacion'); // Ajustar la URL según el backend
+        this.notifications = response.data.map(notificacion => ({
+          id: notificacion.idNotificacion, // Agregar id de la notificación
+          title: notificacion.titulo,
+          description: notificacion.contenido,
+          time: new Date(notificacion.fecha).toLocaleString(), // Convierte la fecha al formato local
+          read: notificacion.estadoNotificacion, // Verifica si está leída o no
+        }));
+      } catch (error) {
+        console.error('Error al cargar las notificaciones:', error);
+      }
+    },
+    async markAsRead(notification, index) {
+      if (!notification.read) { // Solo marcar como leída si no lo está
+        try {
+          await axios.put(`http://localhost:8082/notificacion/${notification.id}/marcar-como-leida`);
+          
+          // Actualizar el estado de la notificación localmente
+          this.notifications[index].read = true;
+        } catch (error) {
+          console.error('Error al marcar la notificación como leída:', error);
+        }
+      }
     },
     toggleNotifications() {
       this.showNotifications = !this.showNotifications;
@@ -231,6 +271,15 @@ nav {
 
 .login-btn:hover {
   background: #80ced7;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 .icon-button {
@@ -310,12 +359,37 @@ nav {
   align-items: flex-start;
   padding: 10px;
   border-bottom: 1px solid #ddd;
+  cursor: pointer; /* Cursor de pointer */
+  transition: background-color 0.2s ease;
+}
+
+.notification-item:hover {
+  background-color: #f0f0f0; /* Cambio de fondo al hacer hover */
+}
+
+/* Estilo de los íconos de notificación */
+.notification-item .fa-envelope {
+  color: #dc3545; /* Color rojo para notificaciones no leídas */
+}
+
+.notification-item .fa-envelope-open {
+  color: #28a745; /* Color verde para notificaciones leídas */
+}
+
+/* Estilos para notificaciones leídas */
+.notification-item .notification-icon.read {
+  color: #8e6c88; /* Cambiar color si está leída */
 }
 
 .notification-icon {
   font-size: 25px;
-  color: #8e6c88;
   margin-right: 10px;
+}
+
+/* Estilos para el botón de notificaciones con animación */
+.has-unread {
+  animation: glow 1.5s infinite, bounce 2s infinite;
+  color: rgb(45, 59, 255);
 }
 
 .notification-content p {
@@ -326,4 +400,36 @@ nav {
 .notification-item:last-child {
   border-bottom: none;
 }
+
+/* Estilo para el contenedor que tendrá el scroll */
+.scrollable {
+  max-height: 250px; /* Altura máxima antes de activar el scroll */
+  overflow-y: auto; /* Habilitar scroll vertical */
+  padding-right: 10px; /* Asegura que el contenido no quede oculto por la barra de desplazamiento */
+}
+
+/* Estilo para el hover y clic */
+.clickable {
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.clickable:hover {
+  background-color: #f0f0f0;
+}
+
+/* Añadir un estilo para el scroll personalizado (opcional) */
+.scrollable::-webkit-scrollbar {
+  width: 6px; /* Anchura del scrollbar */
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+  background-color: #8e6c88; /* Color de la barra */
+  border-radius: 10px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+  background-color: #f1f1f1; /* Color de fondo del track */
+}
+
 </style>
