@@ -176,13 +176,16 @@ export default {
     async loadNotifications() {
       try {
         const response = await axios.get('http://localhost:8082/notificacion'); // Ajustar la URL según el backend
-        this.notifications = response.data.map(notificacion => ({
-          id: notificacion.idNotificacion, // Agregar id de la notificación
-          title: notificacion.titulo,
-          description: notificacion.contenido,
-          time: new Date(notificacion.fecha).toLocaleString(), // Convierte la fecha al formato local
-          read: notificacion.estadoNotificacion, // Verifica si está leída o no
-        }));
+        // Ordenar las notificaciones por idNotificacion de mayor a menor
+        this.notifications = response.data
+          .map(notificacion => ({
+            id: notificacion.idNotificacion, // Agregar id de la notificación
+            title: notificacion.titulo,
+            description: notificacion.contenido,
+            time: new Date(notificacion.fecha).toLocaleString(), // Convierte la fecha al formato local
+            read: notificacion.estadoNotificacion, // Verifica si está leída o no
+          }))
+          .sort((a, b) => b.id - a.id); // Ordenar por id de mayor a menor
       } catch (error) {
         console.error('Error al cargar las notificaciones:', error);
       }
