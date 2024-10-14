@@ -57,7 +57,7 @@
           </div>
           <h3>SOPORTE/AYUDA</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToContactAdmin">Ingresar</button>
           </div>
         </div>
       </div>
@@ -140,8 +140,11 @@ async goToEncuesta() {
 },
 goToEnProgreso(){
     this.$router.push('/en-progreso');
-}
-}
+},
+goToContactAdmin() {
+    this.$router.push('/contacto-admin');
+},
+  },
 };
 </script>
 
