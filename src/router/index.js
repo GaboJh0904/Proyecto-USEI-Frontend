@@ -13,6 +13,7 @@ import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
 import GestionOpcionesPregunta from '../views/GestionOpcionesPregunta.vue'
 import NoticiaForm from '@/views/NoticiaForm.vue'
 import GestionEncuestas from '@/views/GestionEncuestas.vue'
+import FormularioSoporte from '@/views/FormularioSoporte.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -88,15 +89,17 @@ const router = createRouter({
       path: '/gestion-encuestas/:idUsuario',
       name: 'GestionEncuestas',
       component: GestionEncuestas
-    }
+    },
+    {
+      path: '/formulario-soporte',
+      name: 'FormularioSoporte',
+      component: FormularioSoporte
+    },
   ],
-  // Aquí es donde agregamos el comportamiento de desplazamiento
   scrollBehavior(to, from, savedPosition) {
-    // Si la posición guardada existe (por ejemplo, al hacer clic en "atrás")
     if (savedPosition) {
       return savedPosition;
     } else {
-      // Si no hay posición guardada, desplazarse hacia la parte superior
       return { top: 0 };
     }
   },
