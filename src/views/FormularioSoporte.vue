@@ -43,6 +43,7 @@ export default {
   },
   data() {
     return {
+      userRole: '',
       problemas: [], 
       formData: {
         Tipo_Problema_id_problema: null,
@@ -67,6 +68,7 @@ export default {
     }
   },
   mounted() {
+    this.userRole = localStorage.getItem('rol') || '';
     this.fetchProblemas(); 
   }
 };
