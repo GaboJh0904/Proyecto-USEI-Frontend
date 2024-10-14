@@ -123,7 +123,7 @@
           </div>
           <h3>SOPORTE/AYUDA</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToFormularioSoporte">Ingresar</button>
           </div>
         </div>
       </div>
@@ -157,7 +157,7 @@
     },
     data() {
     return {
-      usuarioId: null, // Para almacenar el ID del usuario administrador
+      usuarioId: null, 
     };
   },
   mounted() {
@@ -190,6 +190,10 @@
     goToNoticiaForm() {
       this.$router.push('/noticia-form');
     },
+    goToFormularioSoporte() {
+      this.$router.push('/formulario-soporte');
+    },
+
   },
   };
   </script>
