@@ -13,7 +13,7 @@
           <input type="password" id="password" v-model="loginRequest.contrasena" required>
         </div>
         <div class="form-group">
-          <a href="#" @click.prevent="forgotPassword">Olvidé mi contraseña</a>
+          <a href="#" @click.prevent="$emit('switch-to-change-password')">Olvidé mi contraseña</a>
         </div>
         <button type="submit" class="submit-btn">Ingresar</button>
       </form>

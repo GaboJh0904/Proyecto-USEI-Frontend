@@ -82,11 +82,19 @@
       @close="showLoginPopup = false" 
       @switch-to-register="switchToRegister" 
       @switch-to-admin-login="switchToAdminLogin" 
+      @switch-to-change-password="switchToChangePassword"
     />
     <RegisterPopup v-if="showRegisterPopup" @close="showRegisterPopup = false" />
     <AdminLoginPopup 
       v-if="showAdminLoginPopup" 
       @close="showAdminLoginPopup = false" 
+      @switch-to-student-login="switchToStudentLogin" 
+      @switch-to-change-password="switchToChangePassword"
+    />
+    <ChangePasswordPopup 
+      v-if="showChangePasswordPopup" 
+      @close=" showChangePasswordPopup= false"
+      @switch-to-change-password="switchToChangePassword"
       @switch-to-student-login="switchToStudentLogin" 
     />
   </nav>
@@ -99,6 +107,7 @@ import LoginPopup from '@/components/LoginPopup.vue';
 import RegisterPopup from '@/components/RegisterPopup.vue';
 import UserProfilePopup from '@/components/UserProfilePopup.vue';
 import AdminLoginPopup from '@/components/AdminLoginPopup.vue';
+import ChangePasswordPopup from '@/components/ChangePasswordPopup.vue';
 
 export default {
   name: 'NavBar',
@@ -107,6 +116,7 @@ export default {
     RegisterPopup,
     UserProfilePopup,
     AdminLoginPopup,
+    ChangePasswordPopup,
   },
   props: {
     userRole: {
@@ -121,6 +131,7 @@ export default {
       showUserProfile: false,
       showAdminLoginPopup: false,
       showNotifications: false,
+      showChangePasswordPopup: false,
       username: '',
       role: '',
       notifications: [],
@@ -165,20 +176,30 @@ export default {
     this.loadNotifications();
   },
   methods: {
-    switchToRegister() {
-      this.showLoginPopup = false;
-      this.showAdminLoginPopup = false;
-      this.showRegisterPopup = true;
-    },
-    switchToAdminLogin() {
-      this.showLoginPopup = false;
-      this.showRegisterPopup = false;
-      this.showAdminLoginPopup = true;
-    },
     switchToStudentLogin() {
-      this.showAdminLoginPopup = false;
-      this.showLoginPopup = true;
-    },
+    this.showAdminLoginPopup = false;
+    this.showLoginPopup = true;
+    this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
+  },
+  switchToRegister() {
+    this.showLoginPopup = false;
+    this.showAdminLoginPopup = false;
+    this.showRegisterPopup = true;
+    this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
+  },
+  switchToAdminLogin() {
+    this.showLoginPopup = false;
+    this.showRegisterPopup = false;
+    this.showAdminLoginPopup = true;
+    this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
+  },
+  switchToChangePassword() {
+    console.log('Mostrar popup de cambio de contraseña');
+    this.showChangePasswordPopup = true;
+    this.showLoginPopup = false;
+    this.showAdminLoginPopup = false;
+    this.showRegisterPopup = false;
+  },
     async loadNotifications() {
       try {
         const response = await axios.get('http://localhost:8082/notificacion'); // Ajustar la URL según el backend
