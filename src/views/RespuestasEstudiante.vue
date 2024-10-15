@@ -11,6 +11,21 @@
         <p><strong>Fecha de envio de encuesta:</strong> {{ formattedFechaEncuesta || 'Fecha no disponible' }}</p>
       </div>
 
+         <!-- Contenedor de filtros, búsqueda y ordenación -->
+      <div class="filter-search-container">
+        <input type="text" v-model="searchQuery" placeholder="Buscar..." class="search-input" />
+        <select v-model="selectedFilter" class="filter-select">
+          <option value="">Filtrar por</option>
+          <option value="pregunta">Pregunta</option>
+          <option value="respuesta">Respuesta</option>
+        </select>
+        <select v-model="selectedSort" class="filter-select">
+          <option value="">Ordenar por</option>
+          <option value="asc">Ascendente</option>
+          <option value="desc">Descendente</option>
+        </select>
+      </div>
+
       <div v-if="respuestas.length > 0" class="questions-container">
         <ul>
           <li v-for="(respuesta, index) in respuestas" :key="index" class="question-item">
@@ -22,6 +37,11 @@
       <div v-else>
         <p>No se encontraron respuestas para este estudiante.</p>
       </div>
+      <PaginationComponent
+        :page-count="totalPages"
+        :current-page="currentPage"
+        @page-changed="handlePageClick"
+      />
     </main>
     <FooterComponent />
   </div>
@@ -31,18 +51,25 @@
 import axios from 'axios';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-
+import PaginationComponent from '@/components/PaginationComponent.vue';
 export default {
   name: 'RespuestasEstudiante',
   components: {
     NavBar,
-    FooterComponent
+    FooterComponent,
+    PaginationComponent,
+
   },
   data() {
     return {
       estudiante: null, 
       respuestas: [], 
       fechaEncuesta: null, 
+      searchQuery: '', // Campo de búsqueda
+      selectedFilter: '', // Filtro seleccionado
+      selectedSort: '', // Orden seleccionado
+      currentPage: 1, // Página actual para la paginación
+      totalPages: 5, // Total de páginas (puedes ajustar este valor o calcularlo)
     };
   },
   computed: {
@@ -59,7 +86,6 @@ export default {
     this.fetchRespuestas(); 
   },
   methods: {
-
     async fetchFechaEncuesta() {
       const idEstudiante = this.$route.params.idEstudiante; 
       try {
@@ -90,7 +116,10 @@ export default {
       } catch (error) {
         console.error('Error al obtener las respuestas:', error);
       }
-    }
+    },
+    handlePageClick(pageNumber) {
+      this.currentPage = pageNumber;
+    },
   }
 }
 </script>
@@ -113,6 +142,27 @@ h1 {
   line-height: 1.6;
 }
 
+.filter-search-container {
+  margin: 20px 0;
+  display: flex;
+  gap: 20px;
+}
+
+.search-input {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #929292;
+  border-radius: 10px;
+  width: 60%;
+}
+
+.filter-select {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #929292;
+  border-radius: 10px;
+  width: 30%;
+}
 .questions-container {
   background-color: #c6d7d7;
   padding: 20px;
@@ -136,6 +186,13 @@ ul {
   border-radius: 10px;
   background-color: #e9e9e9;
 }
+.pagination-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 0;
+}
 </style>
 
 
@@ -147,44 +204,6 @@ ul {
     box-sizing: border-box;
     font-family: 'Roboto', sans-serif;
   }
-  
-  .sortable {
-    cursor: pointer;
-  }
-  
-  .sortable i {
-    margin-left: 5px;
-    font-size: 0.9em;
-  }
-  
-  
-  .filters-container {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    width: 100%;
-    max-width: 48rem;
-    gap: 20px; 
-  }
-  
-  
-  .search-input {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #929292;
-    border-radius: 15px;
-    width: 60%;
-  }
-  
-  .filter-select {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #929292;
-    border-radius: 15px;
-    width: 35%;
-  }
-  
-  
   
   header {
     position: fixed;
