@@ -19,20 +19,38 @@
           <option value="pregunta">Pregunta</option>
           <option value="respuesta">Respuesta</option>
         </select>
-        <select v-model="selectedSort" class="filter-select">
-          <option value="">Ordenar por</option>
-          <option value="asc">Ascendente</option>
-          <option value="desc">Descendente</option>
-        </select>
       </div>
 
-      <div v-if="respuestas.length > 0" class="questions-container">
-        <ul>
-          <li v-for="(respuesta, index) in respuestas" :key="index" class="question-item">
-            <p><strong>Pregunta {{ index + 1 }}:</strong> {{ respuesta.pregunta?.pregunta || 'Pregunta no disponible' }}</p>
-            <input type="text" :value="respuesta.respuesta || 'Respuesta no disponible'" readonly class="response-input"/>
-          </li>
-        </ul>
+      <!-- Tabla de preguntas y respuestas -->
+      <div v-if="respuestas.length > 0" class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th># 
+                <button class="sort-button">
+                  <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>Pregunta 
+                <button class="sort-button">
+                  <i class="fas fa-sort"></i>
+                </button>
+              </th>
+              <th>Respuesta 
+                <button class="sort-button">
+                  <i class="fas fa-sort"></i>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(respuesta, index) in respuestas" :key="index">
+              <td>{{ index + 1 }}</td>
+              <td>{{ respuesta.pregunta?.pregunta || 'Pregunta no disponible' }}</td>
+              <td class="wide-column"><input type="text" :value="respuesta.respuesta || 'Respuesta no disponible'" readonly class="response-input" /></td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div v-else>
         <p>No se encontraron respuestas para este estudiante.</p>
@@ -65,11 +83,11 @@ export default {
       estudiante: null, 
       respuestas: [], 
       fechaEncuesta: null, 
-      searchQuery: '', // Campo de búsqueda
+      searchQuery: '', // Campo de busqueda
       selectedFilter: '', // Filtro seleccionado
       selectedSort: '', // Orden seleccionado
-      currentPage: 1, // Página actual para la paginación
-      totalPages: 5, // Total de páginas (puedes ajustar este valor o calcularlo)
+      currentPage: 1, // Pagina actual para la paginacion
+      totalPages: 3, // Total de paginas (puedes ajustar este valor o calcularlo)
     };
   },
   computed: {
@@ -174,16 +192,36 @@ ul {
   list-style-type: none;
   padding: 0;
 }
-.question-item {
-  margin-bottom: 20px;
+.table-container {
+  margin-top: 20px;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 15px;
 }
 
-.response-input {
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #263d42;
+  color: white;
+  position: relative;
+
+}
+
+td input.response-input {
   width: 100%;
   padding: 10px;
-  font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 10px;
+  border-radius: 5px;
   background-color: #e9e9e9;
 }
 .pagination-container {
@@ -193,6 +231,31 @@ ul {
   align-items: center;
   padding: 10px 0;
 }
+.wide-column {
+  width: 50%;
+}
+
+.sort-button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 0 5px;
+  margin-left: 5px;
+  transition: color 0.3s ease;
+}
+
+.sort-button:hover {
+  color: #4a787b; 
+}
+.sort-button:active {
+  color: #916d9f; 
+}
+
+.sort-button i {
+  font-size: 12px;
+}
+
 </style>
 
 
@@ -211,63 +274,6 @@ ul {
     width: 100%;
     z-index: 1000;
   }
-  .student-list-container {
-    padding-top: 80px;
-    min-height: 100vh;
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 15px;
-  }
-  .student-list-title {
-    font-size: 25px;
-    font-weight: bold;
-    color: #000000;
-    margin-bottom: 1.5rem;
-  }
-  .student-table-container {
-    background-color: #CBDADB;
-    padding: 2rem;
-    border-radius: 15px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 48rem;
-  }
-  .student-table-container table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .student-table-container th,
-  .student-table-container td {
-    border: 1px solid #263D42;
-    padding: 12px;
-    text-align: left;
-  }
-  .student-table-container th {
-    background-color: #263D42;
-    color: white;
-  }
-  .send-button {
-    background-color: #263D42;
-    color: white;
-    padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 15px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  /* .send-button:hover {
-    background-color: #1F2E34;
-  } */
   
-  .send-button:disabled {
-    background-color: #bab7b7;
-    cursor: not-allowed;
-  }
-  
-  .send-button:hover:enabled {
-    background-color: #1F2E34;
-  }
+ 
   </style>
