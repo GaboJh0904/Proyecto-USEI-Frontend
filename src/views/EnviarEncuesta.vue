@@ -28,7 +28,8 @@
                 Nombre del Estudiante
                 <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
               </th>
-              <th>Estado</th> 
+              <th>Estado</th>
+              <th>Encuesta</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -37,7 +38,13 @@
               <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
               <td>{{ estudiante.estado }}</td>
               <td>
+                <button @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)" class="view-survey-button">
+                  Ver Encuesta
+                </button>
+              </td>
+              <td>
                 <button @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)" 
+
                 class="send-button"
                 :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
                 >
@@ -48,7 +55,7 @@
 </tbody>
           <tbody v-else>
             <tr>
-              <td colspan="3">No se encontraron estudiantes que coincidan con los criterios de búsqueda.</td>
+              <td colspan="4">No se encontraron estudiantes que coincidan con los criterios de búsqueda.</td>
             </tr>
           </tbody>
         </table>
@@ -154,7 +161,13 @@ export default {
       Swal.fire('Error', 'No se pudo enviar el certificado o registrar la notificación', 'error');
       console.error('Error al enviar el certificado o registrar la notificación:', error);
     }
-  }
+  },
+  verEncuesta(idEstudiante) {
+      this.$router.push({
+        name: 'RespuestasEstudiante',
+        params: { idEstudiante }
+      });
+    }
   }
 }
 </script>
