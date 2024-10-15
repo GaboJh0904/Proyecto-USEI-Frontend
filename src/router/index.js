@@ -15,6 +15,7 @@ import NoticiaForm from '@/views/NoticiaForm.vue'
 import GestionEncuestas from '@/views/GestionEncuestas.vue'
 import ContactoAdmin from '../views/ContactoAdmin.vue'
 import FormularioSoporte from '@/views/FormularioSoporte.vue'
+import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -100,7 +101,12 @@ const router = createRouter({
       path: '/formulario-soporte',
       name: 'FormularioSoporte',
       component: FormularioSoporte
-    }
+    },
+    {
+      path: '/respuestas-estudiante/:idEstudiante',
+      name: 'RespuestasEstudiante',
+      component: RespuestasEstudiante
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
