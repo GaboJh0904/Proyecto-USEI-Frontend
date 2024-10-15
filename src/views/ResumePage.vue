@@ -8,8 +8,13 @@
       <h1 class="resume-title">Revisión de Respuestas</h1>
 
       <div class="resume-form">
-        <!-- Iterar sobre las respuestas, pero excluir el 'estudianteId' -->
-        <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId">
+        <!-- Si no hay respuestas, mostrar un mensaje -->
+        <p v-if="Object.keys(filteredForm).length === 0">
+          No se encontraron respuestas para mostrar.
+        </p>
+        
+        <!-- Mostrar respuestas si están presentes -->
+        <p v-else v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId">
           <strong>{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
         </p>
         
@@ -47,6 +52,7 @@ export default {
     // Excluir 'estudianteId' del formulario para mostrar sólo las preguntas y respuestas
     filteredForm() {
       const { estudianteId, ...preguntasRespuestas } = this.form;
+      console.log('Datos recibidos en la vista de resumen:', preguntasRespuestas);
       return preguntasRespuestas;
     }
   },
@@ -59,6 +65,7 @@ export default {
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
         this.preguntas = response.data;
+        console.log('Preguntas obtenidas:', this.preguntas); // Verificar si las preguntas son obtenidas correctamente
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
@@ -83,26 +90,50 @@ export default {
           throw new Error('El ID del estudiante no está disponible.');
         }
 
-        // Registrar notificación
-    const notification = {
-      titulo: "Encuesta completado exitosamente",
-      contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
-      fecha: new Date().toISOString(), // Fecha actual
-      estadoNotificacion: false, // Estado inicial como no leído
-      estudianteIdEstudiante: { idEstudiante: estudianteId }, // ID del estudiante corregido
-      tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
-    };
+        // Verificar si hay preguntas y respuestas
+        if (Object.keys(this.filteredForm).length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sin respuestas',
+            text: 'Por favor responde a todas las preguntas antes de enviar la encuesta.',
+            confirmButtonText: 'Aceptar'
+          });
+          return;
+        }
 
-    // Enviar la notificación
-    await axios.post('http://localhost:8082/notificacion', notification);
+        // Registrar notificación
+        const notification = {
+          titulo: "Encuesta completada exitosamente",
+          contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
+          fecha: new Date().toISOString(), // Fecha actual
+          estadoNotificacion: false, // Estado inicial como no leído
+          estudianteIdEstudiante: { idEstudiante: estudianteId }, // ID del estudiante corregido
+          tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+        };
+
+        // Enviar la notificación
+        await axios.post('http://localhost:8082/notificacion', notification);
 
         // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
-          await axios.post('http://localhost:8082/respuesta', {
+          if (!respuesta) {
+            console.warn(`La pregunta con ID ${preguntaId} no tiene respuesta.`);
+            continue; // Saltar respuestas vacías
+          }
+
+          const payload = {
             respuesta: respuesta,
             preguntaIdPregunta: { idPregunta: preguntaId },
             estudianteIdEstudiante: { idEstudiante: estudianteId }
-          });
+          };
+
+          console.log('Enviando respuesta:', payload); // Para depuración
+
+          try {
+            await axios.post('http://localhost:8082/respuesta', payload);
+          } catch (error) {
+            console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
+          }
         }
 
         // Cambiar el estado de la encuesta a "Completada"
@@ -141,6 +172,7 @@ export default {
   }
 };
 </script>
+
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
