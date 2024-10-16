@@ -2,10 +2,21 @@
   <header>
     <NavBar :userRole="userRole" />
   </header>
-  
+
   <div class="support-container">
+    <!-- Animación de carga -->
+    <div v-if="loading" class="loading-overlay">
+      <div class="container">
+        <div class="ball"></div>
+        <div class="ball"></div>
+        <div class="ball"></div>
+        <div class="ball"></div>
+        <div class="ball"></div>
+      </div>
+    </div>
+
     <!-- Formulario de soporte -->
-    <div class="support-form">
+    <div v-else class="support-form">
       <div class="header">
         <img src="@/components/images/soporte.png" alt="Support icon" class="support-icon" />
         <h2>Formulario de soporte</h2>
@@ -13,7 +24,7 @@
       <form @submit.prevent="submitSupport">
         <div class="input-group">
           <label for="tipoProblema">Tipo de Problema:</label>
-          <select v-model="formData.Tipo_Problema_id_problema" id="tipoProblema">
+          <select v-model="formData.tipoProblema.idProblema" id="tipoProblema">
             <option v-for="problema in problemas" :key="problema.id" :value="problema.id">{{ problema.problema }}</option>
           </select>
         </div>
@@ -59,6 +70,8 @@
 </template>
 
 <script>
+import axios from 'axios';
+import Swal from 'sweetalert2'; // Importar SweetAlert
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 
@@ -73,16 +86,16 @@ export default {
       userRole: '',
       problemas: [], 
       formData: {
-        Tipo_Problema_id_problema: null,
+        tipoProblema: { idProblema: null },  // Relacionar tipo de problema con el objeto correcto
         mensaje: '',
-        fecha: new Date().toISOString(), 
-        Usuario_id_usuario: null
+        fecha: new Date().toISOString(),
+        usuario: { idUsuario: null }, // Relación con el usuario
       },
-      // Historial de reportes de soporte
       reportes: [
         { id_soporte: 1, tipoProblema: 'Problemas de acceso', mensaje: 'No puedo iniciar sesión', fecha: '2024-10-14', enviado: true },
-        { id_soporte: 2, tipoProblema: 'Problemas con la encuesta', mensaje: 'Error al completar', fecha: '2024-10-12', enviado: false }
-      ]
+        { id_soporte: 2, tipoProblema: 'Problemas con la encuesta', mensaje: 'Error al completar', fecha: '2024-10-12', enviado: false },
+      ],
+      loading: false // Estado de carga
     };
   },
   methods: {
@@ -90,27 +103,135 @@ export default {
       this.problemas = [
         { id: 1, problema: 'Problemas de acceso' },
         { id: 2, problema: 'Problemas con la encuesta' },
-        { id: 3, problema: 'Problemas con la emision de certificados' },
+        { id: 3, problema: 'Problemas con la emisión de certificados' },
         { id: 4, problema: 'Problemas con el reporte de datos' },
         { id: 5, problema: 'Problemas técnicos generales' }
       ];
     },
-    submitSupport() {
-      console.log('Enviando soporte:', this.formData);
-    }
+    async submitSupport() {
+      try {
+        // Mostrar la animación de carga
+        this.loading = true;
+
+        // Obtener el id_usuario desde localStorage
+        const userId = localStorage.getItem('id_usuario');
+        console.log("Información de usuario desde localStorage:", userId);
+
+        if (!userId) {
+          this.loading = false; // Ocultar la animación de carga
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se encontró información del usuario. Por favor, inicia sesión.',
+            confirmButtonColor: '#6b45b1', // Color morado
+            confirmButtonText: 'Aceptar'
+          });
+          return;
+        }
+
+        // Asignar el id_usuario correctamente a formData
+        this.formData.usuario.idUsuario = userId;
+
+        console.log("Datos enviados al backend:", this.formData);
+
+        // Enviar los datos del soporte
+        const response = await axios.post('http://localhost:8082/soporte', this.formData);
+
+        // Ocultar la animación de carga antes de mostrar el mensaje
+        this.loading = false; // Desaparece antes de mostrar el alert
+        
+        // Mostrar el mensaje de éxito con SweetAlert
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Reporte enviado correctamente.',
+          confirmButtonColor: '#49caa1', // Color celeste
+          confirmButtonText: 'Aceptar'
+        });
+        console.log("Soporte enviado:", response.data);
+
+      } catch (error) {
+        console.error("Error al enviar soporte:", error);
+        this.loading = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un error al enviar el soporte.',
+          confirmButtonColor: '#6b45b1', // Color morado
+          confirmButtonText: 'Aceptar'
+        });
+      }
+    },
   },
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchProblemas(); 
-  }
+    this.fetchProblemas();
+  },
 };
 </script>
 
 <style scoped>
+/* Overlay para la animación de carga, ocupa toda la pantalla */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(255, 255, 255, 0.8); /* Fondo semitransparente */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Asegura que esté encima de todo */
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ball {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  animation: wave 1.5s ease-in-out infinite;
+  background-color: #37bf57;
+}
+
+.ball:nth-child(2) {
+  animation-delay: -0.2s;
+  background-color: #49caa1;
+}
+
+.ball:nth-child(3) {
+  animation-delay: -0.4s;
+  background-color: #12aab4;
+}
+
+.ball:nth-child(4) {
+  animation-delay: -0.6s;
+  background-color: #2c88c1;
+}
+
+.ball:nth-child(5) {
+  animation-delay: -0.8s;
+  background-color: #6b45b1;
+}
+
+@keyframes wave {
+  0%, 100% {
+    transform: translateY(30px);
+  }
+  50% {
+    transform: translateY(-30px);
+  }
+}
+
 .support-container {
   display: flex;
-  justify-content: space-between; 
-  gap: 20px; 
+  justify-content: space-between;
+  gap: 20px;
   padding: 0 50px;
 }
 
@@ -120,7 +241,7 @@ export default {
   padding: 20px;
   border-radius: 8px;
   max-width: 400px;
-  flex: 1; 
+  flex: 1;
   margin-top: 110px;
   margin-bottom: 50px;
 }
@@ -178,14 +299,14 @@ button:hover {
 }
 
 .support-history {
-  flex: 1; 
+  flex: 1;
   background-color: #ccdbdc;
   padding: 20px;
   border-radius: 8px;
-  margin-top: 110px; 
-  width: 300px;  
-  height: 400px; 
-  overflow-y: auto; 
+  margin-top: 110px;
+  width: 300px;
+  height: 400px;
+  overflow-y: auto;
 }
 
 table {
@@ -203,16 +324,15 @@ th, td {
 }
 
 th {
-  background-color: #263d42; 
-  color: #fff; 
+  background-color: #263d42;
+  color: #fff;
   text-align: center;
-  vertical-align: middle; 
-  padding: 10px; 
+  vertical-align: middle;
+  padding: 10px;
 }
 
 .support-history h2 {
-  margin-bottom: 20px; 
-  text-align: center
+  margin-bottom: 20px;
+  text-align: center;
 }
-
 </style>
