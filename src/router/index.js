@@ -15,6 +15,8 @@ import NoticiaForm from '@/views/NoticiaForm.vue'
 import GestionEncuestas from '@/views/GestionEncuestas.vue'
 import ContactoAdmin from '../views/ContactoAdmin.vue'
 import FormularioSoporte from '@/views/FormularioSoporte.vue'
+import VerRespuestas from '../views/VerRespuestas.vue'
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -100,6 +102,11 @@ const router = createRouter({
       path: '/formulario-soporte',
       name: 'FormularioSoporte',
       component: FormularioSoporte
+    },
+    {
+      path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
+      name: 'VerRespuestas',
+      component: VerRespuestas, // Componente que muestra las respuestas
     }
   ],
   scrollBehavior(to, from, savedPosition) {
