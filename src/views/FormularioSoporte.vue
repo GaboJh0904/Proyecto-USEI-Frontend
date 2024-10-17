@@ -44,9 +44,31 @@
       </form>
     </div>
 
-    <!-- Tabla de historial de reportes -->
+    <!-- Tabla de historial de reportes con paginación, filtrado y ordenación -->
     <div class="support-history">
       <h2>Historial de Reportes</h2>
+
+      <!-- Controles para filtro y ordenación -->
+      <div class="filter-sort-container">
+        <!-- Filtro por mensaje del reporte -->
+        <!-- Filtro por mensaje del reporte -->
+      <input class="search-input" type="text" v-model="filterTerm" placeholder="Buscar por mensaje..." @input="fetchReportes(1)" />
+
+
+        <!-- Selección de cantidad de elementos por página -->
+        <select class="dropdown-page-size" v-model="perPage" @change="fetchReportes(1)">
+          <option value="5">5</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+        </select>
+
+
+        <!-- Botón para seleccionar orden ascendente/descendente -->
+        <button class="sort-button" @click="toggleSortDirection">
+          <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+        </button>
+      </div>
+
       <table>
         <thead>
           <tr>
@@ -57,12 +79,15 @@
         </thead>
         <tbody>
           <tr v-for="reporte in reportes" :key="reporte.id_soporte">
-            <td>{{ reporte.tipoProblema.problema }}</td> <!-- Accediendo al campo 'problema' -->
+            <td>{{ reporte.tipoProblema.problema }}</td>
             <td>{{ reporte.mensaje }}</td>
-            <td>{{ formatDate(reporte.fecha) }}</td> <!-- Formatear la fecha con el nuevo método -->
+            <td>{{ formatDate(reporte.fecha) }}</td>
           </tr>
         </tbody>
       </table>
+
+      <!-- Componente de paginación -->
+      <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
     </div>
   </div>
 
@@ -71,29 +96,38 @@
 
 <script>
 import axios from 'axios';
-import Swal from 'sweetalert2'; // Importar SweetAlert
+import Swal from 'sweetalert2';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
+import PaginationComponent from '@/components/PaginationComponent.vue'; // Importa el componente de paginación
 
 export default {
   name: 'FormularioSoporte',
   components: {
     NavBar,
     FooterComponent,
+    PaginationComponent,
   },
   data() {
     return {
       userRole: '',
-      problemas: [], 
+      problemas: [],
       formData: {
-        tipoProblema: { idProblema: null },  // Relacionar tipo de problema con el objeto correcto
+        tipoProblema: { idProblema: null },
         mensaje: '',
         fecha: new Date().toISOString(),
-        usuario: { idUsuario: null }, // Relación con el usuario
+        usuario: { idUsuario: null },
       },
-      formattedFecha: '',  // Para almacenar la fecha formateada
-      reportes: [], // Vaciar reportes para que se llenen desde la base de datos
-      loading: false // Estado de carga
+      formattedFecha: '',
+      reportes: [],
+      loading: false,
+      // Parámetros para paginación, ordenación y filtro
+      currentPage: 1,
+      totalPages: 1,
+      perPage: 5,
+      filterTerm: '',
+      sortBy: 'fecha',
+      sortDirection: 'asc',
     };
   },
   methods: {
@@ -103,11 +137,11 @@ export default {
         { id: 2, problema: 'Problemas con la encuesta' },
         { id: 3, problema: 'Problemas con la emisión de certificados' },
         { id: 4, problema: 'Problemas con el reporte de datos' },
-        { id: 5, problema: 'Problemas técnicos generales' }
+        { id: 5, problema: 'Problemas técnicos generales' },
       ];
     },
 
-    async fetchReportes() {
+    async fetchReportes(page = 1) {
       try {
         const userId = localStorage.getItem('id_usuario');
         if (!userId) {
@@ -115,120 +149,124 @@ export default {
             icon: 'error',
             title: 'Error',
             text: 'No se encontró información del usuario. Por favor, inicia sesión.',
-            confirmButtonColor: '#6b45b1', 
-            confirmButtonText: 'Aceptar'
+            confirmButtonColor: '#6b45b1',
+            confirmButtonText: 'Aceptar',
           });
           return;
         }
-        
-        // Hacer la solicitud al backend para obtener los reportes del usuario
-        const response = await axios.get(`http://localhost:8082/soporte/usuario/${userId}`);
-        this.reportes = response.data;
+
+        // Solicitud al backend con paginación, filtrado y ordenación
+        const response = await axios.get(`http://localhost:8082/soporte/paginado`, {
+          params: {
+            page: page - 1,
+            size: this.perPage,
+            sortBy: this.sortBy,
+            sortDirection: this.sortDirection,
+            filter: this.filterTerm,
+            idUsuario: userId,
+          },
+        });
+
+        this.reportes = response.data.content;
+        this.totalPages = response.data.totalPages;
+        this.currentPage = page;
       } catch (error) {
-        console.error("Error al obtener los reportes:", error);
+        console.error('Error al obtener los reportes:', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'Hubo un error al obtener los reportes.',
           confirmButtonColor: '#6b45b1',
-          confirmButtonText: 'Aceptar'
+          confirmButtonText: 'Aceptar',
         });
       }
     },
 
     async submitSupport() {
-  try {
-    // Mostrar la animación de carga
-    this.loading = true;
+      try {
+        this.loading = true;
+        const userId = localStorage.getItem('id_usuario');
+        if (!userId) {
+          this.loading = false;
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se encontró información del usuario. Por favor, inicia sesión.',
+            confirmButtonColor: '#6b45b1',
+            confirmButtonText: 'Aceptar',
+          });
+          return;
+        }
 
-    // Obtener el id_usuario desde localStorage
-    const userId = localStorage.getItem('id_usuario');
-    if (!userId) {
-      this.loading = false; // Ocultar la animación de carga
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se encontró información del usuario. Por favor, inicia sesión.',
-        confirmButtonColor: '#6b45b1', 
-        confirmButtonText: 'Aceptar'
-      });
-      return;
-    }
+        this.formData.usuario.idUsuario = userId;
+        this.formData.fecha = new Date().toISOString().split('.')[0];
 
-    // Asignar el id_usuario correctamente a formData
-    this.formData.usuario.idUsuario = userId;
+        const response = await axios.post('http://localhost:8082/soporte', this.formData);
 
-    // Formatear la fecha sin la "Z" (zona horaria)
-    this.formData.fecha = new Date().toISOString().split('.')[0]; // Elimina la parte de milisegundos y la "Z"
+        this.loading = false;
 
-    // Enviar los datos del soporte
-    const response = await axios.post('http://localhost:8082/soporte', this.formData);
+        Swal.fire({
+          icon: 'success',
+          title: 'Éxito',
+          text: 'Reporte enviado correctamente.',
+          confirmButtonColor: '#49caa1',
+          confirmButtonText: 'Aceptar',
+        });
 
-    // Ocultar la animación de carga antes de mostrar el mensaje
-    this.loading = false;
+        this.fetchReportes();
+      } catch (error) {
+        console.error('Error al enviar soporte:', error);
+        this.loading = false;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un error al enviar el soporte.',
+          confirmButtonColor: '#6b45b1',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
 
-    // Mostrar el mensaje de éxito con SweetAlert
-    Swal.fire({
-      icon: 'success',
-      title: 'Éxito',
-      text: 'Reporte enviado correctamente.',
-      confirmButtonColor: '#49caa1', 
-      confirmButtonText: 'Aceptar'
-    });
-
-    console.log("Soporte enviado:", response.data);
-
-    // Actualizar los reportes después de enviar uno nuevo
-    this.fetchReportes();
-
-  } catch (error) {
-    console.error("Error al enviar soporte:", error);
-    this.loading = false;
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'Hubo un error al enviar el soporte.',
-      confirmButtonColor: '#6b45b1', 
-      confirmButtonText: 'Aceptar'
-    });
-  }
-},
-
-
-    // Método para formatear la fecha de manera legible
     formatDate(dateString) {
-      const parsedDate = Date.parse(dateString);  // Parsear la fecha
+      const parsedDate = Date.parse(dateString);
       if (isNaN(parsedDate)) {
-        return "Fecha inválida";
+        return 'Fecha inválida';
       }
       const date = new Date(parsedDate);
       return date.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
-    }
+    },
+
+    toggleSortDirection() {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+      this.fetchReportes(1);
+    },
+
+    handlePageClick(pageNumber) {
+      this.fetchReportes(pageNumber);
+    },
   },
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
     this.fetchProblemas();
-    this.fetchReportes();  // Llamar a la función para cargar los reportes al montar el componente
+    this.fetchReportes();
 
-    // Formatear la fecha para mostrarla en el campo de fecha del formulario
     this.formattedFecha = this.formatDate(this.formData.fecha);
   },
 };
 </script>
 
 <style scoped>
-/* Overlay para la animación de carga, ocupa toda la pantalla */
 .loading-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(255, 255, 255, 0.8); /* Fondo semitransparente */
+  background-color: rgba(255, 255, 255, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Asegura que esté encima de todo */
+  z-index: 9999;
 }
 
 .container {
@@ -327,6 +365,13 @@ textarea, select, input {
   border: 1px solid #ccc;
 }
 
+
+.dropdown-page-size {
+  width: auto; 
+  max-width: 80px; 
+}
+
+
 button {
   background-color: #8dced7;
   color: #000;
@@ -351,8 +396,16 @@ button:hover {
   border-radius: 8px;
   margin-top: 110px;
   width: 300px;
-  height: 400px;
+  height: 528px;
   overflow-y: auto;
+}
+
+.filter-sort-container {
+  display: flex;
+  justify-content: space-between; /* Alinea los elementos en una sola línea */
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 table {
