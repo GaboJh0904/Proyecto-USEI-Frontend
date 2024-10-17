@@ -24,14 +24,17 @@
       <form @submit.prevent="submitSupport">
         <div class="input-group">
           <label for="tipoProblema">Tipo de Problema:</label>
-          <select v-model="formData.tipoProblema.idProblema" id="tipoProblema">
+          <select v-model="formData.tipoProblema.idProblema" id="tipoProblema" required>
+            <option value="" disabled>Seleccione un tipo de problema</option>
             <option v-for="problema in problemas" :key="problema.id" :value="problema.id">{{ problema.problema }}</option>
           </select>
+          <span v-if="!formData.tipoProblema.idProblema && showErrors" class="error-message">Este campo es obligatorio.</span>
         </div>
 
         <div class="input-group">
           <label for="mensaje">Mensaje:</label>
-          <textarea id="mensaje" v-model="formData.mensaje" placeholder="Describe el problema..." rows="5"></textarea>
+          <textarea id="mensaje" v-model="formData.mensaje" placeholder="Describe el problema..." rows="5" required></textarea>
+          <span v-if="!formData.mensaje && showErrors" class="error-message">Este campo es obligatorio.</span>
         </div>
 
         <!-- Campo de fecha (automático) -->
@@ -51,9 +54,7 @@
       <!-- Controles para filtro y ordenación -->
       <div class="filter-sort-container">
         <!-- Filtro por mensaje del reporte -->
-        <!-- Filtro por mensaje del reporte -->
-      <input class="search-input" type="text" v-model="filterTerm" placeholder="Buscar por mensaje..." @input="fetchReportes(1)" />
-
+        <input class="search-input" type="text" v-model="filterTerm" placeholder="Buscar por mensaje..." @input="fetchReportes(1)" />
 
         <!-- Selección de cantidad de elementos por página -->
         <select class="dropdown-page-size" v-model="perPage" @change="fetchReportes(1)">
@@ -61,7 +62,6 @@
           <option value="10">10</option>
           <option value="20">20</option>
         </select>
-
 
         <!-- Botón para seleccionar orden ascendente/descendente -->
         <button class="sort-button" @click="toggleSortDirection">
@@ -121,6 +121,7 @@ export default {
       formattedFecha: '',
       reportes: [],
       loading: false,
+      showErrors: false,  // Nueva variable para mostrar errores de validación
       // Parámetros para paginación, ordenación y filtro
       currentPage: 1,
       totalPages: 1,
@@ -183,6 +184,20 @@ export default {
     },
 
     async submitSupport() {
+      this.showErrors = true;
+
+      // Verificar si los campos requeridos están llenos
+      if (!this.formData.tipoProblema.idProblema || !this.formData.mensaje) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Por favor complete todos los campos obligatorios.',
+          confirmButtonColor: '#6b45b1',
+          confirmButtonText: 'Aceptar',
+        });
+        return;
+      }
+
       try {
         this.loading = true;
         const userId = localStorage.getItem('id_usuario');
@@ -204,6 +219,7 @@ export default {
         const response = await axios.post('http://localhost:8082/soporte', this.formData);
 
         this.loading = false;
+        this.showErrors = false; // Resetea los errores si el envío es exitoso
 
         Swal.fire({
           icon: 'success',
@@ -254,6 +270,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 .loading-overlay {
@@ -371,6 +388,11 @@ textarea, select, input {
   max-width: 80px; 
 }
 
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-top: 5px;
+}
 
 button {
   background-color: #8dced7;
