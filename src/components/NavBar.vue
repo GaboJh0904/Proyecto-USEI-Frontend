@@ -221,11 +221,17 @@ export default {
       this.$router.go(-1);
     },
     openSupport() {
-      this.$router.push('/support');
+      // Verificar si el usuario es estudiante o administrador
+      if (this.userRole === 'estudiante') {
+        this.$router.push('/contacto-admin');  // Para estudiantes redirigir a contactoAdmin
+      } else if (this.userRole === 'Administrador') {
+        this.$router.push('/formulario-soporte'); // Para administradores redirigir a formularioSoporte
+      }
     }
   },
 };
 </script>
+
 
 <style scoped>
 /* Estilos para el NavBar y botones */
