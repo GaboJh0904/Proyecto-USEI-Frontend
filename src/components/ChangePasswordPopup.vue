@@ -23,7 +23,7 @@
           <button type="submit" class="submit-btn" >Cambiar Contraseña</button>
           <h2></h2>
         </form>
-        <button class="role-btn" @click="$emit('switch-to-student-login')">Volver a Login</button>
+        <button class="role-btn" @click="$emit('switch-to-student-login')">Cancelar</button>
       </div>
     </div>
   </template>

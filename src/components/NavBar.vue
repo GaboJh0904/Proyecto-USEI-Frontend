@@ -83,6 +83,7 @@
       @switch-to-register="switchToRegister" 
       @switch-to-admin-login="switchToAdminLogin" 
       @switch-to-change-password="switchToChangePassword"
+      @switch-to-code-verification="switchToCodeVerification"
     />
     <RegisterPopup v-if="showRegisterPopup" @close="showRegisterPopup = false" />
     <AdminLoginPopup 
@@ -90,12 +91,19 @@
       @close="showAdminLoginPopup = false" 
       @switch-to-student-login="switchToStudentLogin" 
       @switch-to-change-password="switchToChangePassword"
+      @switch-to-code-verification="switchToCodeVerification"
     />
     <ChangePasswordPopup 
       v-if="showChangePasswordPopup" 
       @close=" showChangePasswordPopup= false"
       @switch-to-change-password="switchToChangePassword"
       @switch-to-student-login="switchToStudentLogin" 
+    />
+    <CodeVerificationPopup 
+      v-if="showCodeVerificationPopup" 
+      @close="showCodeVerificationPopup = false"
+      @switch-to-student-login="switchToStudentLogin"
+      @switch-to-change-password="switchToChangePassword"
     />
   </nav>
 </template>
@@ -108,6 +116,7 @@ import RegisterPopup from '@/components/RegisterPopup.vue';
 import UserProfilePopup from '@/components/UserProfilePopup.vue';
 import AdminLoginPopup from '@/components/AdminLoginPopup.vue';
 import ChangePasswordPopup from '@/components/ChangePasswordPopup.vue';
+import CodeVerificationPopup from './CodeVerificationPopup.vue';
 
 export default {
   name: 'NavBar',
@@ -117,6 +126,7 @@ export default {
     UserProfilePopup,
     AdminLoginPopup,
     ChangePasswordPopup,
+    CodeVerificationPopup,
   },
   props: {
     userRole: {
@@ -132,9 +142,11 @@ export default {
       showAdminLoginPopup: false,
       showNotifications: false,
       showChangePasswordPopup: false,
+      showCodeVerificationPopup: false,
       username: '',
       role: '',
       notifications: [],
+      estudianteId: null // Para almacenar el ID del estudiante
     };
   },
   computed: {
@@ -167,12 +179,29 @@ export default {
       return this.$route.path === '/contacto-admin'
     },
   },
+  watch: {
+    estudianteId(newVal, oldVal) {
+      if (newVal !== oldVal && newVal) {
+        // Si el ID del estudiante cambia y no es nulo, cargar las notificaciones
+        this.loadNotifications();
+      }
+    }
+  },
   mounted() {
     // Set username and role from localStorage (or defaults)
     this.username = localStorage.getItem('nombre') || 'USERNAME';
     this.role = localStorage.getItem('rol') || 'ROL';
 
-    // Cargar las notificaciones desde el backend
+    // Comprobar si ya hay un id de estudiante en localStorage al montar el componente
+    const storedEstudianteId = localStorage.getItem('id_estudiante');
+    if (storedEstudianteId) {
+      this.estudianteId = storedEstudianteId;
+    }
+
+    // Si ya hay un ID de estudiante, cargar las notificaciones inmediatamente
+    /*if (this.estudianteId) {
+      this.loadNotifications();
+    }*/
     this.loadNotifications();
   },
   methods: {
@@ -180,29 +209,46 @@ export default {
     this.showAdminLoginPopup = false;
     this.showLoginPopup = true;
     this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
+    this.showCodeVerificationPopup = false;
   },
   switchToRegister() {
     this.showLoginPopup = false;
     this.showAdminLoginPopup = false;
     this.showRegisterPopup = true;
     this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
+    this.showCodeVerificationPopup = false;
   },
   switchToAdminLogin() {
     this.showLoginPopup = false;
     this.showRegisterPopup = false;
     this.showAdminLoginPopup = true;
     this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
+    this.showCodeVerificationPopup = false;
   },
   switchToChangePassword() {
-    console.log('Mostrar popup de cambio de contraseña');
     this.showChangePasswordPopup = true;
     this.showLoginPopup = false;
     this.showAdminLoginPopup = false;
     this.showRegisterPopup = false;
+    this.showCodeVerificationPopup = false;
   },
+  switchToCodeVerification() {
+    this.showCodeVerificationPopup = true;
+    this.showLoginPopup = false;
+    this.showAdminLoginPopup = false;
+    this.showRegisterPopup = false;
+    this.showChangePasswordPopup = false;
+  },
+  // Método que podrías llamar después de iniciar sesión
+    onLoginSuccess(idEstudiante) {
+      // Actualizar el id en localStorage y en el componente
+      localStorage.setItem('id_estudiante', idEstudiante);
+      this.estudianteId = idEstudiante;
+    },
     async loadNotifications() {
+      const estudianteId = this.estudianteId; // Usar la variable estudianteId ya asignada
       try {
-        const response = await axios.get('http://localhost:8082/notificacion'); // Ajustar la URL según el backend
+        const response = await axios.get(`http://localhost:8082/notificacion/estudiante/${estudianteId}`); // Ajustar la URL según el backend
         // Ordenar las notificaciones por idNotificacion de mayor a menor
         this.notifications = response.data
           .map(notificacion => ({

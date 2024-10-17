@@ -17,7 +17,7 @@
         <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
 
         <div class="form-group">
-          <a href="#" @click.prevent="$emit('switch-to-change-password')">Olvidé mi contraseña</a>
+          <a href="#" @click.prevent="$emit('switch-to-code-verification')">Olvidé mi contraseña</a>
         </div>
         <button type="submit" class="submit-btn">Ingresar</button>
       </form>
