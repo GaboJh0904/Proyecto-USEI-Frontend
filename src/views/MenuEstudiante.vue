@@ -108,43 +108,60 @@ export default {
 
   },
   methods: {
-async goToEncuesta() {
-  const estudianteId = localStorage.getItem('id_estudiante'); // Obtener el ID del estudiante del localStorage
+  async goToEncuesta() {
+    const estudianteId = localStorage.getItem('id_estudiante'); // Obtener el ID del estudiante del localStorage
 
-  if (!estudianteId) {
-    alert('No se encontró el ID del estudiante. Por favor, inicie sesión nuevamente.');
-    this.$router.push('/login'); // Redirigir al login si no hay ID del estudiante
-    return;
-  }
-
-  const url = `http://localhost:8082/respuesta/filled/${estudianteId}`;
-  console.log('Verificando encuesta con la URL:', url); // Para depurar
-
-  try {
-    const response = await axios.get(url);
-    const hasFilled = response.data.filled;
-
-    if (hasFilled) {
+    if (!estudianteId) {
       Swal.fire({
-        icon: 'success',
-        title: 'Ya has llenado la encuesta',
-        confirmButtonText: 'Continuar',
+        icon: 'error',
+        title: 'Error de autenticación',
+        text: 'No se encontró el ID del estudiante. Por favor, inicie sesión nuevamente.',
+        confirmButtonText: 'Aceptar'
       });
-      return; 
-    } else {
-      this.$router.push('/encuesta-estudiante'); // Redirigir a la encuesta si no ha sido llenada
+      this.$router.push('/login'); // Redirigir al login si no hay ID del estudiante
+      return;
     }
-  } catch (error) {
-    console.error('Error al verificar el estado de la encuesta:', error);
-  }
-},
-goToEnProgreso(){
-    this.$router.push('/en-progreso');
-},
-goToContactAdmin() {
-    this.$router.push('/contacto-admin');
-},
+
+    const url = `http://localhost:8082/respuesta/filled/${estudianteId}`; // Cambiar esta URL según tu API
+    console.log('Verificando encuesta con la URL:', url); // Para depuración
+
+    try {
+      const response = await axios.get(url);
+      const hasFilled = response.data.filled; // API debe devolver si el estudiante ya llenó la encuesta
+
+      if (hasFilled) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Encuesta completada',
+          text: 'Ya has llenado la encuesta, serás redirigido a las respuestas.',
+          confirmButtonText: 'Ver respuestas'
+        }).then(() => {
+          // Redirigir a la página de ver respuestas si la encuesta está completada
+          this.$router.push(`/vista-respuestas/${estudianteId}`);
+        });
+      } else {
+        // Redirigir a la página de encuesta si no ha sido llenada
+        this.$router.push('/encuesta-estudiante');
+      }
+    } catch (error) {
+      console.error('Error al verificar el estado de la encuesta:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un problema al verificar el estado de la encuesta. Por favor, inténtalo más tarde.',
+        confirmButtonText: 'Aceptar'
+      });
+    }
   },
+  
+  goToEnProgreso() {
+    this.$router.push('/en-progreso');
+  },
+  
+  goToContactAdmin() {
+    this.$router.push('/contacto-admin');
+  },
+},
 };
 </script>
 

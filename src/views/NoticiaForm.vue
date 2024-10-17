@@ -48,7 +48,7 @@
           </form>
         </div>
 
-        <!-- Noticias activas con paginación, filtro y ordenación -->
+        <!-- Noticias activas con scroll bar -->
         <div class="user-table-container">
           <h2>Noticias Existentes</h2>
 
@@ -86,36 +86,39 @@
             </div>
           </div>
 
-          <table class="noticias-table">
-            <thead>
-              <tr>
-                <th v-if="visibleColumns.title">Título</th>
-                <th v-if="visibleColumns.description">Descripción</th>
-                <th v-if="visibleColumns.estado">Estado</th>
-                <th v-if="visibleColumns.fechaModificado">Última Modificación</th>
-                <th v-if="visibleColumns.acciones">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="noticia in noticias" :key="noticia.idNoticia">
-                <td v-if="visibleColumns.title">{{ noticia.titulo }}</td>
-                <td v-if="visibleColumns.description">{{ noticia.descripcion }}</td>
-                <td v-if="visibleColumns.estado">{{ noticia.estado }}</td>
-                <td v-if="visibleColumns.fechaModificado">{{ formatDate(noticia.fechaModificado) }}</td>
-                <td v-if="visibleColumns.acciones" class="action-buttons">
-                  <button class="edit-button" @click="editNoticia(noticia)">
-                    <i class="fas fa-pencil-alt"></i>
-                  </button>
-                  <button class="delete-button" @click="confirmDeleteNoticia(noticia.idNoticia)">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>
-                  <button v-if="noticia.estado !== 'archivado'" class="edit-button" @click="archiveNoticia(noticia.idNoticia)">
-                    <i class="fas fa-archive"></i>
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Tabla con scroll bar -->
+          <div class="scrollable-table">
+            <table class="noticias-table">
+              <thead>
+                <tr>
+                  <th v-if="visibleColumns.title">Título</th>
+                  <th v-if="visibleColumns.description">Descripción</th>
+                  <th v-if="visibleColumns.estado">Estado</th>
+                  <th v-if="visibleColumns.fechaModificado">Última Modificación</th>
+                  <th v-if="visibleColumns.acciones">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="noticia in noticias" :key="noticia.idNoticia">
+                  <td v-if="visibleColumns.title">{{ noticia.titulo }}</td>
+                  <td v-if="visibleColumns.description">{{ noticia.descripcion }}</td>
+                  <td v-if="visibleColumns.estado">{{ noticia.estado }}</td>
+                  <td v-if="visibleColumns.fechaModificado">{{ formatDate(noticia.fechaModificado) }}</td>
+                  <td v-if="visibleColumns.acciones" class="action-buttons">
+                    <button class="edit-button" @click="editNoticia(noticia)">
+                      <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-button" @click="confirmDeleteNoticia(noticia.idNoticia)">
+                      <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button v-if="noticia.estado !== 'archivado'" class="edit-button" @click="archiveNoticia(noticia.idNoticia)">
+                      <i class="fas fa-archive"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
           <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
         </div>
@@ -657,6 +660,12 @@ textarea {
   margin-bottom: 50px;
 }
 
+/* Agregar scroll bar a la tabla */
+.scrollable-table {
+  max-height: 400px; /* Fija la altura máxima del contenedor de noticias */
+  overflow-y: auto;  /* Habilita el scroll vertical */
+}
+
 .noticias-table {
   width: 100%;
   border-collapse: collapse;
@@ -865,3 +874,4 @@ textarea {
 }
 
 </style>
+
