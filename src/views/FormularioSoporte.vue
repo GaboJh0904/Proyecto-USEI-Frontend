@@ -37,7 +37,7 @@
         <!-- Campo de fecha (automático) -->
         <div class="input-group">
           <label for="fecha">Fecha:</label>
-          <input type="text" id="fecha" v-model="formData.fecha" disabled />
+          <input type="text" id="fecha" v-model="formattedFecha" disabled />
         </div>
 
         <button type="submit">Enviar 📧</button>
@@ -57,9 +57,9 @@
         </thead>
         <tbody>
           <tr v-for="reporte in reportes" :key="reporte.id_soporte">
-            <td>{{ reporte.tipoProblema }}</td>
+            <td>{{ reporte.tipoProblema.problema }}</td> <!-- Accediendo al campo 'problema' -->
             <td>{{ reporte.mensaje }}</td>
-            <td>{{ reporte.fecha }}</td>
+            <td>{{ formatDate(reporte.fecha) }}</td> <!-- Formatear la fecha con el nuevo método -->
           </tr>
         </tbody>
       </table>
@@ -91,10 +91,8 @@ export default {
         fecha: new Date().toISOString(),
         usuario: { idUsuario: null }, // Relación con el usuario
       },
-      reportes: [
-        { id_soporte: 1, tipoProblema: 'Problemas de acceso', mensaje: 'No puedo iniciar sesión', fecha: '2024-10-14', enviado: true },
-        { id_soporte: 2, tipoProblema: 'Problemas con la encuesta', mensaje: 'Error al completar', fecha: '2024-10-12', enviado: false },
-      ],
+      formattedFecha: '',  // Para almacenar la fecha formateada
+      reportes: [], // Vaciar reportes para que se llenen desde la base de datos
       loading: false // Estado de carga
     };
   },
@@ -108,64 +106,112 @@ export default {
         { id: 5, problema: 'Problemas técnicos generales' }
       ];
     },
-    async submitSupport() {
+
+    async fetchReportes() {
       try {
-        // Mostrar la animación de carga
-        this.loading = true;
-
-        // Obtener el id_usuario desde localStorage
         const userId = localStorage.getItem('id_usuario');
-        console.log("Información de usuario desde localStorage:", userId);
-
         if (!userId) {
-          this.loading = false; // Ocultar la animación de carga
           Swal.fire({
             icon: 'error',
             title: 'Error',
             text: 'No se encontró información del usuario. Por favor, inicia sesión.',
-            confirmButtonColor: '#6b45b1', // Color morado
+            confirmButtonColor: '#6b45b1', 
             confirmButtonText: 'Aceptar'
           });
           return;
         }
-
-        // Asignar el id_usuario correctamente a formData
-        this.formData.usuario.idUsuario = userId;
-
-        console.log("Datos enviados al backend:", this.formData);
-
-        // Enviar los datos del soporte
-        const response = await axios.post('http://localhost:8082/soporte', this.formData);
-
-        // Ocultar la animación de carga antes de mostrar el mensaje
-        this.loading = false; // Desaparece antes de mostrar el alert
         
-        // Mostrar el mensaje de éxito con SweetAlert
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Reporte enviado correctamente.',
-          confirmButtonColor: '#49caa1', // Color celeste
-          confirmButtonText: 'Aceptar'
-        });
-        console.log("Soporte enviado:", response.data);
-
+        // Hacer la solicitud al backend para obtener los reportes del usuario
+        const response = await axios.get(`http://localhost:8082/soporte/usuario/${userId}`);
+        this.reportes = response.data;
       } catch (error) {
-        console.error("Error al enviar soporte:", error);
-        this.loading = false;
+        console.error("Error al obtener los reportes:", error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
-          text: 'Hubo un error al enviar el soporte.',
-          confirmButtonColor: '#6b45b1', // Color morado
+          text: 'Hubo un error al obtener los reportes.',
+          confirmButtonColor: '#6b45b1',
           confirmButtonText: 'Aceptar'
         });
       }
     },
+
+    async submitSupport() {
+  try {
+    // Mostrar la animación de carga
+    this.loading = true;
+
+    // Obtener el id_usuario desde localStorage
+    const userId = localStorage.getItem('id_usuario');
+    if (!userId) {
+      this.loading = false; // Ocultar la animación de carga
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se encontró información del usuario. Por favor, inicia sesión.',
+        confirmButtonColor: '#6b45b1', 
+        confirmButtonText: 'Aceptar'
+      });
+      return;
+    }
+
+    // Asignar el id_usuario correctamente a formData
+    this.formData.usuario.idUsuario = userId;
+
+    // Formatear la fecha sin la "Z" (zona horaria)
+    this.formData.fecha = new Date().toISOString().split('.')[0]; // Elimina la parte de milisegundos y la "Z"
+
+    // Enviar los datos del soporte
+    const response = await axios.post('http://localhost:8082/soporte', this.formData);
+
+    // Ocultar la animación de carga antes de mostrar el mensaje
+    this.loading = false;
+
+    // Mostrar el mensaje de éxito con SweetAlert
+    Swal.fire({
+      icon: 'success',
+      title: 'Éxito',
+      text: 'Reporte enviado correctamente.',
+      confirmButtonColor: '#49caa1', 
+      confirmButtonText: 'Aceptar'
+    });
+
+    console.log("Soporte enviado:", response.data);
+
+    // Actualizar los reportes después de enviar uno nuevo
+    this.fetchReportes();
+
+  } catch (error) {
+    console.error("Error al enviar soporte:", error);
+    this.loading = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Hubo un error al enviar el soporte.',
+      confirmButtonColor: '#6b45b1', 
+      confirmButtonText: 'Aceptar'
+    });
+  }
+},
+
+
+    // Método para formatear la fecha de manera legible
+    formatDate(dateString) {
+      const parsedDate = Date.parse(dateString);  // Parsear la fecha
+      if (isNaN(parsedDate)) {
+        return "Fecha inválida";
+      }
+      const date = new Date(parsedDate);
+      return date.toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'short' });
+    }
   },
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
     this.fetchProblemas();
+    this.fetchReportes();  // Llamar a la función para cargar los reportes al montar el componente
+
+    // Formatear la fecha para mostrarla en el campo de fecha del formulario
+    this.formattedFecha = this.formatDate(this.formData.fecha);
   },
 };
 </script>
