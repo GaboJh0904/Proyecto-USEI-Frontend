@@ -5,10 +5,6 @@
         <h2>Cambiar Contraseña</h2>
         <form @submit.prevent="handleChangePassword">
           <div class="form-group">
-            <label for="currentPassword">Contraseña Actual</label>
-            <input type="password" id="currentPassword" v-model="currentPassword" required>
-          </div>
-          <div class="form-group">
             <label for="newPassword">Nueva Contraseña</label>
             <input type="password" id="newPassword" v-model="newPassword" required>
           </div>
@@ -36,7 +32,6 @@
     name: 'ChangePasswordPopup',
     data() {
       return {
-        currentPassword: '',  // Contraseña actual
         newPassword: '',      // Nueva contraseña
         confirmPassword: '',  // Confirmar nueva contraseña
         errorMessage: ''      // Mensaje de error
@@ -54,9 +49,10 @@
         this.errorMessage = '';
   
         try {
+          // Obtener el idEstudiante desde localStorage
+          const idEstudiante = localStorage.getItem('idEstudianteCorreo');
           // Llamada al backend para cambiar la contraseña
-          const response = await axios.put('http://localhost:8082/cambiar-contrasena', {
-            currentPassword: this.currentPassword,
+          await axios.put(`http://localhost:8082/estudiante/change-password?idEstudiante=${idEstudiante}`, {
             newPassword: this.newPassword
           });
   
