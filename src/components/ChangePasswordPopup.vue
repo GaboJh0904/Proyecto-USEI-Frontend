@@ -7,6 +7,16 @@
           <div class="form-group">
             <label for="newPassword">Nueva Contraseña</label>
             <input type="password" id="newPassword" v-model="newPassword" required>
+            <!-- Instrucciones de contraseña segura -->
+            <p class="password-requirements">
+              La contraseña debe contener al menos:
+              <ul>
+                <li>8 caracteres</li>
+                <li>1 letra</li>
+                <li>1 número</li>
+                <li>1 carácter especial (@$!%*?&)</li>
+              </ul>
+            </p>
           </div>
           <div class="form-group">
             <label for="confirmPassword">Confirmar Nueva Contraseña</label>
@@ -45,6 +55,14 @@
           return;
         }
   
+        // Validar que la nueva contraseña sea segura
+        const passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        
+        if (!passwordRegex.test(this.newPassword)) {
+          this.errorMessage = 'La contraseña debe tener al menos 8 caracteres, incluir una letra, un número y un carácter especial.';
+          return;
+        }
+
         // Resetear mensaje de error
         this.errorMessage = '';
   
@@ -149,8 +167,24 @@
     background-color: #8e6c88;
   }
   
+  .password-requirements {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+  }
+
+  .password-requirements ul {
+    list-style-type: disc;
+    padding-left: 20px;
+  }
+
+  .password-requirements li {
+    margin-bottom: 5px;
+  }
+
   .error-message {
     color: red;
+    font-size: 14px;
   }
 
   .role-btn {
