@@ -62,10 +62,22 @@
     },
     methods: {
       async handleSendCode() {
+        // Mostrar mensaje de carga
+        Swal.fire({
+          title: 'Enviando código...',
+          text: 'Por favor espera un momento.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
       try {
         // Consumir la API para enviar el código de verificación
         const response = await axios.post(`http://localhost:8082/estudiante/enviarCodigoVerificacion/${this.email}`);
         
+        // Cerrar el mensaje de carga
+        Swal.close();
+
         Swal.fire({
           icon: 'success',
           title: 'Código enviado',
@@ -75,8 +87,15 @@
         
         // Guardar el código enviado que llega en la respuesta del backend
         this.sentCode = response.data.codigoVerificacion;
-        
+
+        // Guardar idEstudiante en localStorage
+        localStorage.setItem('idEstudianteCorreo', response.data.idEstudiante);
+    
       } catch (error) {
+        // Cerrar el mensaje de carga si hay error
+          Swal.close();
+
+      // Mostrar mensaje de error
         Swal.fire({
           icon: 'error',
           title: 'Error',

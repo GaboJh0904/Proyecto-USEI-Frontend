@@ -55,6 +55,18 @@
           await axios.put(`http://localhost:8082/estudiante/change-password?idEstudiante=${idEstudiante}`, {
             newPassword: this.newPassword
           });
+
+          const notification = {
+            titulo: "Cambio de contraseña exitosa",
+            contenido: "Se realizo el cambio de contraseña exitosamente. Si no deseo realizar el cambio de contraseña, contactese con Soporte Técnico",
+            fecha: new Date().toISOString(), // Fecha actual
+            estadoNotificacion: false, // Estado inicial como no leído
+            estudianteIdEstudiante: { idEstudiante: idEstudiante }, // ID del estudiante corregido
+            tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+          };
+
+          // Enviar la notificación
+          await axios.post('http://localhost:8082/notificacion', notification);
   
           // Manejar respuesta exitosa
           Swal.fire({
