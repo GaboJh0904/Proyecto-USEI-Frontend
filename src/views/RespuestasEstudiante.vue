@@ -11,13 +11,15 @@
         <p><strong>Fecha de envio de encuesta:</strong> {{ formattedFechaEncuesta || 'Fecha no disponible' }}</p>
       </div>
 
-         <!-- Contenedor de filtros, búsqueda y ordenación -->
+         <!-- Contenedor de filtros, busqueda y ordenacion -->
       <div class="filter-search-container">
         <input type="text" v-model="searchQuery" placeholder="Buscar..." class="search-input" />
-        <select v-model="selectedFilter" class="filter-select">
-          <option value="">Filtrar por</option>
-          <option value="pregunta">Pregunta</option>
-          <option value="respuesta">Respuesta</option>
+        
+        <select v-model="selectedFilter" class="filter-select" @change="fetchRespuestas">
+          <option value="">Filtrar por tipo de pregunta</option>
+          <option value="">Todos</option>
+
+          <option v-for="tipo in tiposPregunta" :key="tipo" :value="tipo">{{ tipo }}</option>
         </select>
       </div>
 
@@ -47,11 +49,13 @@
             <tr v-for="(respuesta, index) in respuestas" :key="index">
               <td>{{ index + 1 }}</td>
               <td>{{ respuesta.pregunta?.pregunta || 'Pregunta no disponible' }}</td>
-              <td class="wide-column"><input type="text" :value="respuesta.respuesta || 'Respuesta no disponible'" readonly class="response-input" /></td>
+              <td class="wide-column">
+                <input type="text" :value="respuesta.respuesta || 'Respuesta no disponible'" readonly class="response-input" /></td>
             </tr>
           </tbody>
         </table>
       </div>
+
       <div v-else>
         <p>No se encontraron respuestas para este estudiante.</p>
       </div>
@@ -87,7 +91,8 @@ export default {
       selectedFilter: '', // Filtro seleccionado
       selectedSort: '', // Orden seleccionado
       currentPage: 1, // Pagina actual para la paginacion
-      totalPages: 3, // Total de paginas (puedes ajustar este valor o calcularlo)
+      totalPages: 3, 
+      tiposPregunta: [],
     };
   },
   computed: {
@@ -102,6 +107,7 @@ export default {
   mounted() {
     this.fetchFechaEncuesta(); 
     this.fetchRespuestas(); 
+    this.fetchTiposDePregunta();
   },
   methods: {
     async fetchFechaEncuesta() {
@@ -120,19 +126,38 @@ export default {
     },
 
     async fetchRespuestas() {
+      console.log('Ejecutando fetchRespuestas'); 
+      console.log('Tipo de pregunta seleccionado:', this.selectedFilter);
+
       const idEstudiante = this.$route.params.idEstudiante; 
       try {
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`); // Solicitud al backend
-        if (response.data && response.data.length > 0) {
+        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
+          params: {
+            tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null // Asegúrate de que el filtro se envíe si está seleccionado
+          }
+      });
+      console.log('Datos recibidos:', response.data); // Verifica si se reciben datos
+
+      if (response.data && response.data.length > 0) {
           this.respuestas = response.data.map(respuesta => ({
-            pregunta: respuesta.preguntaIdPregunta || null, 
+            pregunta: respuesta.preguntaIdPregunta || null,
             respuesta: respuesta.respuesta || 'Sin respuesta'
           }));
         } else {
+          this.respuestas = []; 
+
           console.error('No se encontraron respuestas para este estudiante');
         }
       } catch (error) {
         console.error('Error al obtener las respuestas:', error);
+      }
+    },
+    async fetchTiposDePregunta() {
+      try {
+        const response = await axios.get('http://localhost:8082/pregunta/tipos'); 
+        this.tiposPregunta = response.data; 
+      } catch (error) {
+        console.error('Error al obtener los tipos de pregunta:', error);
       }
     },
     handlePageClick(pageNumber) {
