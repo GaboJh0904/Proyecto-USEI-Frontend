@@ -29,17 +29,17 @@
           <thead>
             <tr>
               <th># 
-                <button class="sort-button">
+                <button class="sort-button" @click="sort('idPregunta')">
                   <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>Pregunta 
-                <button class="sort-button">
+                <button class="sort-button" @click="sort('pregunta')">
                   <i class="fas fa-sort"></i>
                 </button>
               </th>
               <th>Respuesta 
-                <button class="sort-button">
+                <button class="sort-button" @click="sort('respuesta')">
                   <i class="fas fa-sort"></i>
                 </button>
               </th>
@@ -47,7 +47,7 @@
           </thead>
           <tbody>
             <tr v-for="(respuesta, index) in respuestas" :key="index">
-              <td>{{ index + 1 }}</td>
+              <td>{{ respuesta.pregunta.idPregunta || 'ID no disponible' }}</td>
               <td>{{ respuesta.pregunta?.pregunta || 'Pregunta no disponible' }}</td>
               <td class="wide-column">
                 <input type="text" :value="respuesta.respuesta || 'Respuesta no disponible'" readonly class="response-input" /></td>
@@ -89,7 +89,8 @@ export default {
       fechaEncuesta: null, 
       searchQuery: '', // Campo de busqueda
       selectedFilter: '', // Filtro seleccionado
-      selectedSort: '', // Orden seleccionado
+      selectedSortBy: '', // Campo a ordenar
+      selectedSortType: 'ASC', // Tipo de ordenacion (ASC o DESC)     
       currentPage: 1, // Pagina actual para la paginacion
       totalPages: 3, 
       tiposPregunta: [],
@@ -105,6 +106,8 @@ export default {
     }
   },
   mounted() {
+    this.selectedSortBy = 'idPregunta'; // Ordenar por idPregunta por defecto
+    this.selectedSortType = 'ASC'; // Ordenar de forma ascendente por defecto
     this.fetchFechaEncuesta(); 
     this.fetchRespuestas(); 
     this.fetchTiposDePregunta();
@@ -131,9 +134,13 @@ export default {
 
       const idEstudiante = this.$route.params.idEstudiante; 
       try {
+        console.log("Ordenando por:", this.selectedSortBy, "Tipo de ordenación:", this.selectedSortType);
+
         const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
           params: {
-            tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null // Asegúrate de que el filtro se envíe si está seleccionado
+            tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null,
+              sortBy: this.selectedSortBy || 'pregunta',
+              sortType: this.selectedSortType || 'ASC'
           }
       });
       console.log('Datos recibidos:', response.data); // Verifica si se reciben datos
@@ -163,6 +170,18 @@ export default {
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
     },
+    sort(column) {
+      if (this.selectedSortBy === column) {
+        // Si ya se está ordenando por esta columna, invierte el tipo de ordenación
+        this.selectedSortType = this.selectedSortType === 'ASC' ? 'DESC' : 'ASC';
+      } else {
+        // Si se selecciona una nueva columna, ordena por esa columna en orden ascendente
+        this.selectedSortBy = column;
+        this.selectedSortType = 'ASC';
+      }
+      this.fetchRespuestas(); // Vuelve a cargar las respuestas con el nuevo orden
+    },
+
   }
 }
 </script>
