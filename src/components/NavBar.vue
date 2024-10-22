@@ -40,21 +40,28 @@
         <div v-if="showNotifications" class="notification-menu">
           <h3>Notificaciones</h3>
           <div class="scrollable">
-            <div
-              class="notification-item"
-              v-for="(notification, index) in notifications"
-              :key="index"
-              @click="markAsRead(notification, index)"
-              :class="{ clickable: true }"
-            >
-              <!-- Mostrar sobre cerrado si no está leída, sobre abierto si está leída -->
-              <i class="fas" :class="notification.read ? 'fa-envelope-open' : 'fa-envelope'"></i>
-              <div class="notification-content">
-                <p><strong>{{ notification.title }}</strong></p>
-                <p>{{ notification.description }}</p>
-                <p>{{ notification.time }}</p>
+            <template v-if="notifications.length > 0">
+              <div class="notification-item" v-for="(notification, index) in notifications" :key="index" @click="markAsRead(notification, index)">
+                <i class="fas" :class="notification.read ? 'fa-envelope-open' : 'fa-envelope'"></i>
+                <div class="notification-content">
+                  <p><strong>{{ notification.title }}</strong></p>
+                  <p>{{ notification.description }}</p>
+                  <p>{{ notification.time }}</p>
+                </div>
               </div>
-            </div>
+              
+              <!-- Botón para retroceder a la página anterior -->
+              <div class="pagination-buttons">
+                <button v-if="currentPage > 0" @click="loadNotifications(currentPage - 1)" class="load-more-button prev-button">
+                  ← Volver a Notificaciones Anteriores
+                </button>
+
+                <!-- Mostrar el botón de "Cargar más" solo si hay más páginas -->
+                <button v-if="currentPage < totalPages - 1" @click="loadNotifications(currentPage + 1)" class="load-more-button">
+                  Cargar más
+                </button>
+              </div>
+            </template>
           </div>
         </div>
 
@@ -146,7 +153,10 @@ export default {
       username: '',
       role: '',
       notifications: [],
-      estudianteId: null // Para almacenar el ID del estudiante
+      estudianteId: null, // Para almacenar el ID del estudiante
+      currentPage: 0,     // Página actual para la paginación
+      pageSize: 10,       // Tamaño de página (cantidad de notificaciones por página)
+      totalPages: 0       // Total de páginas disponibles (a ser determinado por el backend)
     };
   },
   computed: {
@@ -245,12 +255,18 @@ export default {
       localStorage.setItem('id_estudiante', idEstudiante);
       this.estudianteId = idEstudiante;
     },
-    async loadNotifications() {
+    async loadNotifications(page = this.currentPage) {
       const estudianteId = this.estudianteId; // Usar la variable estudianteId ya asignada
       try {
-        const response = await axios.get(`http://localhost:8082/notificacion/estudiante/${estudianteId}`); // Ajustar la URL según el backend
+        const response = await axios.get(`http://localhost:8082/notificacion/estudiante/${estudianteId}`, {
+          params: {
+            page: page,
+            size: this.pageSize
+          }
+        }); // Ajustar la URL según el backend
         // Ordenar las notificaciones por idNotificacion de mayor a menor
-        this.notifications = response.data
+        const notificationData = response.data.content; // 'content' es la parte que contiene los datos paginados
+        this.notifications = notificationData
           .map(notificacion => ({
             id: notificacion.idNotificacion, // Agregar id de la notificación
             title: notificacion.titulo,
@@ -259,6 +275,10 @@ export default {
             read: notificacion.estadoNotificacion, // Verifica si está leída o no
           }))
           .sort((a, b) => b.id - a.id); // Ordenar por id de mayor a menor
+
+        // Asignar la paginación
+        this.currentPage = page;
+        this.totalPages = response.data.totalPages;
       } catch (error) {
         console.error('Error al cargar las notificaciones:', error);
       }
@@ -512,6 +532,39 @@ nav {
 
 .scrollable::-webkit-scrollbar-track {
   background-color: #f1f1f1; /* Color de fondo del track */
+}
+
+.load-more-button {
+  background-color: #4CAF50; /* Verde atractivo */
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  margin: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.load-more-button:hover {
+  background-color: #388E3C; /* Oscurecer el color al hacer hover */
+  transform: scale(1.05); /* Animación al hacer hover */
+}
+
+.pagination-buttons {
+  display: flex;
+  justify-content: space-between; /* Coloca los botones en extremos opuestos */
+  margin-top: 20px;
+}
+
+/* Botón para volver a la página anterior */
+.prev-button {
+  background-color: #FF9800; /* Color naranja atractivo */
+}
+
+.prev-button:hover {
+  background-color: #FB8C00; /* Oscurecer el color al hacer hover */
 }
 
 </style>
