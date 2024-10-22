@@ -92,7 +92,8 @@ export default {
       selectedSortBy: '', // Campo a ordenar
       selectedSortType: 'ASC', // Tipo de ordenacion (ASC o DESC)     
       currentPage: 1, // Pagina actual para la paginacion
-      totalPages: 3, 
+      totalPages: 5, 
+      pageSize: 10,  
       tiposPregunta: [],
     };
   },
@@ -106,6 +107,8 @@ export default {
     }
   },
   mounted() {
+    this.currentPage = 1;  // Establecer página inicial en 1
+    this.pageSize = 10;  // Tamaño de página por defecto
     this.selectedSortBy = 'idPregunta'; // Ordenar por idPregunta por defecto
     this.selectedSortType = 'ASC'; // Ordenar de forma ascendente por defecto
     this.fetchFechaEncuesta(); 
@@ -127,38 +130,47 @@ export default {
         console.error('Error al obtener la fecha de la encuesta:', error);
       }
     },
+    handlePageClick(pageNumber) {
+    this.currentPage = pageNumber; 
+    this.fetchRespuestas();        
+  },
 
     async fetchRespuestas() {
       console.log('Ejecutando fetchRespuestas'); 
       console.log('Tipo de pregunta seleccionado:', this.selectedFilter);
 
+
       const idEstudiante = this.$route.params.idEstudiante; 
       try {
-        console.log("Ordenando por:", this.selectedSortBy, "Tipo de ordenación:", this.selectedSortType);
+        const pageToFetch = this.currentPage - 2;
+        console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
 
         const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
           params: {
             tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null,
-              sortBy: this.selectedSortBy || 'pregunta',
-              sortType: this.selectedSortType || 'ASC'
+            sortBy: this.selectedSortBy || 'pregunta',
+            sortType: this.selectedSortType || 'ASC',
+            page: pageToFetch ,
+            pageSize: this.pageSize  
           }
       });
-      console.log('Datos recibidos:', response.data); // Verifica si se reciben datos
+      console.log('Datos recibidos:', response.data);
 
-      if (response.data && response.data.length > 0) {
-          this.respuestas = response.data.map(respuesta => ({
-            pregunta: respuesta.preguntaIdPregunta || null,
-            respuesta: respuesta.respuesta || 'Sin respuesta'
-          }));
-        } else {
-          this.respuestas = []; 
-
-          console.error('No se encontraron respuestas para este estudiante');
-        }
-      } catch (error) {
-        console.error('Error al obtener las respuestas:', error);
-      }
-    },
+      if (response.data && response.data.content && response.data.content.length > 0) {
+      // Acceder al contenido paginado
+      this.respuestas = response.data.content.map(respuesta => ({
+        pregunta: respuesta.preguntaIdPregunta || null,
+        respuesta: respuesta.respuesta || 'Sin respuesta'
+      }));
+      this.totalPages = response.data.totalPages; 
+    } else {
+      this.respuestas = []; 
+      console.error('No se encontraron respuestas para este estudiante');
+    }
+  } catch (error) {
+    console.error('Error al obtener las respuestas:', error);
+  }
+},
     async fetchTiposDePregunta() {
       try {
         const response = await axios.get('http://localhost:8082/pregunta/tipos'); 
@@ -167,9 +179,9 @@ export default {
         console.error('Error al obtener los tipos de pregunta:', error);
       }
     },
-    handlePageClick(pageNumber) {
-      this.currentPage = pageNumber;
-    },
+   
+
+
     sort(column) {
       if (this.selectedSortBy === column) {
         // Si ya se está ordenando por esta columna, invierte el tipo de ordenación
