@@ -1,3 +1,117 @@
+<!-- <template>
+  <div>
+    <header>
+      <NavBar userRole="Admin" />
+    </header>
+
+    <main class="resume-container">
+      <h1 class="resume-title">Respuestas de la Encuesta</h1>
+
+      <div class="resume-form">
+        <p v-if="!respuestas.length">
+          No se encontraron respuestas para este estudiante.
+        </p>
+
+        <p v-else v-for="(respuesta, index) in respuestas" :key="index">
+          <strong>{{ getPreguntaTexto(respuesta.preguntaIdPregunta.idPregunta) }}:</strong> {{ respuesta.respuesta }}
+        </p>
+
+        <div class="pagination-controls">
+          <button @click="fetchRespuestas(currentPage - 1)" :disabled="currentPage === 0">Anterior</button>
+          <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+          <button @click="fetchRespuestas(currentPage + 1)" :disabled="currentPage + 1 === totalPages">Siguiente</button>
+        </div>
+
+        <div class="form-actions">
+          <button class="back-button" @click="goBackToMenu">Regresar al Menú</button>
+        </div>
+      </div>
+    </main>
+
+    <FooterComponent />
+  </div>
+</template> -->
+
+<!-- <script>
+import NavBar from '@/components/NavBar.vue';
+import FooterComponent from '@/components/FooterComponent.vue';
+import Swal from 'sweetalert2';  
+import axios from 'axios';
+
+export default {
+  name: 'VerRespuestas',
+  components: {
+    NavBar,
+    FooterComponent
+  },
+  data() {
+    return {
+      respuestas: [], 
+      preguntas: [],  
+      estudianteId: this.$route.params.idEstudiante, 
+      pageSize: 10, 
+      totalPages: 0 
+    };
+  },
+  mounted() {
+    this.fetchAllPreguntas();
+    this.fetchRespuestas(this.currentPage); 
+  },
+  methods: {
+    async fetchRespuestas(page) {
+      try {
+        if (page < 0 || (this.totalPages && page >= this.totalPages)) return;
+
+        this.currentPage = page;
+
+        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${this.estudianteId}`, {
+          params: {
+            page: this.currentPage,
+            pageSize: this.pageSize,
+            sortBy: 'IdRespuesta',
+            sortType: 'ASC'
+          }
+        });
+        console.log('Datos recibidos:', response.data); 
+
+        this.respuestas = response.data.content;
+        this.totalPages = response.data.totalPages;
+      } catch (error) {
+        console.error('Error al obtener las respuestas:', error);
+        Swal.fire('Error', 'Ocurrió un problema al cargar las respuestas.', 'error');
+      }
+    },
+
+    async fetchAllPreguntas() {
+      try {
+        const response = await axios.get('http://localhost:8082/pregunta', {
+          params: {
+            page: 0,
+            pageSize: 1000, // Un número suficientemente grande para cubrir todas las preguntas
+            sortBy: 'numPregunta',
+            sortType: 'ASC'
+          }
+        });
+
+        this.preguntas = response.data.content;
+      } catch (error) {
+        console.error('Error al obtener todas las preguntas:', error);
+        Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
+      }
+    },
+
+    getPreguntaTexto(idPregunta) {
+      const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
+      return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
+    },
+
+    goBackToMenu() {
+      this.$router.push('/menu-estudiante');
+    }
+  }
+};
+</script> -->
+
 <template>
   <div>
     <header>
@@ -9,13 +123,14 @@
 
       <div class="resume-form">
         <!-- Mostrar un mensaje si no hay respuestas -->
-        <p v-if="!respuestas.length">
+        <p v-if="respuestas.length === 0">
           No se encontraron respuestas para este estudiante.
         </p>
 
-        <!-- Iterar sobre las respuestas -->
+        <!-- Iterar sobre las respuestas y mostrar la pregunta asociada -->
         <p v-else v-for="(respuesta, index) in respuestas" :key="index">
-          <strong>{{ getPreguntaTexto(respuesta.preguntaIdPregunta.idPregunta) }}:</strong> {{ respuesta.respuesta }}
+          <strong>{{ respuesta.preguntaIdPregunta?.pregunta || 'Pregunta no disponible' }}:</strong>
+          {{ respuesta.respuesta || 'Sin respuesta' }}
         </p>
 
         <div class="pagination-controls">
@@ -37,7 +152,7 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-import Swal from 'sweetalert2';  
+import Swal from 'sweetalert2';
 import axios from 'axios';
 
 export default {
@@ -49,7 +164,6 @@ export default {
   data() {
     return {
       respuestas: [], // Respuestas obtenidas desde la API
-      preguntas: [],  // Lista de preguntas obtenida desde la base de datos
       estudianteId: this.$route.params.idEstudiante, // ID del estudiante cuyas respuestas se están viendo
       currentPage: 0, // Página actual
       pageSize: 10, // Tamaño de página
@@ -57,11 +171,12 @@ export default {
     };
   },
   mounted() {
-    this.fetchAllPreguntas(); // Cargar todas las preguntas al inicio
     this.fetchRespuestas(this.currentPage); // Cargar las respuestas de la primera página
   },
   methods: {
     async fetchRespuestas(page) {
+      const idEstudiante = this.$route.params.idEstudiante; 
+
       try {
         // Verificar que la página no sea negativa o superior al límite
         if (page < 0 || (this.totalPages && page >= this.totalPages)) return;
@@ -69,7 +184,8 @@ export default {
         // Actualizar la página actual
         this.currentPage = page;
 
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${this.estudianteId}`, {
+        // Llamar a la API para obtener las respuestas
+        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
           params: {
             page: this.currentPage,
             pageSize: this.pageSize,
@@ -77,40 +193,17 @@ export default {
             sortType: 'ASC'
           }
         });
-        console.log('Datos recibidos:', response.data); // Imprimir los datos recibidos
+
+        // Depuración para verificar la estructura de los datos recibidos
+        console.log('Respuestas recibidas:', response.data.content);
 
         // Asignar los datos recibidos y la información de la paginación
-        this.respuestas = response.data.content;
-        this.totalPages = response.data.totalPages;
+        this.respuestas = response.data.content || [];
+        this.totalPages = response.data.totalPages || 0;
       } catch (error) {
         console.error('Error al obtener las respuestas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las respuestas.', 'error');
       }
-    },
-
-    async fetchAllPreguntas() {
-      try {
-        const response = await axios.get('http://localhost:8082/pregunta', {
-          params: {
-            page: 0,
-            pageSize: 1000, // Un número suficientemente grande para cubrir todas las preguntas
-            sortBy: 'numPregunta',
-            sortType: 'ASC'
-          }
-        });
-
-        // Guardar todas las preguntas
-        this.preguntas = response.data.content;
-      } catch (error) {
-        console.error('Error al obtener todas las preguntas:', error);
-        Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
-      }
-    },
-
-    // Obtener el texto de una pregunta según su ID
-    getPreguntaTexto(idPregunta) {
-      const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
-      return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
     },
 
     goBackToMenu() {
@@ -119,6 +212,7 @@ export default {
   }
 };
 </script>
+
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
