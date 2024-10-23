@@ -14,10 +14,16 @@
         </p>
 
         <!-- Iterar sobre las respuestas -->
-        <p v-else v-for="(respuesta, preguntaId) in respuestasForm" :key="preguntaId">
-          <strong>{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
+        <p v-else v-for="(respuesta, index) in respuestas" :key="index">
+          <strong>{{ getPreguntaTexto(respuesta.preguntaIdPregunta.idPregunta) }}:</strong> {{ respuesta.respuesta }}
         </p>
-        
+
+        <div class="pagination-controls">
+          <button @click="fetchRespuestas(currentPage - 1)" :disabled="currentPage === 0">Anterior</button>
+          <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+          <button @click="fetchRespuestas(currentPage + 1)" :disabled="currentPage + 1 === totalPages">Siguiente</button>
+        </div>
+
         <div class="form-actions">
           <button class="back-button" @click="goBackToMenu">Regresar al Menú</button>
         </div>
@@ -45,39 +51,58 @@ export default {
       respuestas: [], // Respuestas obtenidas desde la API
       preguntas: [],  // Lista de preguntas obtenida desde la base de datos
       estudianteId: this.$route.params.idEstudiante, // ID del estudiante cuyas respuestas se están viendo
+      currentPage: 0, // Página actual
+      pageSize: 10, // Tamaño de página
+      totalPages: 0 // Número total de páginas
     };
   },
-  computed: {
-    // Transformar las respuestas para mostrarlas con sus respectivas preguntas
-    respuestasForm() {
-      const respuestasTransformadas = {};
-      this.respuestas.forEach((respuesta) => {
-        respuestasTransformadas[respuesta.preguntaIdPregunta.idPregunta] = respuesta.respuesta;
-      });
-      return respuestasTransformadas;
-    }
-  },
   mounted() {
-    this.fetchRespuestas();
-    this.fetchPreguntas();
+    this.fetchAllPreguntas(); // Cargar todas las preguntas al inicio
+    this.fetchRespuestas(this.currentPage); // Cargar las respuestas de la primera página
   },
   methods: {
-    async fetchRespuestas() {
+    async fetchRespuestas(page) {
       try {
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${this.estudianteId}`);
-        this.respuestas = response.data;
+        // Verificar que la página no sea negativa o superior al límite
+        if (page < 0 || (this.totalPages && page >= this.totalPages)) return;
+
+        // Actualizar la página actual
+        this.currentPage = page;
+
+        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${this.estudianteId}`, {
+          params: {
+            page: this.currentPage,
+            pageSize: this.pageSize,
+            sortBy: 'IdRespuesta',
+            sortType: 'ASC'
+          }
+        });
+        console.log('Datos recibidos:', response.data); // Imprimir los datos recibidos
+
+        // Asignar los datos recibidos y la información de la paginación
+        this.respuestas = response.data.content;
+        this.totalPages = response.data.totalPages;
       } catch (error) {
         console.error('Error al obtener las respuestas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las respuestas.', 'error');
       }
     },
 
-    async fetchPreguntas() {
+    async fetchAllPreguntas() {
       try {
-        const response = await axios.get('http://localhost:8082/pregunta');
-        this.preguntas = response.data;
+        const response = await axios.get('http://localhost:8082/pregunta', {
+          params: {
+            page: 0,
+            pageSize: 1000, // Un número suficientemente grande para cubrir todas las preguntas
+            sortBy: 'numPregunta',
+            sortType: 'ASC'
+          }
+        });
+
+        // Guardar todas las preguntas
+        this.preguntas = response.data.content;
       } catch (error) {
-        console.error('Error al obtener las preguntas:', error);
+        console.error('Error al obtener todas las preguntas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
       }
     },
@@ -171,5 +196,27 @@ header {
 
 .back-button:hover {
   background-color: #1F2E34;
+}
+
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.pagination-controls button {
+  margin: 0 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #6c5b7b;
+  color: white;
+  border: none;
+  border-radius: 15px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.pagination-controls button:hover {
+  background-color: #664583;
 }
 </style>
