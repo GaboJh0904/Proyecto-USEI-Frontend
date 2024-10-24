@@ -74,18 +74,18 @@
                 <td>{{ new Date(certificado.fechaModificacion).toLocaleDateString() }}</td>
                 <td class="icon-actions">
                         <!-- Mostrar iconos según el estado -->
-                    <div v-if="certificado.estado === 'En uso'">
-                        <i class="fas fa-archive  icon-archived" @click="archivarCertificado(certificado.idCertificado)" title="Archivar"></i>
-                        <i class="fas fa-ban icon-suspended" @click="suspenderCertificado(certificado.idCertificado)" title="Suspender"></i>
-                    </div>
-                    <div v-if="certificado.estado === 'Suspendido'">
-                        <i class="fas fa-play icon-in-use" @click="activarCertificado(certificado.idCertificado)" title="En uso"></i>
-                        <i class="fas fa-archive icon-archived" @click="archivarCertificado(certificado.idCertificado)" title="Archivar"></i>
-                    </div>
-                    <div v-if="certificado.estado === 'Archivado'">
-                        <i class="fas fa-pla icon-in-use" @click="activarCertificado(certificado.idCertificado)" title="En uso"></i>
-                        <i class="fas fa-ban icon-suspended" @click="suspenderCertificado(certificado.idCertificado)" title="Suspender"></i>
-                    </div>
+                        <div v-if="certificado.estado === 'En uso'">
+                        <i class="fas fa-archive icon-archived" @click="archivarCertificado(certificado)" title="Archivar"></i>
+                        <i class="fas fa-ban icon-suspended" @click="suspenderCertificado(certificado)" title="Suspender"></i>
+                        </div>
+                        <div v-if="certificado.estado === 'Suspendido'">
+                        <i class="fas fa-play icon-in-use" @click="verificarCambioAEnUso(certificado)" title="En uso"></i>
+                        <i class="fas fa-archive icon-archived" @click="archivarCertificado(certificado)" title="Archivar"></i>
+                        </div>
+                        <div v-if="certificado.estado === 'Archivado'">
+                        <i class="fas fa-play icon-in-use" @click="verificarCambioAEnUso(certificado)" title="En uso"></i>
+                        <i class="fas fa-ban icon-suspended" @click="suspenderCertificado(certificado)" title="Suspender"></i>
+                        </div>
                 </td>
                 </tr>
             </tbody>
@@ -111,6 +111,7 @@
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
   import PaginationComponent from '@/components/PaginationComponent.vue';
+  import Swal from 'sweetalert2';
   export default {
     name: 'subirCertificado',
     components: {
@@ -220,45 +221,73 @@
       return filePath.split(/(\\|\/)/g).pop(); 
     },
 
-     async archivarCertificado(idCertificado) {
+     // Métodos para cambiar el estado del certificado
+     async archivarCertificado(certificado) {
       try {
-        await axios.put(`http://localhost:8082/certificado/${idCertificado}`, {
-          estado: 'Archivado'
+        await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+          estado: 'Archivado',
         });
         alert('Certificado archivado exitosamente');
         this.fetchCertificados();
       } catch (error) {
         alert('Error al archivar el certificado');
-        console.error('Error al archivar el certificado:', error);
       }
     },
 
-    async suspenderCertificado(idCertificado) {
+    async suspenderCertificado(certificado) {
       try {
-        await axios.put(`http://localhost:8082/certificado/${idCertificado}`, {
-          estado: 'Suspendido'
+        await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+          estado: 'Suspendido',
         });
         alert('Certificado suspendido exitosamente');
         this.fetchCertificados();
       } catch (error) {
         alert('Error al suspender el certificado');
-        console.error('Error al suspender el certificado:', error);
       }
     },
+    async verificarCambioAEnUso(certificado) {
+      const certificadoEnUso = this.certificados.find(cert => cert.estado === 'En uso');
 
-    async activarCertificado(idCertificado) {
+      if (certificadoEnUso && certificadoEnUso.idCertificado !== certificado.idCertificado) {
+        Swal.fire({
+          title: '¿Desea poner en uso este archivo?',
+          text: 'El archivo que está en uso actualmente será suspendido.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, continuar',
+          cancelButtonText: 'Cancelar',
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              await axios.put(`http://localhost:8082/certificado/${certificadoEnUso.idCertificado}/estado`, {
+                estado: 'Suspendido',
+              });
+              await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+                estado: 'En uso',
+              });
+              alert('El archivo se ha puesto en uso correctamente y el otro archivo fue suspendido.');
+              this.fetchCertificados();
+            } catch (error) {
+              alert('Error al cambiar el estado de los certificados');
+            }
+          }
+        });
+      } else {
+        this.activarCertificado(certificado);
+      }
+    },
+    async activarCertificado(certificado) {
       try {
-        await axios.put(`http://localhost:8082/certificado/${idCertificado}`, {
-          estado: 'En uso'
+        await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+          estado: 'En uso',
         });
         alert('Certificado activado exitosamente');
         this.fetchCertificados();
       } catch (error) {
         alert('Error al activar el certificado');
-        console.error('Error al activar el certificado:', error);
       }
-    }
-  }
+    },
+  },
 };
   </script>
   
