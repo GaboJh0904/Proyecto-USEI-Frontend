@@ -113,7 +113,12 @@ const router = createRouter({
       path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
       name: 'VerRespuestas',
       component: VerRespuestas, // Componente que muestra las respuestas
-    }
+    },
+    {
+      path: '/Subir-certificado',
+      name: 'SubirCertificado',
+      component: SubirCertificado
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
