@@ -13,7 +13,7 @@
 
          <!-- Contenedor de filtros, busqueda y ordenacion -->
       <div class="filter-search-container">
-        <input type="text" v-model="searchQuery" placeholder="Buscar..." class="search-input" />
+        <input type="text" v-model="searchQuery" @input="fetchRespuestas" placeholder="Buscar por pregunta o respuesta" class="search-input" />
         
         <select v-model="selectedFilter" class="filter-select" @change="fetchRespuestas">
           <option value="">Filtrar por tipo de pregunta</option>
@@ -55,9 +55,9 @@
           </tbody>
         </table>
       </div>
-
-      <div v-else>
-        <p>No se encontraron respuestas para este estudiante.</p>
+   <!-- Mostrar mensaje si no hay coincidencias -->
+   <div v-else>
+        <p>No hay coincidencias para la búsqueda realizada.</p>
       </div>
       <PaginationComponent
         :page-count="totalPages"
@@ -135,42 +135,46 @@ export default {
     this.fetchRespuestas();        
   },
 
-    async fetchRespuestas() {
-      console.log('Ejecutando fetchRespuestas'); 
-      console.log('Tipo de pregunta seleccionado:', this.selectedFilter);
+  async fetchRespuestas() {
+  console.log('Ejecutando fetchRespuestas');
+  const idEstudiante = this.$route.params.idEstudiante;
+  try {
+    const pageToFetch = this.currentPage - 2;
+    console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
 
+    // Llamar a la API con el parámetro de búsqueda (searchQuery)
+    const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
+      params: {
+        tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null,
+        sortBy: this.selectedSortBy || 'pregunta',
+        sortType: this.selectedSortType || 'ASC',
+        page: pageToFetch,
+        pageSize: this.pageSize,
+        searchQuery: this.searchQuery || '' // Pasar el parámetro de búsqueda
+      }
+    });
 
-      const idEstudiante = this.$route.params.idEstudiante; 
-      try {
-        const pageToFetch = this.currentPage - 2;
-        console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
-
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
-          params: {
-            tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null,
-            sortBy: this.selectedSortBy || 'pregunta',
-            sortType: this.selectedSortType || 'ASC',
-            page: pageToFetch ,
-            pageSize: this.pageSize  
-          }
-      });
-      console.log('Datos recibidos:', response.data);
+    console.log('Datos recibidos:', response.data);
 
       if (response.data && response.data.content && response.data.content.length > 0) {
-      // Acceder al contenido paginado
-      this.respuestas = response.data.content.map(respuesta => ({
-        pregunta: respuesta.preguntaIdPregunta || null,
-        respuesta: respuesta.respuesta || 'Sin respuesta'
-      }));
-      this.totalPages = response.data.totalPages; 
-    } else {
-      this.respuestas = []; 
-      console.error('No se encontraron respuestas para este estudiante');
+        // Si hay respuestas, las asignamos
+        this.respuestas = response.data.content.map(respuesta => ({
+          pregunta: respuesta.preguntaIdPregunta || null,
+          respuesta: respuesta.respuesta || 'Sin respuesta'
+        }));
+        this.totalPages = response.data.totalPages;
+      } else {
+        // Si no se encontraron respuestas, vaciar el array
+        this.respuestas = [];
+        console.error('No se encontraron respuestas para este estudiante');
+      }
+    } catch (error) {
+      console.error('Error al obtener las respuestas:', error);
+      this.respuestas = []; // Manejar el caso de error vacío
     }
-  } catch (error) {
-    console.error('Error al obtener las respuestas:', error);
-  }
-},
+  },
+
+
     async fetchTiposDePregunta() {
       try {
         const response = await axios.get('http://localhost:8082/pregunta/tipos'); 
