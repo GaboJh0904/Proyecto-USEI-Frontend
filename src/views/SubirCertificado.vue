@@ -13,9 +13,9 @@
          <div class="upload-container">
           <p><strong>Subir nueva versión de certificado:</strong></p>
           <div class="upload-inputs">
-            <input type="file" @change="handleFileUpload" accept="application/pdf" class="pdf-upload" />
+            <input type="file" @change="handleFileUpload" ref="fileInput" accept="application/pdf" class="pdf-upload" />
             <button @click="uploadFile" class="upload-button">Subir</button>
-          </div>
+        </div>
           <p class="file-instruction">Solo se permiten archivos en formato PDF.</p>
         </div>
   
@@ -37,27 +37,27 @@
             <thead>
               <tr>
                 <th>id
-                  <button class="sort-button" @click="sort()">
+                  <button class="sort-button" @click="sort('id')">
                     <i class="fas fa-sort"></i>
                   </button>
                 </th>
-                <th>Formato 
-                  <button class="sort-button" @click="sort()">
+                <th>Archivo 
+                  <button class="sort-button" @click="sort('formato')">
                     <i class="fas fa-sort"></i>
                   </button>
                 </th>
                 <th>Version 
-                  <button class="sort-button" @click="sort()">
+                  <button class="sort-button" @click="sort('version')">
                     <i class="fas fa-sort"></i>
                   </button>
                 </th>
                 <th>Estado 
-                  <button class="sort-button" @click="sort()">
+                  <button class="sort-button" @click="sort('estado')">
                     <i class="fas fa-sort"></i>
                   </button>
                 </th>
                 <th>Fecha 
-                  <button class="sort-button" @click="sort()">
+                  <button class="sort-button" @click="sort(fecha)">
                     <i class="fas fa-sort"></i>
                   </button>
                 </th>
@@ -66,21 +66,36 @@
               </tr>
             </thead>
             <tbody>
-              <tr >
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-              </tr>
+                <tr v-for="certificado in certificados" :key="certificado.idCertificado">
+                <td>{{ certificado.idCertificado }}</td>
+                <td>{{ extractFileName(certificado.formato) }}</td>
+                <td>{{ certificado.version }}</td>
+                <td>{{ certificado.estado }}</td>
+                <td>{{ new Date(certificado.fechaModificacion).toLocaleDateString() }}</td>
+                <td class="icon-actions">
+                        <!-- Mostrar iconos según el estado -->
+                    <div v-if="certificado.estado === 'En uso'">
+                        <i class="fas fa-archive  icon-archived" @click="archivarCertificado(certificado.idCertificado)" title="Archivar"></i>
+                        <i class="fas fa-ban icon-suspended" @click="suspenderCertificado(certificado.idCertificado)" title="Suspender"></i>
+                    </div>
+                    <div v-if="certificado.estado === 'Suspendido'">
+                        <i class="fas fa-play icon-in-use" @click="activarCertificado(certificado.idCertificado)" title="En uso"></i>
+                        <i class="fas fa-archive icon-archived" @click="archivarCertificado(certificado.idCertificado)" title="Archivar"></i>
+                    </div>
+                    <div v-if="certificado.estado === 'Archivado'">
+                        <i class="fas fa-pla icon-in-use" @click="activarCertificado(certificado.idCertificado)" title="En uso"></i>
+                        <i class="fas fa-ban icon-suspended" @click="suspenderCertificado(certificado.idCertificado)" title="Suspender"></i>
+                    </div>
+                </td>
+                </tr>
             </tbody>
           </table>
         </div>
-     <!-- Mostrar mensaje si no hay coincidencias -->
-     <div>
-          <p>No hay coincidencias para la búsqueda realizada.</p>
-        </div>
+         <!-- Mostrar mensaje si no hay registros -->
+      <div v-if="certificados.length === 0">
+        <p>No se encontraron certificados registrados.</p>
+      </div>
+
         <PaginationComponent
           :page-count="totalPages"
           :current-page="currentPage"
@@ -91,13 +106,13 @@
     </div>
   </template>
   
-  <script>
+  <script >
   import axios from 'axios';
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
   import PaginationComponent from '@/components/PaginationComponent.vue';
   export default {
-    name: 'RespuestasEstudiante',
+    name: 'subirCertificado',
     components: {
       NavBar,
       FooterComponent,
@@ -106,8 +121,11 @@
     },
     data() {
       return {
-          selectedFile: null, // Almacenar el archivo seleccionado
-  
+      selectedFile: null,  // Almacenar el archivo seleccionado
+      certificados: [],     // Almacenar los registros de certificados
+      totalPages: 1,
+      currentPage: 1,
+      usuarioId: null,
        
       };
     },
@@ -115,38 +133,133 @@
      
     },
     mounted() {
-      
+        this.fetchCertificados(); 
+        
+        this.loadUsuarioId(); 
+
     },
     methods: {
+    loadUsuarioId() {
+      const storedUsuarioId = localStorage.getItem('id_usuario');
+      if (storedUsuarioId) {
+        this.usuarioId = storedUsuarioId;
+        console.log('ID de usuario cargado desde localStorage:', this.usuarioId); 
+      } else {
+        alert('No se encontró el ID del usuario en localStorage.'); 
+        console.error('No se encontró el ID del usuario en localStorage.');
+      }
+    },
       
       handlePageClick(pageNumber) {
       this.currentPage = pageNumber; 
       this.fetchRespuestas();        
     },
     handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-          if (file.type === 'application/pdf') {
-            this.selectedFile = file;
-            console.log('Archivo PDF válido:', file);
-          } else {
-            console.error('Formato de archivo no válido. Solo se permiten archivos PDF.');
-            this.selectedFile = null;
-          }
+      const file = event.target.files[0];
+      if (file && file.type === 'application/pdf') {
+        this.selectedFile = file;
+        alert('Archivo PDF válido seleccionado'); 
+        console.log('Archivo PDF válido seleccionado:', file); 
+      } else {
+        alert('Formato de archivo no válido. Solo se permiten archivos PDF.'); 
+        console.error('Formato de archivo no válido. Solo se permiten archivos PDF.');
+        this.selectedFile = null;
+      }
+    },
+
+    async uploadFile() {
+      if (this.selectedFile) {
+        if (!this.usuarioId) {
+          alert('No se encontró el ID del usuario en localStorage'); // <-- Alerta de error
+          console.error('No se encontró el ID del usuario en localStorage.');
+          return;
         }
-      },
-      uploadFile() {
-        if (this.selectedFile) {
-          console.log('Subiendo archivo:', this.selectedFile);
-          // Aquí puedes implementar la lógica para subir el archivo al servidor
-          // Utiliza axios o fetch para enviar el archivo.
-        } else {
-          console.error('No se ha seleccionado ningún archivo o el formato es incorrecto.');
+
+        alert('Subiendo archivo PDF...'); 
+        console.log('Subiendo archivo PDF:', this.selectedFile); 
+
+        const formData = new FormData();
+        formData.append('formato', this.selectedFile);
+        formData.append('UsuarioIdUsuario', this.usuarioId);
+
+        try {
+          const response = await axios.post('http://localhost:8082/certificado', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
+          alert('Archivo subido exitosamente'); 
+          console.log('Respuesta del servidor:', response.data); 
+          this.fetchCertificados(); // Actualizar la lista de certificados
+          this.selectedFile = null;
+          this.$refs.fileInput.value = ''; 
+
+        } catch (error) {
+          alert('Error al subir el archivo'); 
+          console.error('Error al subir el archivo:', error);
         }
-      },
+      } else {
+        alert('No se ha seleccionado ningún archivo o el formato es incorrecto'); 
+        console.error('No se ha seleccionado ningún archivo o el formato es incorrecto.');
+      }
+    },
+
+
+
+    async fetchCertificados() {
+      try {
+        const response = await axios.get('http://localhost:8082/certificado');
+        this.certificados = response.data;
+        console.log('Certificados obtenidos:', this.certificados); 
+      } catch (error) {
+        alert('Error al obtener los certificados');
+        console.error('Error al obtener los certificados:', error);
+      }
+    },
+    extractFileName(filePath) {
+      return filePath.split(/(\\|\/)/g).pop(); 
+    },
+
+     async archivarCertificado(idCertificado) {
+      try {
+        await axios.put(`http://localhost:8082/certificado/${idCertificado}`, {
+          estado: 'Archivado'
+        });
+        alert('Certificado archivado exitosamente');
+        this.fetchCertificados();
+      } catch (error) {
+        alert('Error al archivar el certificado');
+        console.error('Error al archivar el certificado:', error);
+      }
+    },
+
+    async suspenderCertificado(idCertificado) {
+      try {
+        await axios.put(`http://localhost:8082/certificado/${idCertificado}`, {
+          estado: 'Suspendido'
+        });
+        alert('Certificado suspendido exitosamente');
+        this.fetchCertificados();
+      } catch (error) {
+        alert('Error al suspender el certificado');
+        console.error('Error al suspender el certificado:', error);
+      }
+    },
+
+    async activarCertificado(idCertificado) {
+      try {
+        await axios.put(`http://localhost:8082/certificado/${idCertificado}`, {
+          estado: 'En uso'
+        });
+        alert('Certificado activado exitosamente');
+        this.fetchCertificados();
+      } catch (error) {
+        alert('Error al activar el certificado');
+        console.error('Error al activar el certificado:', error);
+      }
     }
   }
-   
+};
   </script>
   
   <style scoped>
@@ -314,6 +427,52 @@
   .sort-button i {
     font-size: 12px;
   }
+
+  .icon-actions i {
+
+  font-size: 1.3rem;
+  margin: 0 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.icon-actions i:hover {
+  transform: scale(1.2);
+}
+
+.icon-archived {
+  color: #d89e41; 
+}
+
+.icon-in-use {
+  color: #5a8d8d; 
+}
+
+.icon-suspended {
+  color: #a850b4; 
+}
+
+.icon-actions i[title="Archivar"]:hover::after,
+.icon-actions i[title="En uso"]:hover::after,
+.icon-actions i[title="Suspender"]:hover::after {
+  content: attr(title);
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: 5px;
+  border-radius: 9px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Arial', sans-serif; 
+}
+
+.icon-actions {
+  position: relative;
+}
+
   
   </style>
   

@@ -70,7 +70,7 @@
           </div>
           <h3>EDITAR CERTIFICADO</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToSubirCertificado">Ingresar</button>
           </div>
         </div>
         <!-- Card 5 -->
@@ -165,6 +165,8 @@
 
     if (storedUsuarioId) {
       this.usuarioId = storedUsuarioId;
+      console.log('ID del usuario encontrado en localStorage:', this.usuarioId);  // <-- Depuración
+
     } else {
       console.error('No se encontró el ID del usuario en el localStorage.');
 
@@ -192,6 +194,9 @@
     },
     goToFormularioSoporte() {
       this.$router.push('/formulario-soporte');
+    },
+    goToSubirCertificado() {
+      this.$router.push('/subir-certificado');
     },
 
   },

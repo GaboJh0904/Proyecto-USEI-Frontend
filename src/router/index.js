@@ -17,7 +17,7 @@ import ContactoAdmin from '../views/ContactoAdmin.vue'
 import FormularioSoporte from '@/views/FormularioSoporte.vue'
 import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
-
+import subirCertificado from '@/views/subirCertificado.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -115,9 +115,9 @@ const router = createRouter({
       component: VerRespuestas, // Componente que muestra las respuestas
     },
     {
-      path: '/Subir-certificado',
-      name: 'SubirCertificado',
-      component: SubirCertificado
+      path: '/subir-certificado',
+      name: 'subir-certificado',
+      component: subirCertificado,
     },
   ],
   scrollBehavior(to, from, savedPosition) {
