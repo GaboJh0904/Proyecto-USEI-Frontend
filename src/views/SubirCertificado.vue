@@ -20,7 +20,7 @@
         </div>
   
            <!-- Contenedor de filtros, busqueda y ordenacion -->
-        <div class="filter-search-container">
+        <!-- <div class="filter-search-container">
           <input type="text"  placeholder="Buscar..." class="search-input" />
           
           <select  class="filter-select" >
@@ -29,7 +29,7 @@
   
             <option></option> 
           </select>
-        </div>
+        </div> -->
   
         <!-- Tabla de preguntas y respuestas -->
         <div class="table-container">
@@ -96,11 +96,11 @@
         <p>No se encontraron certificados registrados.</p>
       </div>
 
-        <PaginationComponent
+        <!-- <PaginationComponent
           :page-count="totalPages"
           :current-page="currentPage"
           @page-changed="handlePageClick"
-        />
+        /> -->
       </main>
       <FooterComponent />
     </div>
@@ -159,11 +159,21 @@
       const file = event.target.files[0];
       if (file && file.type === 'application/pdf') {
         this.selectedFile = file;
-        alert('Archivo PDF válido seleccionado'); 
+        // alert('Archivo PDF válido seleccionado'); 
+         Swal.fire({
+            icon: 'success',
+            title: 'Archivo PDF válido seleccionado',
+            confirmButtonText: 'Aceptar'
+            });    
         console.log('Archivo PDF válido seleccionado:', file); 
+        
       } else {
-        alert('Formato de archivo no válido. Solo se permiten archivos PDF.'); 
-        console.error('Formato de archivo no válido. Solo se permiten archivos PDF.');
+        Swal.fire({
+            icon: 'error',
+            title: 'Formato de archivo no válido. Solo se permiten archivos PDF.',
+            confirmButtonText: 'Aceptar'
+            });         
+            console.error('Formato de archivo no válido. Solo se permiten archivos PDF.');
         this.selectedFile = null;
       }
     },
@@ -176,7 +186,12 @@
           return;
         }
 
-        alert('Subiendo archivo PDF...'); 
+        // alert('Subiendo archivo PDF...'); 
+        // await Swal.fire({
+        //     icon: 'process',
+        //     title: 'Archivo subido exitosamente',
+        //     confirmButtonText: 'Aceptar'
+        //     }); 
         console.log('Subiendo archivo PDF:', this.selectedFile); 
 
         const formData = new FormData();
@@ -189,18 +204,32 @@
               'Content-Type': 'multipart/form-data'
             }
           });
-          alert('Archivo subido exitosamente'); 
+        //   alert('Archivo subido exitosamente'); 
+        await Swal.fire({
+            icon: 'success',
+            title: 'Archivo Cargado exitosamente',
+            confirmButtonText: 'Aceptar'
+            });    
           console.log('Respuesta del servidor:', response.data); 
           this.fetchCertificados(); // Actualizar la lista de certificados
           this.selectedFile = null;
           this.$refs.fileInput.value = ''; 
 
         } catch (error) {
-          alert('Error al subir el archivo'); 
-          console.error('Error al subir el archivo:', error);
+            await Swal.fire({
+            icon: 'error',
+            title: 'Error al cargar el archivo',
+            confirmButtonText: 'Aceptar'
+            });               
+            console.error('Error al subir el archivo:', error);
         }
       } else {
-        alert('No se ha seleccionado ningún archivo o el formato es incorrecto'); 
+        //alert('No se ha seleccionado ningún archivo o el formato es incorrecto'); 
+        await Swal.fire({
+            icon: 'warning',
+            title: 'No se ha seleccionado ningún archivo',
+            confirmButtonText: 'Aceptar'
+            });    
         console.error('No se ha seleccionado ningún archivo o el formato es incorrecto.');
       }
     },
@@ -213,7 +242,12 @@
         this.certificados = response.data;
         console.log('Certificados obtenidos:', this.certificados); 
       } catch (error) {
-        alert('Error al obtener los certificados');
+       // alert('Error al obtener los certificados');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error al obtener los certificados',
+            confirmButtonText: 'Aceptar'
+            });      
         console.error('Error al obtener los certificados:', error);
       }
     },
@@ -227,11 +261,20 @@
         await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
           estado: 'Archivado',
         });
-        alert('Certificado archivado exitosamente');
+        // alert('Certificado archivado exitosamente');
+        await Swal.fire({
+            icon: 'success',
+            title: 'Estado actualizado exitosamente',
+            confirmButtonText: 'Aceptar'
+            });      
         this.fetchCertificados();
       } catch (error) {
-        alert('Error al archivar el certificado');
-      }
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error al cambiar el estado de los certificados',
+            confirmButtonText: 'Aceptar'
+            });
+        }
     },
 
     async suspenderCertificado(certificado) {
@@ -239,10 +282,19 @@
         await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
           estado: 'Suspendido',
         });
-        alert('Certificado suspendido exitosamente');
-        this.fetchCertificados();
+        await Swal.fire({
+            icon: 'success',
+            title: 'Estado actualizado exitosamente',
+            confirmButtonText: 'Aceptar'
+            });        
+            this.fetchCertificados();
       } catch (error) {
-        alert('Error al suspender el certificado');
+        // alert('Error al suspender el certificado');
+        await Swal.fire({
+            icon: 'error',
+            title: 'Error al cambiar el estado de los certificados',
+            confirmButtonText: 'Aceptar'
+            });
       }
     },
     async verificarCambioAEnUso(certificado) {
@@ -265,10 +317,21 @@
               await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
                 estado: 'En uso',
               });
-              alert('El archivo se ha puesto en uso correctamente y el otro archivo fue suspendido.');
+            //   alert('El archivo se ha actualizo en uso correctamente y el anterior archivo fue suspendido.');
+            await Swal.fire({
+            icon: 'success',
+            title: 'El archivo se ha actualizo en uso correctamente y el anterior archivo fue suspendido.',
+            confirmButtonText: 'Aceptar'
+            });
+
               this.fetchCertificados();
             } catch (error) {
-              alert('Error al cambiar el estado de los certificados');
+            //   alert('Error al cambiar el estado de los certificados');
+            await Swal.fire({
+            icon: 'error',
+            title: 'Error al cambiar el estado de los certificados',
+            confirmButtonText: 'Aceptar'
+            });
             }
           }
         });
@@ -281,10 +344,20 @@
         await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
           estado: 'En uso',
         });
-        alert('Certificado activado exitosamente');
+        // alert('Certificado activado exitosamente');
+        await Swal.fire({
+            icon: 'success',
+            title: 'Estado actualizado exitosamente',
+            confirmButtonText: 'Aceptar'
+            });
         this.fetchCertificados();
       } catch (error) {
-        alert('Error al activar el certificado');
+        // alert('Error al activar el certificado');
+        await Swal.fire({
+            icon: 'error',
+            title: 'error al actualizar el estado ',
+            confirmButtonText: 'Aceptar'
+            });
       }
     },
   },
