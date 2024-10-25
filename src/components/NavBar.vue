@@ -286,7 +286,7 @@ export default {
     async markAsRead(notification, index) {
       if (!notification.read) { // Solo marcar como leída si no lo está
         try {
-          await axios.put(`http://localhost:8082/notificacion/${notification.id}/marcar-como-leida`);
+          await axios.put(`http://localhost:8082/notificacion/${notification.id}/lectura`);
           
           // Actualizar el estado de la notificación localmente
           this.notifications[index].read = true;

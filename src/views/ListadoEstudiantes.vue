@@ -175,7 +175,7 @@ export default {
         formData.append('file', this.file);
 
         try {
-          const response = await axios.post('http://localhost:8082/estudiante/upload-csv', formData, {
+          const response = await axios.post('http://localhost:8082/estudiante/csv-estudiantes', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
@@ -209,7 +209,7 @@ export default {
     },
 
     enviarInvitaciones() {
-      axios.post('http://localhost:8082/estudiante/enviarEnlace') 
+      axios.post('http://localhost:8082/estudiante/enlaceInvitacion') 
         .then(() => {
           Swal.fire('Éxito', 'Invitaciones enviadas correctamente', 'success');
         })

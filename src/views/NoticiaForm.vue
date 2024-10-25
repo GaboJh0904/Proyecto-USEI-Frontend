@@ -466,7 +466,7 @@ export default {
         return;
       }
       try {
-        await axios.put(`http://localhost:8082/noticia/archivar/${idNoticia}`);
+        await axios.put(`http://localhost:8082/noticia/archivado/${idNoticia}`);
         this.fetchNoticias();
         this.fetchNoticiasArchivadas();
 
@@ -493,7 +493,7 @@ export default {
         return;
       }
       try {
-        await axios.put(`http://localhost:8082/noticia/desarchivar/${idNoticia}`);
+        await axios.put(`http://localhost:8082/noticia/desarchivado/${idNoticia}`);
         this.fetchNoticias();
         this.fetchNoticiasArchivadas();
 

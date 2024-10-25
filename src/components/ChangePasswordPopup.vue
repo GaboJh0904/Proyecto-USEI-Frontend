@@ -70,7 +70,7 @@
           // Obtener el idEstudiante desde localStorage
           const idEstudiante = localStorage.getItem('idEstudianteCorreo');
           // Llamada al backend para cambiar la contraseña
-          await axios.put(`http://localhost:8082/estudiante/change-password?idEstudiante=${idEstudiante}`, {
+          await axios.put(`http://localhost:8082/estudiante/new-password?idEstudiante=${idEstudiante}`, {
             newPassword: this.newPassword
           });
 
