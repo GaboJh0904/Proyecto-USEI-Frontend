@@ -1,117 +1,3 @@
-<!-- <template>
-  <div>
-    <header>
-      <NavBar userRole="Admin" />
-    </header>
-
-    <main class="resume-container">
-      <h1 class="resume-title">Respuestas de la Encuesta</h1>
-
-      <div class="resume-form">
-        <p v-if="!respuestas.length">
-          No se encontraron respuestas para este estudiante.
-        </p>
-
-        <p v-else v-for="(respuesta, index) in respuestas" :key="index">
-          <strong>{{ getPreguntaTexto(respuesta.preguntaIdPregunta.idPregunta) }}:</strong> {{ respuesta.respuesta }}
-        </p>
-
-        <div class="pagination-controls">
-          <button @click="fetchRespuestas(currentPage - 1)" :disabled="currentPage === 0">Anterior</button>
-          <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-          <button @click="fetchRespuestas(currentPage + 1)" :disabled="currentPage + 1 === totalPages">Siguiente</button>
-        </div>
-
-        <div class="form-actions">
-          <button class="back-button" @click="goBackToMenu">Regresar al Menú</button>
-        </div>
-      </div>
-    </main>
-
-    <FooterComponent />
-  </div>
-</template> -->
-
-<!-- <script>
-import NavBar from '@/components/NavBar.vue';
-import FooterComponent from '@/components/FooterComponent.vue';
-import Swal from 'sweetalert2';  
-import axios from 'axios';
-
-export default {
-  name: 'VerRespuestas',
-  components: {
-    NavBar,
-    FooterComponent
-  },
-  data() {
-    return {
-      respuestas: [], 
-      preguntas: [],  
-      estudianteId: this.$route.params.idEstudiante, 
-      pageSize: 10, 
-      totalPages: 0 
-    };
-  },
-  mounted() {
-    this.fetchAllPreguntas();
-    this.fetchRespuestas(this.currentPage); 
-  },
-  methods: {
-    async fetchRespuestas(page) {
-      try {
-        if (page < 0 || (this.totalPages && page >= this.totalPages)) return;
-
-        this.currentPage = page;
-
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${this.estudianteId}`, {
-          params: {
-            page: this.currentPage,
-            pageSize: this.pageSize,
-            sortBy: 'IdRespuesta',
-            sortType: 'ASC'
-          }
-        });
-        console.log('Datos recibidos:', response.data); 
-
-        this.respuestas = response.data.content;
-        this.totalPages = response.data.totalPages;
-      } catch (error) {
-        console.error('Error al obtener las respuestas:', error);
-        Swal.fire('Error', 'Ocurrió un problema al cargar las respuestas.', 'error');
-      }
-    },
-
-    async fetchAllPreguntas() {
-      try {
-        const response = await axios.get('http://localhost:8082/pregunta', {
-          params: {
-            page: 0,
-            pageSize: 1000, // Un número suficientemente grande para cubrir todas las preguntas
-            sortBy: 'numPregunta',
-            sortType: 'ASC'
-          }
-        });
-
-        this.preguntas = response.data.content;
-      } catch (error) {
-        console.error('Error al obtener todas las preguntas:', error);
-        Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
-      }
-    },
-
-    getPreguntaTexto(idPregunta) {
-      const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
-      return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
-    },
-
-    goBackToMenu() {
-      this.$router.push('/menu-estudiante');
-    }
-  }
-};
-</script> -->
-
 <template>
   <div>
     <header>
@@ -135,7 +21,7 @@ export default {
 
         <div class="pagination-controls">
           <button @click="fetchRespuestas(currentPage - 1)" :disabled="currentPage === 0">Anterior</button>
-          <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+          <span class="pagination-info">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
           <button @click="fetchRespuestas(currentPage + 1)" :disabled="currentPage + 1 === totalPages">Siguiente</button>
         </div>
 
@@ -148,6 +34,7 @@ export default {
     <FooterComponent />
   </div>
 </template>
+
 
 <script>
 import NavBar from '@/components/NavBar.vue';
@@ -212,8 +99,6 @@ export default {
   }
 };
 </script>
-
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -229,63 +114,66 @@ header {
   top: 0;
   width: 100%;
   z-index: 1000;
+  background-color: #263D42; /* Fondo fijo para el header */
 }
 
 .resume-container {
-  padding-top: 80px;
+  padding-top: 100px; /* Ajuste para compensar el header fijo */
   min-height: 100vh;
-  background-color: #ffffff;
+  background-color: #f2f4f5;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  margin: 15px;
-}
-
-.resume-form {
-  background-color: #CBDADB;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 48rem;
+  margin: 0 auto;
+  width: 90%;
+  max-width: 800px;
 }
 
 .resume-title {
-  font-size: 25px;
-  font-weight: bold;
-  color: #000000;
-  text-align: left;
-  margin-bottom: 1.5rem;
+  font-size: 28px;
+  font-weight: 700;
+  color: #263D42;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.resume-form {
+  background-color: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  width: 100%;
 }
 
 .resume-form p {
   font-size: 1rem;
-  color: #000000;
-  margin-bottom: 1rem;
+  color: #495057;
+  margin-bottom: 1.2rem;
+  line-height: 1.5;
 }
 
 .resume-form strong {
-  font-weight: 500;
+  font-weight: 600;
   color: #263D42;
 }
 
 .form-actions {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
-  width: 100%;
+  justify-content: center;
+  margin-top: 1.5rem;
 }
 
 .back-button {
   background-color: #263D42;
   color: white;
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 15px;
+  border-radius: 30px;
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
 .back-button:hover {
@@ -295,22 +183,35 @@ header {
 .pagination-controls {
   display: flex;
   justify-content: center;
-  margin: 1rem 0;
+  align-items: center;
+  margin: 2rem 0 1rem;
 }
 
 .pagination-controls button {
   margin: 0 0.5rem;
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.5rem;
   background-color: #6c5b7b;
   color: white;
   border: none;
-  border-radius: 15px;
+  border-radius: 30px;
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.pagination-controls button:hover {
-  background-color: #664583;
+.pagination-controls button:disabled {
+  background-color: #ddd;
+  cursor: not-allowed;
+}
+
+.pagination-controls button:not(:disabled):hover {
+  background-color: #5a4864;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #495057;
+  margin: 0 0.5rem;
 }
 </style>
