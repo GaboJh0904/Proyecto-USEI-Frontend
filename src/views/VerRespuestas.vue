@@ -5,9 +5,10 @@
     </header>
 
     <main class="resume-container">
-      <h1 class="resume-title">Respuestas de la Encuesta</h1>
+    
 
       <div class="resume-form">
+        <h1 class="resume-title">Respuestas de la Encuesta</h1>
         <!-- Mostrar un mensaje si no hay respuestas -->
         <p v-if="respuestas.length === 0">
           No se encontraron respuestas para este estudiante.
@@ -115,10 +116,11 @@ header {
   width: 100%;
   z-index: 1000;
   background-color: #263D42;
+  padding: 15px 0px;
 }
 
 .resume-container {
-  padding-top: 100px; /* Ajuste para el header fijo */
+  padding: 110px 40px; /* Ajuste para el header fijo */
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;
@@ -136,10 +138,10 @@ header {
   color: #34495e;
   text-align: center;
   margin-bottom: 2rem;
-}
+} 
 
 .resume-form {
-  background-color: #f5f7f5;
+  background-color: #F0F5EF;
   padding: 2.5rem 3rem;
   border-radius: 16px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);

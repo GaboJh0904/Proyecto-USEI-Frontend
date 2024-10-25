@@ -123,7 +123,7 @@ export default {
   },
   methods: {
     validateTextInput(event, field) {
-      const value = event.target.value.replace(/[^a-zA-Z\s]/g, ''); // Solo letras y espacios
+      const value = event.target.value.replace(/[^a-zA-Z\s@.]/g, '');// Solo letras y espacios
       this.answers[field] = value;
     },
 
@@ -245,31 +245,8 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
-.warning-icon {
-  color: orange;
-  cursor: pointer;
-  font-size: 1.2em;
-}
-.input-warning-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; /* Espacio entre el ícono y el campo de entrada */
-}
-
-.form-group select,
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group input[type="tel"] {
-  flex: 1; /* Asegura que el campo ocupe el resto del espacio */
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
-  font-size: 1rem;
-}
 
 * {
   margin: 0;
@@ -283,34 +260,34 @@ header {
   top: 0;
   width: 100%;
   z-index: 1000;
+  background-color: #263D42;
+  padding: 15px 0px;
 }
 
 .survey-container {
-  padding-top: 80px;
+  padding: 110px 40px ; /* Ajuste para el header fijo */
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;
-  margin: 15px;
   justify-content: center;
   align-items: center;
 }
 
 .survey-form-container {
-  background-color: #CBDADB;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 48rem;
-  /* Ancho ajustado */
+  background-color: #F0F5EF;
+  padding: 2.5rem 3rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  max-width: 55rem;
   width: 100%;
 }
 
 .survey-title {
-  font-size: 25px;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
+  color: #34495e;
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #000000;
+  margin-bottom: 2rem;
 }
 
 .survey-form {
@@ -329,85 +306,97 @@ header {
 .form-group label {
   font-size: 15px;
   font-weight: 500;
-  color: #000000
+  color: #2c3e50;
 }
 
 .form-group select,
-.form-group input[type="text"]{
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="tel"] {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
+  padding: 10px 15px;
+  border: 1px solid #bdc3c7;
+  border-radius: 12px;
   font-size: 1rem;
-}
-.form-group input[type="number"]{
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
-  font-size: 1rem;
-}
-.form-group input[type="tel"]{
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
-  font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
-.radio-group {
+.form-group select:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="tel"]:focus {
+  border-color: #6c5b7b;
+  outline: none;
+}
+
+.warning-icon {
+  color: #f39c12;
+  cursor: pointer;
+  font-size: 1.2em;
+  transition: transform 0.3s;
+}
+
+.warning-icon:hover {
+  transform: scale(1.1);
+}
+
+.input-warning-container {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* Espacio entre el ícono y el campo de entrada */
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+}
+
+.checkbox-group label {
+  font-size: 0.9rem;
+  color: #34495e;
 }
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
+  justify-content: space-between;
+  margin-top: 2rem;
 }
 
-.submit-button {
-  background-color: #263D42;
-  color: white;
-  padding: 0.5rem 1rem;
+.submit-button,
+.volver-button {
+  padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 15px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-}
-
-
-.submit-button:hover {
-  background-color: #263D42;
+  transition: background-color 0.3s, transform 0.3s;
 }
 
 .volver-button {
   background-color: #6c5b7b;
   color: white;
-  padding: 0.5rem 1rem;
-  margin-right: 50px;
-  border: none;
-  border-radius: 15px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
 }
 
 .volver-button:hover {
-  background-color: #6c5b7b;
-}
-.submit-button:disabled {
-  background-color: #bfbdbd; 
-  color: #645e5e; 
-  cursor: not-allowed; 
+  background-color: #574e6d;
+  transform: translateY(-2px);
 }
 
-.submit-button:enabled {
+.submit-button {
   background-color: #263D42;
   color: white;
-
 }
 
+.submit-button:enabled:hover {
+  background-color: #1e2f34;
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  background-color: #bdc3c7;
+  color: #7f8c8d;
+  cursor: not-allowed;
+}
 </style>

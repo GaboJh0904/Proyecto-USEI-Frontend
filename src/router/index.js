@@ -50,17 +50,17 @@ const router = createRouter({
       component: EncuestaEstudiante
     },
     {
-      path: '/resume', // Ruta ResumePage
+      path: '/resumen', 
       name: 'ResumePage',
       component: ResumePage
     },
     {
-      path: '/gestion-directores', // Ruta ResumePage
+      path: '/gestion-directores', 
       name: 'GestionDirectores',
       component: GestionDirectores
     },
     {
-      path: '/enviar-encuesta', // Ruta ResumePage
+      path: '/enviar-encuesta', 
       name: 'EnviarEncuesta',
       component: EnviarEncuesta
     },
