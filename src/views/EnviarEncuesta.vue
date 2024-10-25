@@ -5,7 +5,7 @@
     </header>
     <main class="student-list-container">
       <h1 class="student-list-title">Estudiantes que Completaron la Encuesta</h1>
-       <div class="filters-container">
+       <!--<div class="filters-container">
         <input
           type="text"
           v-model="searchQuery"
@@ -17,7 +17,7 @@
           <option value="Pendiente">Pendiente</option>
           <option value="Enviado">Enviado</option>
         </select>
-      </div>
+      </div>-->
       
       <div class="student-table-container">
         <h2>Lista de Estudiantes</h2>
@@ -141,7 +141,7 @@ export default {
 
     try {
       // Enviar certificado
-      const response = await axios.post('http://localhost:8082/certificado/enviar', null, {
+      const response = await axios.post('http://localhost:8082/certificado/remision', null, {
         params: {
           idEstudiante: idEstudiante
         }
