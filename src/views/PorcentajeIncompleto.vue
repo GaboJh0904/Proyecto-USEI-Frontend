@@ -25,7 +25,7 @@
         <div class="table-section">
           <div class="table-controls">
             <input v-model="searchTerm" class="search-input" placeholder="Buscar por nombre..." />
-            <select v-model="filterYear" class="filter-select" @change="filterByYear">
+            <select v-model="filterYear" class="filter-select">
               <option value="">Filtrar por año</option>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
@@ -55,8 +55,26 @@
           </table>
         </div>
   
-        <!-- Botón para cambiar a la página de parámetros -->
-        <button class="settings-btn" @click="goToSettings">Modificar Parámetros de Porcentaje</button>
+        <!-- Botón para abrir la ventana modal -->
+        <button class="settings-btn" @click="showModal = true">Modificar Parámetros de Porcentaje</button>
+      </div>
+  
+      <!-- Ventana Modal -->
+      <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+        <div class="modal-content">
+          <h2>Modificar Parámetros</h2>
+          
+          <label for="minPercentage">Porcentaje Mínimo para Notificación:</label>
+          <input type="number" v-model="minPercentage" id="minPercentage" min="0" max="100" />
+  
+          <label for="defaultMessage">Mensaje Predeterminado:</label>
+          <textarea v-model="defaultMessage" id="defaultMessage" placeholder="Mensaje predeterminado para los estudiantes..."></textarea>
+  
+          <div class="modal-buttons">
+            <button @click="saveSettings" class="save-btn">Guardar</button>
+            <button @click="closeModal" class="cancel-btn">Cancelar</button>
+          </div>
+        </div>
       </div>
   
       <FooterComponent />
@@ -77,6 +95,9 @@
     },
     data() {
       return {
+        showModal: false,
+        minPercentage: 70, // Valor predeterminado
+        defaultMessage: "Por favor complete la encuesta.",
         surveyData: { completed: 70, notCompleted: 30 },
         customMessage: '',
         lastSentDate: '2024-10-30',
@@ -107,8 +128,14 @@
       sendEmail(id) {
         alert(`Enviando correo al estudiante con ID: ${id}`);
       },
-      goToSettings() {
-        this.$router.push('/settings');
+      closeModal() {
+        this.showModal = false;
+      },
+      saveSettings() {
+        alert(`Configuración guardada: 
+        Porcentaje mínimo: ${this.minPercentage}%, 
+        Mensaje predeterminado: ${this.defaultMessage}`);
+        this.closeModal();
       },
       renderChart() {
         const ctx = document.getElementById('surveyChart').getContext('2d');
@@ -133,6 +160,7 @@
   </script>
   
   <style scoped>
+  /* Estilos generales */
   .survey-page {
     padding: 30px;
     max-width: 900px;
@@ -149,13 +177,8 @@
     margin-bottom: 20px;
   }
   
-  .chart-section {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  .send-all-btn {
+  /* Botones */
+  .send-all-btn, .settings-btn {
     margin: 15px 0;
     padding: 12px 20px;
     background-color: #007BFF;
@@ -167,102 +190,181 @@
     transition: background-color 0.3s ease;
   }
   
-  .send-all-btn:hover {
+  .send-all-btn:hover, .settings-btn:hover {
     background-color: #0056b3;
   }
-  
+
   .message-input {
+  width: 100%;
+  height: 80px;
+  padding: 10px;
+  margin: 15px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  resize: none;
+  font-size: 1em;
+  color: #555;
+}
+
+.last-sent {
+  font-style: italic;
+  color: #666;
+}
+
+.table-section {
+  margin-top: 20px;
+}
+
+.table-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.search-input,
+.filter-select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 1em;
+  color: #333;
+  width: 45%;
+}
+
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-table th,
+.student-table td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd;
+  color: #555;
+}
+
+.student-table th {
+  background-color: #007BFF;
+  color: #fff;
+  font-weight: bold;
+}
+
+.student-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-btn:hover {
+  background-color: #218838;
+}
+
+.settings-btn {
+  margin-top: 20px;
+  padding: 12px 20px;
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  display: block;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.settings-btn:hover {
+  background-color: #5a6268;
+}
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 80px;
-    padding: 10px;
-    margin: 15px 0;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    resize: none;
-    font-size: 1em;
-    color: #555;
-  }
-  
-  .last-sent {
-    font-style: italic;
-    color: #666;
-  }
-  
-  .table-section {
-    margin-top: 20px;
-  }
-  
-  .table-controls {
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    justify-content: center;
+    z-index: 1000;
   }
   
-  .search-input,
-  .filter-select {
-    padding: 8px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-    font-size: 1em;
+  .modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .modal-content h2 {
+    margin-top: 0;
     color: #333;
-    width: 45%;
   }
   
-  .student-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .student-table th,
-  .student-table td {
-    padding: 12px;
-    text-align: left;
-    border: 1px solid #ddd;
+  .modal-content label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
     color: #555;
   }
   
-  .student-table th {
-    background-color: #007BFF;
-    color: #fff;
-    font-weight: bold;
+  .modal-content input[type="number"],
+  .modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1em;
   }
   
-  .student-table tr:nth-child(even) {
-    background-color: #f2f2f2;
+  .modal-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
   }
   
-  .action-btn {
-    padding: 6px 12px;
+  .save-btn {
     background-color: #28a745;
     color: #fff;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
   
-  .action-btn:hover {
+  .save-btn:hover {
     background-color: #218838;
   }
   
-  .settings-btn {
-    margin-top: 20px;
-    padding: 12px 20px;
+  .cancel-btn {
     background-color: #6c757d;
     color: #fff;
+    padding: 10px 15px;
     border: none;
     border-radius: 5px;
-    font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    display: block;
-    width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
   }
   
-  .settings-btn:hover {
+  .cancel-btn:hover {
     background-color: #5a6268;
   }
   </style>
