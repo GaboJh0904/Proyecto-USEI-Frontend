@@ -13,7 +13,7 @@
           <input type="password" id="password" v-model="loginRequest.contrasena" required>
         </div>
         <div class="form-group">
-          <a href="#" @click.prevent="forgotPassword">Olvidé mi contraseña</a>
+          <a href="#" @click.prevent="$emit('switch-to-code-verification')">Olvidé mi contraseña</a>
         </div>
         <button type="submit" class="submit-btn">Ingresar</button>
       </form>
@@ -45,35 +45,45 @@ export default {
         const response = await axios.post('http://localhost:8082/usuario/login', this.loginRequest);
         const userData = response.data.result;
 
-        // Guardar los datos de la respuesta en el localStorage
-        localStorage.setItem('correo', userData.correo);
-        localStorage.setItem('usuario', userData.usuario);
-        localStorage.setItem('nombre', userData.nombre);
-        localStorage.setItem('rol', userData.rol);
+        // Verifica si el inicio de sesión fue exitoso
+        if (response.data.status === '200 OK') {
+          // Guardar los datos del usuario, incluyendo el id_usuario en el localStorage
+          const usuarioId = userData.id_usuario;  // Suponiendo que el backend devuelve el id_usuario
 
-        // Mostrar un mensaje de éxito con SweetAlert
-        Swal.fire({
-          icon: 'success',
-          title: 'Inicio de sesión correcto',
-          text: `Bienvenido ${userData.nombre}`,
-          confirmButtonText: 'Continuar'
-        }).then(() => {
-          // Redirigir según el rol obtenido
-          if (userData.rol === 'Administrador') {
-            this.$router.push({ name: 'menuAdministrador' });
-          } else if (userData.rol === 'Director') {
-            this.$router.push({ name: 'menuDirector' });
-          } else {
-            this.message = 'Rol no reconocido';
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: this.message,
-              confirmButtonText: 'Aceptar'
-            });
-          }
-        });
+          // Almacenar el ID y otros datos en el localStorage
+          localStorage.setItem('id_usuario', usuarioId);
+          localStorage.setItem('correo', userData.correo);
+          localStorage.setItem('usuario', userData.usuario);
+          localStorage.setItem('nombre', userData.nombre);
+          localStorage.setItem('rol', userData.rol);
+
+          console.log('Inicio de sesión correcto. ID del usuario:', usuarioId);
+
+          // Mostrar un mensaje de éxito con SweetAlert
+          Swal.fire({
+            icon: 'success',
+            title: 'Inicio de sesión correcto',
+            text: `Bienvenido/a ${userData.nombre}`,
+            confirmButtonText: 'Continuar'
+          }).then(() => {
+            // Redirigir según el rol obtenido
+            if (userData.rol === 'Administrador') {
+              this.$router.push({ name: 'menuAdministrador' });
+            } else if (userData.rol === 'Director') {
+              this.$router.push({ name: 'menuDirector' });
+            } else {
+              this.message = 'Rol no reconocido';
+              Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: this.message,
+                confirmButtonText: 'Aceptar'
+              });
+            }
+          });
+        }
       } catch (error) {
+        // Manejar respuesta no exitosa
         if (error.response && error.response.data && error.response.data.error) {
           this.message = error.response.data.error; // Mensaje de error del backend
         } else {

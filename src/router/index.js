@@ -11,6 +11,13 @@ import EnProgreso from '@/views/EnProgreso.vue'
 import EditarEncuesta from '../views/EditarEncuesta.vue'
 import ListadoEstudiantes from '../views/ListadoEstudiantes.vue'
 import GestionOpcionesPregunta from '../views/GestionOpcionesPregunta.vue'
+import NoticiaForm from '@/views/NoticiaForm.vue'
+import GestionEncuestas from '@/views/GestionEncuestas.vue'
+import ContactoAdmin from '../views/ContactoAdmin.vue'
+import FormularioSoporte from '@/views/FormularioSoporte.vue'
+import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
+import VerRespuestas from '../views/VerRespuestas.vue'
+import subirCertificado from '@/views/subirCertificado.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -43,17 +50,17 @@ const router = createRouter({
       component: EncuestaEstudiante
     },
     {
-      path: '/resume', // Ruta ResumePage
+      path: '/resumen', 
       name: 'ResumePage',
       component: ResumePage
     },
     {
-      path: '/gestion-directores', // Ruta ResumePage
+      path: '/gestion-directores', 
       name: 'GestionDirectores',
       component: GestionDirectores
     },
     {
-      path: '/enviar-encuesta', // Ruta ResumePage
+      path: '/enviar-encuesta', 
       name: 'EnviarEncuesta',
       component: EnviarEncuesta
     },
@@ -63,7 +70,7 @@ const router = createRouter({
       component: EnProgreso
     },
     {
-      path: '/editar-encuesta', // Nueva ruta
+      path: '/editar-encuesta/:idEncuesta/preguntas', // Nueva ruta
       name: 'EditarEncuesta',
       component: EditarEncuesta
     },
@@ -76,15 +83,47 @@ const router = createRouter({
       path: '/preguntas/:idPregunta/opciones',
       name: 'GestionOpcionesPregunta',
       component: GestionOpcionesPregunta
-    }
+    },
+    {
+      path: '/noticia-form',
+      name: 'NoticiaForm',
+      component: NoticiaForm
+    },
+    {
+      path: '/gestion-encuestas/:idUsuario',
+      name: 'GestionEncuestas',
+      component: GestionEncuestas
+    },
+    {
+      path: '/contacto-admin',
+      name: 'ContactoAdmin',
+      component: ContactoAdmin
+    },
+    {
+      path: '/formulario-soporte',
+      name: 'FormularioSoporte',
+      component: FormularioSoporte
+    },
+    {
+      path: '/respuestas-estudiante/:idEstudiante',
+      name: 'RespuestasEstudiante',
+      component: RespuestasEstudiante
+    },
+    {
+      path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
+      name: 'VerRespuestas',
+      component: VerRespuestas, // Componente que muestra las respuestas
+    },
+    {
+      path: '/subir-certificado',
+      name: 'subir-certificado',
+      component: subirCertificado,
+    },
   ],
-  // Aquí es donde agregamos el comportamiento de desplazamiento
   scrollBehavior(to, from, savedPosition) {
-    // Si la posición guardada existe (por ejemplo, al hacer clic en "atrás")
     if (savedPosition) {
       return savedPosition;
     } else {
-      // Si no hay posición guardada, desplazarse hacia la parte superior
       return { top: 0 };
     }
   },

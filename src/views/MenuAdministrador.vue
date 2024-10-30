@@ -37,7 +37,7 @@
           </div>
           <h3>CERTIFICADOS</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToEnviarEnc">Ingresar</button>
           </div>
         </div>
         <!-- Card 2 -->
@@ -70,7 +70,7 @@
           </div>
           <h3>EDITAR CERTIFICADO</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToSubirCertificado">Ingresar</button>
           </div>
         </div>
         <!-- Card 5 -->
@@ -123,10 +123,20 @@
           </div>
           <h3>SOPORTE/AYUDA</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToFormularioSoporte">Ingresar</button>
           </div>
         </div>
       </div>
+      <!-- Card 10 -->
+      <div class="card-wrapper">
+          <div class="card">
+            <img src="@/components/images/noticias.png" alt="Soporte" class="card-icon" />
+          </div>
+          <h3>NOTICIAS/ANUNCIOS</h3>
+          <div class="card-button-container">
+            <button class="btn-ingresar" @click="goToNoticiaForm">Ingresar</button>
+          </div>
+        </div>
     </section>
   
       <!-- Footer Section -->
@@ -145,6 +155,23 @@
       ImageCarousel,
       FooterComponent  
     },
+    data() {
+    return {
+      usuarioId: null, 
+    };
+  },
+  mounted() {
+    const storedUsuarioId = localStorage.getItem('id_usuario');
+
+    if (storedUsuarioId) {
+      this.usuarioId = storedUsuarioId;
+      console.log('ID del usuario encontrado en localStorage:', this.usuarioId);  // <-- Depuración
+
+    } else {
+      console.error('No se encontró el ID del usuario en el localStorage.');
+
+    }
+  },
     methods: {
       goToDirectores() {
         this.$router.push('/gestion-directores');
@@ -159,8 +186,19 @@
       this.$router.push('/enviar-encuesta');
     },
     goToEditarEncuesta() {
-      this.$router.push('/editar-encuesta');
+      // Redirigir a la página de gestión de encuestas pasando el id_usuario como parámetro
+      this.$router.push({ name: 'GestionEncuestas', params: { idUsuario: this.usuarioId } });
     },
+    goToNoticiaForm() {
+      this.$router.push('/noticia-form');
+    },
+    goToFormularioSoporte() {
+      this.$router.push('/formulario-soporte');
+    },
+    goToSubirCertificado() {
+      this.$router.push('/subir-certificado');
+    },
+
   },
   };
   </script>

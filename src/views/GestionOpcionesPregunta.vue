@@ -1,164 +1,171 @@
 <template>
-    <div>
-      <header>
-        <NavBar userRole="Admin" />
-      </header>
-  
-      <main class="option-container">
-        <h1 class="option-title">Gestión de Opciones para la Pregunta</h1>
-  
-        <div class="option-form">
-          <h2>Añadir Nueva Opción</h2>
+  <div>
+    <header>
+      <NavBar userRole="Admin" />
+    </header>
+
+    <main class="option-container">
+      <h1 class="option-title">Gestión de Opciones para la Pregunta</h1>
+
+      <div class="option-form">
+        <h2>Añadir Nueva Opción</h2>
+        
+        <form @submit.prevent="submitOption">
+          <div class="form-group">
+            <label for="opcion">Opción:</label>
+            <input v-model="option.opcion" type="text" id="opcion" required />
+          </div>
           
-          <form @submit.prevent="submitOption">
-            <div class="form-group">
-              <label for="opcion">Opción:</label>
-              <input v-model="option.opcion" type="text" id="opcion" required />
-            </div>
-            
-            <div class="form-actions">
-              <button class="submit-button" type="submit">Agregar Opción</button>
-              <button class="cancel-button" type="button" @click="cancel">Cancelar</button>
-            </div>
-          </form>
-        </div>
-  
-        <div class="option-list">
-          <h2>Opciones Existentes</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Opción</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="option in options" :key="option.idOpciones">
-                <td>{{ option.opcion }}</td>
-                <td class="action-column">
-                  <button @click="editOption(option)" class="edit-button">Editar</button>
-                 <!--<button @click="deleteOption(option.idOpciones)" class="delete-button">Eliminar</button>-->
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </main>
-  
-      <FooterComponent />
-    </div>
-  </template>
-  
-  <script>
-  import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
-  import Swal from 'sweetalert2'; // Importamos SweetAlert para las alertas
-  import NavBar from '@/components/NavBar.vue';
-  import FooterComponent from '@/components/FooterComponent.vue';
-  
-  export default {
-    name: 'GestionOpcionesPregunta',
-    components: {
-      NavBar,
-      FooterComponent
-    },
-    data() {
-      return {
-        options: [], // Lista de opciones para una pregunta específica
-        option: {
-          opcion: '',
-          preguntaIdPregunta: { idPregunta: this.$route.params.idPregunta } // ID de la pregunta desde los parámetros de la ruta
-        },
-        isUpdating: false
-      };
-    },
-    mounted() {
-      // Cargar todas las opciones al montar el componente
-      this.fetchOptions();
-    },
-    methods: {
-      // Método para obtener todas las opciones de una pregunta por su ID
-      async fetchOptions() {
-        try {
-          const response = await axios.get(`http://localhost:8082/opciones_pregunta/pregunta/${this.$route.params.idPregunta}`);
-          console.log('Opciones recibidas:', response.data); 
-          this.options = [...response.data]; // Reasigna el array para asegurar la reactividad
-        } catch (error) {
-          console.error('Esta pregunta no tiene opciones:', error);
-          Swal.fire('Error', 'Esta pregunta no tiene opciones.', 'error');
-        }
+          <div class="form-actions">
+            <button class="submit-button" type="submit">Agregar Opción</button>
+            <button class="cancel-button" type="button" @click="cancel">Cancelar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="option-list">
+        <h2>Opciones Existentes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Opción</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="option in options" :key="option.idOpciones">
+              <td>{{ option.opcion }}</td>
+              <td class="action-column">
+                <button @click="editOption(option)" class="edit-button">Editar</button>
+                <button @click="confirmDeleteOption(option.idOpciones)" class="delete-button">Eliminar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+
+    <FooterComponent />
+  </div>
+</template>
+<script>
+import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
+import Swal from 'sweetalert2'; // Importamos SweetAlert para las alertas
+import NavBar from '@/components/NavBar.vue';
+import FooterComponent from '@/components/FooterComponent.vue';
+
+export default {
+  name: 'GestionOpcionesPregunta',
+  components: {
+    NavBar,
+    FooterComponent
+  },
+  data() {
+    return {
+      options: [], // Lista de opciones para una pregunta específica
+      option: {
+        opcion: '',
+        preguntaIdPregunta: { idPregunta: this.$route.params.idPregunta } // ID de la pregunta desde los parámetros de la ruta
       },
-
-      // Método para crear o actualizar una opción
-      async submitOption() {
-        // Validación de campo vacío
-        if (!this.option.opcion) {
-          Swal.fire('Advertencia', 'El campo de opción no puede estar vacío.', 'warning');
-          return;
-        }
-
-        try {
-          if (this.isUpdating) {
-            // Actualizar opción existente
-            await axios.put(`http://localhost:8082/opciones_pregunta/${this.option.idOpciones}`, this.option);
-            Swal.fire('Actualizado', 'La opción ha sido actualizada exitosamente.', 'success');
-          } else {
-            // Crear nueva opción
-            await axios.post('http://localhost:8082/opciones_pregunta', this.option);
-            Swal.fire('Agregado', 'La nueva opción ha sido agregada exitosamente.', 'success');
-          }
-          this.resetForm(); // Limpiar el formulario después de enviar
-          this.fetchOptions(); // Refrescar la lista de opciones
-        } catch (error) {
-          console.error('Error al enviar la opción:', error);
-          Swal.fire('Error', 'Ocurrió un problema al registrar la opción.', 'error');
-        }
-      },
-
-      /* Método para eliminar una opción por su ID
-      async deleteOption(optionId) {
-        Swal.fire({
-          title: '¿Estás seguro?',
-          text: '¡No podrás revertir esta acción!',
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonText: 'Sí, eliminar',
-          cancelButtonText: 'Cancelar'
-        }).then(async (result) => {
-          if (result.isConfirmed) {
-            try {
-              await axios.delete(`http://localhost:8082/opciones_pregunta/${optionId}`);
-              this.fetchOptions(); // Refrescar la lista de opciones
-              Swal.fire('Eliminado', 'La opción ha sido eliminada exitosamente.', 'success');
-            } catch (error) {
-              console.error('Error al eliminar la opción:', error);
-              Swal.fire('Error', 'No se pudo eliminar la opción.', 'error');
-            }
-          }
-        });
-      },*/
-
-      // Método para preparar la edición de una opción
-      editOption(option) {
-        this.option = { ...option };
-        this.isUpdating = true;
-      },
-
-      // Método para resetear el formulario de opciones
-      resetForm() {
-        // Restablecer el formulario a su estado inicial
-        this.option = {
-          opcion: '',
-          preguntaIdPregunta: { idPregunta: this.$route.params.idPregunta }
-        };
-        this.isUpdating = false;
-      },
-      cancel() {
-        // Redirigir a la vista de "Editar Encuesta"
-        this.$router.push({ name: 'EditarEncuesta' });
+      isUpdating: false
+    };
+  },
+  mounted() {
+    // Cargar todas las opciones al montar el componente
+    this.fetchOptions();
+  },
+  methods: {
+    // Método para obtener todas las opciones de una pregunta por su ID
+    async fetchOptions() {
+      try {
+        const response = await axios.get(`http://localhost:8082/opciones_pregunta/pregunta/${this.$route.params.idPregunta}`);
+        console.log('Opciones recibidas:', response.data); 
+        this.options = [...response.data]; // Reasigna el array para asegurar la reactividad
+      } catch (error) {
+        console.error('Esta pregunta no tiene opciones:', error);
+        Swal.fire('Error', 'Esta pregunta no tiene opciones.', 'error');
       }
+    },
+
+    // Método para crear o actualizar una opción
+    async submitOption() {
+      // Validación de campo vacío
+      if (!this.option.opcion) {
+        Swal.fire('Advertencia', 'El campo de opción no puede estar vacío.', 'warning');
+        return;
+      }
+
+      try {
+        if (this.isUpdating) {
+          // Actualizar opción existente
+          await axios.put(`http://localhost:8082/opciones_pregunta/${this.option.idOpciones}`, this.option);
+          Swal.fire('Actualizado', 'La opción ha sido actualizada exitosamente.', 'success');
+        } else {
+          // Crear nueva opción
+          await axios.post('http://localhost:8082/opciones_pregunta', this.option);
+          Swal.fire('Agregado', 'La nueva opción ha sido agregada exitosamente.', 'success');
+        }
+        this.resetForm(); // Limpiar el formulario después de enviar
+        this.fetchOptions(); // Refrescar la lista de opciones
+      } catch (error) {
+        console.error('Error al enviar la opción:', error);
+        Swal.fire('Error', 'Ocurrió un problema al registrar la opción.', 'error');
+      }
+    },
+
+    // Método para confirmar la eliminación de una opción
+    async confirmDeleteOption(optionId) {
+      const result = await Swal.fire({
+        title: '¿Estás seguro?',
+        text: "No podrás revertir esta acción.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
+        this.deleteOption(optionId);
+      }
+    },
+
+    // Método para eliminar una opción por su ID
+    async deleteOption(optionId) {
+      try {
+        await axios.delete(`http://localhost:8082/opciones_pregunta/${optionId}`);
+        Swal.fire('Eliminado', 'La opción ha sido eliminada exitosamente.', 'success');
+        this.fetchOptions(); // Refrescar la lista de opciones después de eliminar
+      } catch (error) {
+        console.error('Error al eliminar la opción:', error);
+        Swal.fire('Error', 'No se pudo eliminar la opción.', 'error');
+      }
+    },
+
+    // Método para preparar la edición de una opción
+    editOption(option) {
+      this.option = { ...option };
+      this.isUpdating = true;
+    },
+
+    // Método para resetear el formulario de opciones
+    resetForm() {
+      // Restablecer el formulario a su estado inicial
+      this.option = {
+        opcion: '',
+        preguntaIdPregunta: { idPregunta: this.$route.params.idPregunta }
+      };
+      this.isUpdating = false;
+    },
+    
+    cancel() {
+      // Redirigir a la vista de "Editar Encuesta"
+      this.$router.push({ name: 'EditarEncuesta' });
     }
-  };
-  </script>
+  }
+};
+</script>
 
   <style scoped>
   /* Estilos del componente */
@@ -303,6 +310,19 @@
 }
 .cancel-button:hover {
   background-color: #1F2E34;
+}
+
+.delete-button {
+  background-color: #d9534f;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  margin-left: 15px;
+  border-radius: 15px;
+  cursor: pointer;
+}
+.delete-button:hover {
+  background-color: #c9302c;
 }
 
   </style>

@@ -13,10 +13,16 @@
           <!-- Dinámicamente renderizar preguntas -->
           <div v-for="(question, index) in questions" :key="question.idPregunta" class="form-group">
             <label :for="'question-' + index">{{ question.pregunta }}</label>
-
+            <div class="input-warning-container">
+              <span v-if="!isAnswered(question.idPregunta)" class="warning-icon" @click="showWarning(question.pregunta)">
+                <i class="fas fa-exclamation-circle"></i>
+              </span>
             <!-- Tipos de Pregunta -->
             <template v-if="question.tipoPregunta === 'Seleccion'">
-              <select :id="'question-' + index" v-model="answers[question.idPregunta]" :disabled="false">
+              <select :id="'question-' + index" 
+              v-model="answers[question.idPregunta]" 
+              :disabled="isFieldDisabled(index)"
+              >
                 <option v-for="option in question.opciones" :key="option.idOpciones" :value="option.opcion">
                   {{ option.opcion }}
                 </option>
@@ -28,7 +34,18 @@
                 :id="'question-' + index"
                 type="text"
                 v-model="answers[question.idPregunta]"
-                :disabled="false"
+                @input="validateTextInput($event, question.idPregunta)"
+                :disabled="isFieldDisabled(index)"
+                />
+            </template>
+
+            <template v-else-if="question.tipoPregunta === 'Numerico'">
+              <input
+              :id="'question-' + index"
+              type="text"
+              v-model="answers[question.idPregunta]"
+              @input="validatePhoneInput($event, question.idPregunta)"
+              :disabled="isFieldDisabled(index)"
               />
             </template>
 
@@ -39,10 +56,12 @@
                   :id="'option-' + option.idOpciones"
                   :value="option.opcion"
                   v-model="answers[question.idPregunta]"
-                />
+                  :disabled="isFieldDisabled(index)"
+                  />
                 <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
               </div>
             </template>
+            </div>
           </div>
 
           <div class="form-actions">
@@ -103,10 +122,58 @@ export default {
     }
   },
   methods: {
+    validateTextInput(event, field) {
+      const value = event.target.value.replace(/[^a-zA-Z\s@.]/g, '');// Solo letras y espacios
+      this.answers[field] = value;
+    },
+
+    validatePhoneInput(event, field) {
+      const value = event.target.value.replace(/\D/g, ''); // Solo números
+      this.answers[field] = value;
+    },
+
+    isFieldDisabled(index) {
+      // La primera pregunta habilitada
+      if (index === 0) {
+        return false;
+      }
+      
+      // Revisar si todas las preguntas anteriores han sido respondidas
+      for (let i = 0; i < index; i++) {
+        const questionId = this.questions[i].idPregunta;
+        const answer = this.answers[questionId];
+
+        // Si alguna pregunta anterior no es respondida, deshabilitar el campo
+        if (answer === '' || answer === undefined) {
+          return true;
+        }
+      }
+      
+      return false;
+  },
+
+    isAnswered(questionId) {
+      const answer = this.answers[questionId];
+      return answer !== '' && answer !== undefined;
+    },
+
+    showWarning(questionText) {
+      // Mostrar mensaje de advertencia de icono
+      Swal.fire({
+        icon: 'warning',
+        title: 'Campo incompleto',
+        text: `Por favor, complete la pregunta: "${questionText}", para continuar con la siguiente pregunta`,
+        confirmButtonText: 'Aceptar',
+      });
+    },
+
     async fetchQuestions() {
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
-        const questions = response.data;
+        let questions = response.data;
+
+        // Filtrar solo preguntas con estado ACTIVO
+        questions = questions.filter(question => question.estado === 'ACTIVO');
 
         // Para cada pregunta, obtener sus opciones (si aplica)
         for (let question of questions) {
@@ -178,17 +245,8 @@ export default {
   }
 };
 </script>
-
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-
-.warning-icon {
-  color: orange;
-  cursor: pointer;
-  margin-left: 10px;
-  font-size: 1.2em;
-}
 
 * {
   margin: 0;
@@ -202,34 +260,34 @@ header {
   top: 0;
   width: 100%;
   z-index: 1000;
+  background-color: #263D42;
+  padding: 15px 0px;
 }
 
 .survey-container {
-  padding-top: 80px;
+  padding: 110px 40px ; /* Ajuste para el header fijo */
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;
-  margin: 15px;
   justify-content: center;
   align-items: center;
 }
 
 .survey-form-container {
-  background-color: #CBDADB;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  max-width: 48rem;
-  /* Ancho ajustado */
+  background-color: #F0F5EF;
+  padding: 2.5rem 3rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  max-width: 55rem;
   width: 100%;
 }
 
 .survey-title {
-  font-size: 25px;
-  font-weight: bold;
+  font-size: 32px;
+  font-weight: 700;
+  color: #34495e;
   text-align: center;
-  margin-bottom: 1.5rem;
-  color: #000000;
+  margin-bottom: 2rem;
 }
 
 .survey-form {
@@ -248,84 +306,97 @@ header {
 .form-group label {
   font-size: 15px;
   font-weight: 500;
-  color: #000000
+  color: #2c3e50;
 }
 
 .form-group select,
-.form-group input[type="text"]{
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="tel"] {
   width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
+  padding: 10px 15px;
+  border: 1px solid #bdc3c7;
+  border-radius: 12px;
   font-size: 1rem;
-}
-.form-group input[type="number"]{
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
-  font-size: 1rem;
-}
-.form-group input[type="tel"]{
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #929292;
-  border-radius: 15px;
-  font-size: 1rem;
+  transition: border-color 0.3s;
 }
 
-.radio-group {
+.form-group select:focus,
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group input[type="tel"]:focus {
+  border-color: #6c5b7b;
+  outline: none;
+}
+
+.warning-icon {
+  color: #f39c12;
+  cursor: pointer;
+  font-size: 1.2em;
+  transition: transform 0.3s;
+}
+
+.warning-icon:hover {
+  transform: scale(1.1);
+}
+
+.input-warning-container {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 10px; /* Espacio entre el ícono y el campo de entrada */
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
   gap: 0.5rem;
+}
+
+.checkbox-group label {
+  font-size: 0.9rem;
+  color: #34495e;
 }
 
 .form-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 1rem;
+  justify-content: space-between;
+  margin-top: 2rem;
 }
 
-.submit-button {
-  background-color: #263D42;
-  color: white;
-  padding: 0.5rem 1rem;
+.submit-button,
+.volver-button {
+  padding: 0.75rem 1.5rem;
   border: none;
-  border-radius: 15px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-}
-
-
-.submit-button:hover {
-  background-color: #263D42;
+  transition: background-color 0.3s, transform 0.3s;
 }
 
 .volver-button {
   background-color: #6c5b7b;
   color: white;
-  padding: 0.5rem 1rem;
-  margin-right: 50px;
-  border: none;
-  border-radius: 15px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
 }
 
 .volver-button:hover {
-  background-color: #6c5b7b;
-}
-.submit-button:disabled {
-  background-color: #bfbdbd; 
-  color: #645e5e; 
-  cursor: not-allowed; 
+  background-color: #574e6d;
+  transform: translateY(-2px);
 }
 
-.submit-button:enabled {
+.submit-button {
   background-color: #263D42;
   color: white;
 }
 
+.submit-button:enabled:hover {
+  background-color: #1e2f34;
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  background-color: #bdc3c7;
+  color: #7f8c8d;
+  cursor: not-allowed;
+}
 </style>

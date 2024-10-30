@@ -5,14 +5,21 @@
     </header>
 
     <main class="resume-container">
-      <h1 class="resume-title">Revisión de Respuestas</h1>
+     
 
-      <!-- Contenedor único para todas las respuestas -->
       <div class="resume-form">
-        <!-- Iteramos sobre las respuestas, pero excluimos el 'estudianteId' -->
-        <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId">
-          <strong>{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
+        <h1 class="resume-title">Revisión de Respuestas</h1>
+        <!-- Si no hay respuestas, mostrar un mensaje -->
+        <p v-if="Object.keys(filteredForm).length === 0" class="no-responses-message">
+          No se encontraron respuestas para mostrar.
         </p>
+        
+        <!-- Mostrar respuestas si están presentes -->
+        <div v-else class="response-list">
+          <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId" class="response-item">
+            <strong class="question-text">{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
+          </p>
+        </div>
         
         <div class="form-actions">
           <button class="back-button" @click="goBackToSurvey">Regresar a la Encuesta</button>
@@ -39,19 +46,21 @@ export default {
   },
   data() {
     return {
-      form: this.$route.query, // Recibe los datos del formulario a través de query params
-      preguntas: [] // Lista de preguntas que viene de la base de datos
+      form: this.$route.query, // Recibe los datos del formulario desde query params
+      preguntas: [], // Lista de preguntas obtenida desde la base de datos
+      encuestaId: this.$route.params.idEncuesta || 1, // ID dinámico de la encuesta (cambiar según sea necesario)
     };
   },
   computed: {
-    // Computed property para excluir el 'estudianteId' del form
+    // Excluir 'estudianteId' del formulario para mostrar sólo las preguntas y respuestas
     filteredForm() {
       const { estudianteId, ...preguntasRespuestas } = this.form;
+      console.log('Datos recibidos en la vista de resumen:', preguntasRespuestas);
       return preguntasRespuestas;
     }
   },
   mounted() {
-    // Obtener todas las preguntas para mostrar su texto en el resumen
+    // Obtener todas las preguntas para mostrar el texto en el resumen
     this.fetchPreguntas();
   },
   methods: {
@@ -59,6 +68,7 @@ export default {
       try {
         const response = await axios.get('http://localhost:8082/pregunta');
         this.preguntas = response.data;
+        console.log('Preguntas obtenidas:', this.preguntas); // Verificar si las preguntas son obtenidas correctamente
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
@@ -68,8 +78,6 @@ export default {
     // Método para obtener el texto de una pregunta según su ID
     getPreguntaTexto(idPregunta) {
       const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
-      
-      // Si no se encuentra la pregunta, devolver un mensaje claro
       return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
     },
 
@@ -85,30 +93,77 @@ export default {
           throw new Error('El ID del estudiante no está disponible.');
         }
 
-        // Iterar sobre las respuestas para enviar cada una con el ID de la pregunta
+        // Verificar si hay preguntas y respuestas
+        if (Object.keys(this.filteredForm).length === 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Sin respuestas',
+            text: 'Por favor responde a todas las preguntas antes de enviar la encuesta.',
+            confirmButtonText: 'Aceptar'
+          });
+          return;
+        }
+
+        // Registrar notificación
+        const notification = {
+          titulo: "Encuesta completada exitosamente",
+          contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
+          fecha: new Date().toISOString(), // Fecha actual
+          estadoNotificacion: false, // Estado inicial como no leído
+          estudianteIdEstudiante: { idEstudiante: estudianteId }, // ID del estudiante corregido
+          tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+        };
+
+        // Enviar la notificación
+        await axios.post('http://localhost:8082/notificacion', notification);
+
+        // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
-          await axios.post('http://localhost:8082/respuesta', {
+          if (!respuesta) {
+            console.warn(`La pregunta con ID ${preguntaId} no tiene respuesta.`);
+            continue; // Saltar respuestas vacías
+          }
+
+          const payload = {
             respuesta: respuesta,
             preguntaIdPregunta: { idPregunta: preguntaId },
             estudianteIdEstudiante: { idEstudiante: estudianteId }
-          });
+          };
+
+          console.log('Enviando respuesta:', payload); // Para depuración
+
+          try {
+            await axios.post('http://localhost:8082/respuesta', payload);
+          } catch (error) {
+            console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
+          }
         }
 
-        // Mostrar notificación de éxito con SweetAlert2
+        // Cambiar el estado de la encuesta a "Completada"
+        const estadoEncuesta = {
+          estado: 'Completado',
+          fechaEstado: new Date().toISOString(), // Fecha actual
+          estudianteIdEstudiante: { idEstudiante: estudianteId },
+          encuestaIdEncuesta: { idEncuesta: this.encuestaId }
+        };
+
+        await axios.post('http://localhost:8082/estado_encuesta', estadoEncuesta);
+
+        // Mostrar notificación de éxito
         Swal.fire({
           icon: 'success',
           title: '¡Encuesta enviada!',
-          text: 'Tu encuesta ha sido enviada exitosamente.',
+          text: 'Tu encuesta ha sido enviada y marcada como completada exitosamente.',
           confirmButtonText: 'Aceptar'
         });
-        
-        localStorage.removeItem('surveyAnswers'); 
-        this.$router.push('/menu-estudiante');
 
+        // Limpiar respuestas guardadas en localStorage
+        localStorage.removeItem('surveyAnswers');
+        this.$router.push('/menu-estudiante');
       } catch (error) {
         console.error('Detalles del error:', error);
 
-        // Mostrar mensaje de error con SweetAlert2
+        // Mostrar mensaje de error
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -120,82 +175,109 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-* {
+*, h1 {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: 'Roboto', sans-serif;
 }
 
-header {
+header{
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
+  background-color: #263D42;
 }
 
 .resume-container {
-  padding-top: 80px;
+  padding: 110px 40px; /* Ajuste para que el contenido no sea cubierto por el header */
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
-  margin: 15px;
+  justify-content: flex-start;
 }
 
 .resume-form {
-  background-color: #CBDADB;
+  background-color: #F0F5EF;
   padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 48rem;
 }
 
 .resume-title {
-  font-size: 25px;
-  font-weight: bold;
-  color: #000000;
-  text-align: left;
+  font-size: 28px;
+  font-weight: 700;
+  color: #263D42;
+  text-align: center;
   margin-bottom: 1.5rem;
 }
 
-.resume-form p {
-  font-size: 1rem;
-  color: #000000;
-  margin-bottom: 1rem;
+.no-responses-message {
+  font-size: 18px;
+  color: #8B8B8B;
+  text-align: center;
+  margin: 2rem 0;
 }
 
-.resume-form strong {
-  font-weight: 500;
+.response-list {
+  margin: 1rem 0;
+}
+
+.response-item {
+  font-size: 1rem;
+  color: #34495e;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.75rem;
+}
+
+.question-text {
+  font-weight: 600;
   color: #263D42;
 }
 
 .form-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
-  width: 100%;
+  margin-top: 2rem;
 }
 
-.submit-button, .back-button {
+.back-button,
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.back-button {
+  background-color: #6c5b7b;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #574e6d;
+  transform: translateY(-2px);
+}
+
+.submit-button {
   background-color: #263D42;
   color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 15px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
 }
 
-.submit-button:hover, .back-button:hover {
-  background-color: #1F2E34;
+.submit-button:hover {
+  background-color: #1e2f34;
+  transform: translateY(-2px);
 }
 </style>
