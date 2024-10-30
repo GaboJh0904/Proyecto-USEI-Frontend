@@ -18,6 +18,7 @@ import FormularioSoporte from '@/views/FormularioSoporte.vue'
 import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
 import subirCertificado from '@/views/subirCertificado.vue'
+import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -118,6 +119,11 @@ const router = createRouter({
       path: '/subir-certificado',
       name: 'subir-certificado',
       component: subirCertificado,
+    },
+    {
+      path: '/porcentaje-incompleto',
+      name: 'PorcentajeIncompleto',
+      component: PorcentajeIncompleto,
     },
   ],
   scrollBehavior(to, from, savedPosition) {
