@@ -1,26 +1,35 @@
 <template>
     <div>
-      <header>
+      <header class="header-section">
         <NavBar :userRole="userRole" :userName="userName" />
       </header>
-  
+
       <div class="survey-page">
         <h1 class="title">Gestión de Encuestas</h1>
-  
-        <!-- Gráfico circular del porcentaje de encuesta completada -->
-        <div class="chart-section">
-          <canvas id="surveyChart"></canvas>
+
+        <!-- Sección del gráfico y selector de año -->
+        <div class="chart-container">
+          <div class="chart-section">
+            <canvas id="surveyChart"></canvas>
+          </div>
+          <div class="year-selector">
+            <label for="yearSelect">Año:</label>
+            <select v-model="selectedYear" @change="updateChart" id="yearSelect">
+              <option value="">Todos</option>
+              <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
+            </select>
+          </div>
         </div>
-  
+
         <!-- Botón para enviar correos electrónicos -->
         <button class="send-all-btn" @click="sendEmails">Enviar Correos a Todos</button>
-  
+
         <!-- Mensaje personalizado -->
         <textarea v-model="customMessage" class="message-input" placeholder="Escribe un mensaje personalizado..."></textarea>
-  
+
         <!-- Última vez que se envió mensaje -->
         <p class="last-sent">Última vez enviado: {{ lastSentDate || 'No enviado aún' }}</p>
-  
+
         <!-- Tabla de estudiantes que no completaron la encuesta -->
         <div class="table-section">
           <div class="table-controls">
@@ -30,7 +39,7 @@
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
           </div>
-  
+
           <table class="student-table">
             <thead>
               <tr>
@@ -54,7 +63,7 @@
             </tbody>
           </table>
         </div>
-  
+
         <!-- Botón para abrir la ventana modal -->
         <button class="settings-btn" @click="showModal = true">Modificar Parámetros de Porcentaje</button>
       </div>
@@ -108,6 +117,7 @@
         ],
         searchTerm: '',
         filterYear: '',
+        selectedYear: '',
         years: [2020, 2021, 2022],
       };
     },
@@ -367,5 +377,32 @@
   .cancel-btn:hover {
     background-color: #5a6268;
   }
+
+  .header-section {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.chart-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.chart-section {
+  flex: 3;
+}
+
+.year-selector {
+  flex: 1;
+  text-align: right;
+  padding-left: 20px;
+}
+
+.year-selector label {
+  margin-right: 10px;
+}
   </style>
   
