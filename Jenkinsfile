@@ -1,11 +1,10 @@
 pipeline {
     agent any
+    tools {
+        nodejs 'NodeJS 18' // Define NodeJS globalmente
+    }
+
     stages {
-        stage('Install NodeJS') {
-            steps {
-                tool name: 'NodeJS 18', type: 'NodeJS'
-            }
-        }
         stage('Install Dependencies') {
             steps {
                 bat 'npm install' 
