@@ -177,7 +177,7 @@ export default {
 
     async fetchTiposDePregunta() {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/pregunta/tipos'); 
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/pregunta/tipos'); 
         this.tiposPregunta = response.data; 
       } catch (error) {
         console.error('Error al obtener los tipos de pregunta:', error);
