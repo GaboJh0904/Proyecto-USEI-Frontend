@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import PaginaInicio from '../views/PaginaInicio.vue'
-import MenuEstudiante from '../views/MenuEstudiante.vue' // Importa la nueva vista
-import MenuAdministrador from '../views/MenuAdministrador.vue' // Importa la nueva vista
-import MenuDirector from '../views/MenuDirector.vue' // Importa la nueva vista
+import MenuEstudiante from '../views/MenuEstudiante.vue' 
+import MenuAdministrador from '../views/MenuAdministrador.vue' 
+import MenuDirector from '../views/MenuDirector.vue' 
 import EncuestaEstudiante from '../views/EncuestaEstudiante.vue'
-import ResumePage from '../views/ResumePage.vue' // Importa la nueva vista
+import ResumePage from '../views/ResumePage.vue' 
 import GestionDirectores from '../views/GestionDirectores.vue'
 import EnviarEncuesta from '../views/EnviarEncuesta.vue'
 import EnProgreso from '@/views/EnProgreso.vue'
@@ -17,7 +17,7 @@ import ContactoAdmin from '../views/ContactoAdmin.vue'
 import FormularioSoporte from '@/views/FormularioSoporte.vue'
 import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
-import subirCertificado from '@/views/subirCertificado.vue'
+import subirCertificado from '@/views/SubirCertificado.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
