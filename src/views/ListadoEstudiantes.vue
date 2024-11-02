@@ -175,7 +175,7 @@ export default {
         formData.append('file', this.file);
 
         try {
-          const response = await axios.post('http://localhost:8082/estudiante/csv-estudiantes', formData, {
+          const response = await axios.post('${import.meta.env.VITE_BACKEND_URL}/estudiante/csv-estudiantes', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
@@ -191,7 +191,7 @@ export default {
 
     async fetchEstudiantes(page = 1) {
       try {
-        const response = await axios.get('http://localhost:8082/estudiante', {
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/estudiante', {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -209,7 +209,7 @@ export default {
     },
 
     enviarInvitaciones() {
-      axios.post('http://localhost:8082/estudiante/enlaceInvitacion') 
+      axios.post('${import.meta.env.VITE_BACKEND_URL}/estudiante/enlaceInvitacion') 
         .then(() => {
           Swal.fire('Éxito', 'Invitaciones enviadas correctamente', 'success');
         })
@@ -251,7 +251,7 @@ export default {
           correoInstitucional: this.editedEstudiante.correoInstitucional,
         };
 
-        axios.put(`http://localhost:8082/estudiante/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+        axios.put(`${import.meta.env.VITE_BACKEND_URL}/estudiante/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -282,7 +282,7 @@ export default {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          axios.delete(`http://localhost:8082/estudiante/${idEstudiante}`)
+          axios.delete(`${import.meta.env.VITE_BACKEND_URL}/estudiante/${idEstudiante}`)
             .then(() => {
               this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
               Swal.fire(

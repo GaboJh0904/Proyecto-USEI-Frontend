@@ -122,7 +122,7 @@ export default {
       return;
     }
 
-    const url = `http://localhost:8082/respuesta/llenado/${estudianteId}`; // Cambiar esta URL según tu API
+    const url = `${import.meta.env.VITE_BACKEND_URL}/respuesta/llenado/${estudianteId}`; // Cambiar esta URL según tu API
     console.log('Verificando encuesta con la URL:', url); // Para depuración
 
     try {

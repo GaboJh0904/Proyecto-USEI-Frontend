@@ -66,7 +66,7 @@ export default {
   methods: {
     async fetchPreguntas() {
       try {
-        const response = await axios.get('http://localhost:8082/pregunta');
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/pregunta');
         this.preguntas = response.data;
         console.log('Preguntas obtenidas:', this.preguntas); // Verificar si las preguntas son obtenidas correctamente
       } catch (error) {
@@ -115,7 +115,7 @@ export default {
         };
 
         // Enviar la notificación
-        await axios.post('http://localhost:8082/notificacion', notification);
+        await axios.post('${import.meta.env.VITE_BACKEND_URL}/notificacion', notification);
 
         // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
@@ -133,7 +133,7 @@ export default {
           console.log('Enviando respuesta:', payload); // Para depuración
 
           try {
-            await axios.post('http://localhost:8082/respuesta', payload);
+            await axios.post('${import.meta.env.VITE_BACKEND_URL}/respuesta', payload);
           } catch (error) {
             console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
           }
@@ -147,7 +147,7 @@ export default {
           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
         };
 
-        await axios.post('http://localhost:8082/estado_encuesta', estadoEncuesta);
+        await axios.post('${import.meta.env.VITE_BACKEND_URL}/estado_encuesta', estadoEncuesta);
 
         // Mostrar notificación de éxito
         Swal.fire({

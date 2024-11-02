@@ -73,7 +73,7 @@ export default {
         this.currentPage = page;
 
         // Llamar a la API para obtener las respuestas
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/respuesta/estudiante/${idEstudiante}`, {
           params: {
             page: this.currentPage,
             pageSize: this.pageSize,
