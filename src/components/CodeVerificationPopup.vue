@@ -73,7 +73,7 @@
         });
       try {
         // Consumir la API para enviar el código de verificación
-        const response = await axios.post(`http://localhost:8082/estudiante/enviarCodigoVerificacion/${this.email}`);
+        const response = await axios.post(`http://localhost:8082/estudiante/codigoVerificacion/${this.email}`);
         
         // Cerrar el mensaje de carga
         Swal.close();

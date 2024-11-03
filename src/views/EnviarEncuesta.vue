@@ -5,7 +5,7 @@
     </header>
     <main class="student-list-container">
       <h1 class="student-list-title">Estudiantes que Completaron la Encuesta</h1>
-       <div class="filters-container">
+       <!--<div class="filters-container">
         <input
           type="text"
           v-model="searchQuery"
@@ -17,7 +17,7 @@
           <option value="Pendiente">Pendiente</option>
           <option value="Enviado">Enviado</option>
         </select>
-      </div>
+      </div>-->
       
       <div class="student-table-container">
         <h2>Lista de Estudiantes</h2>
@@ -118,7 +118,7 @@ export default {
   methods: {
     async fetchEstudiantes() {
     try {
-        const response = await axios.get('http://localhost:8082/estado_certificado');
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/estado_certificado');
         if (response.data && Array.isArray(response.data)) {
             this.estudiantes = response.data;
         } else {
@@ -141,7 +141,7 @@ export default {
 
     try {
       // Enviar certificado
-      const response = await axios.post('http://localhost:8082/certificado/enviar', null, {
+      const response = await axios.post('${import.meta.env.VITE_BACKEND_URL}/certificado/remision', null, {
         params: {
           idEstudiante: idEstudiante
         }

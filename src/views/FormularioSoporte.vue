@@ -157,7 +157,7 @@ export default {
         }
 
         // Solicitud al backend con paginación, filtrado y ordenación
-        const response = await axios.get(`http://localhost:8082/soporte/paginado`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/soporte/paginado`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -216,7 +216,7 @@ export default {
         this.formData.usuario.idUsuario = userId;
         this.formData.fecha = new Date().toISOString().split('.')[0];
 
-        const response = await axios.post('http://localhost:8082/soporte', this.formData);
+        const response = await axios.post('${import.meta.env.VITE_BACKEND_URL}/soporte', this.formData);
 
         this.loading = false;
         this.showErrors = false; // Resetea los errores si el envío es exitoso

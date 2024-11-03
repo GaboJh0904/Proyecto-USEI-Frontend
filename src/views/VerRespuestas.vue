@@ -5,9 +5,10 @@
     </header>
 
     <main class="resume-container">
-      <h1 class="resume-title">Respuestas de la Encuesta</h1>
+    
 
       <div class="resume-form">
+        <h1 class="resume-title">Respuestas de la Encuesta</h1>
         <!-- Mostrar un mensaje si no hay respuestas -->
         <p v-if="respuestas.length === 0">
           No se encontraron respuestas para este estudiante.
@@ -15,7 +16,7 @@
 
         <!-- Iterar sobre las respuestas y mostrar la pregunta asociada -->
         <p v-else v-for="(respuesta, index) in respuestas" :key="index">
-          <strong>{{ respuesta.preguntaIdPregunta?.pregunta || 'Pregunta no disponible' }}:</strong>
+          <strong>{{ respuesta.preguntaIdPregunta?.pregunta || 'Pregunta no disponible' }}</strong>
           {{ respuesta.respuesta || 'Sin respuesta' }}
         </p>
 
@@ -72,7 +73,7 @@ export default {
         this.currentPage = page;
 
         // Llamar a la API para obtener las respuestas
-        const response = await axios.get(`http://localhost:8082/respuesta/estudiante/${idEstudiante}`, {
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/respuesta/estudiante/${idEstudiante}`, {
           params: {
             page: this.currentPage,
             pageSize: this.pageSize,
@@ -114,104 +115,107 @@ header {
   top: 0;
   width: 100%;
   z-index: 1000;
-  background-color: #263D42; /* Fondo fijo para el header */
+  background-color: #263D42;
+  padding: 15px 0px;
 }
 
 .resume-container {
-  padding-top: 100px; /* Ajuste para compensar el header fijo */
+  padding: 110px 40px; /* Ajuste para el header fijo */
   min-height: 100vh;
-  background-color: #f2f4f5;
+  background-color: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
   margin: 0 auto;
   width: 90%;
-  max-width: 800px;
+  max-width: 850px;
 }
 
 .resume-title {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  color: #263D42;
+  color: #34495e;
   text-align: center;
   margin-bottom: 2rem;
-}
+} 
 
 .resume-form {
-  background-color: #ffffff;
-  padding: 2rem 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  background-color: #F0F5EF;
+  padding: 2.5rem 3rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
   width: 100%;
 }
 
 .resume-form p {
-  font-size: 1rem;
-  color: #495057;
-  margin-bottom: 1.2rem;
-  line-height: 1.5;
+  font-size: 1.1rem;
+  color: #34495e;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
 }
 
 .resume-form strong {
   font-weight: 600;
-  color: #263D42;
+  color: #2c3e50;
 }
 
 .form-actions {
   display: flex;
   justify-content: center;
-  margin-top: 1.5rem;
+  margin-top: 2rem;
 }
 
 .back-button {
-  background-color: #263D42;
+  background-color: #34495e;
   color: white;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.75rem;
   border: none;
-  border-radius: 30px;
-  font-size: 0.875rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
 }
 
 .back-button:hover {
-  background-color: #1F2E34;
+  background-color: #2c3e50;
+  transform: translateY(-2px);
 }
 
 .pagination-controls {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 2rem 0 1rem;
+  margin: 2.5rem 0 1.5rem;
 }
 
 .pagination-controls button {
-  margin: 0 0.5rem;
-  padding: 0.5rem 1.5rem;
-  background-color: #6c5b7b;
+  margin: 0 1rem;
+  padding: 0.5rem 2rem;
+  background-color: #34495e;
   color: white;
   border: none;
-  border-radius: 30px;
-  font-size: 0.875rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
 }
 
 .pagination-controls button:disabled {
-  background-color: #ddd;
+  background-color: #bdc3c7;
   cursor: not-allowed;
 }
 
 .pagination-controls button:not(:disabled):hover {
-  background-color: #5a4864;
+  background-color: #2c3e50;
+  transform: translateY(-2px);
 }
 
 .pagination-info {
-  font-size: 0.875rem;
-  color: #495057;
+  font-size: 0.95rem;
+  color: #34495e;
   margin: 0 0.5rem;
 }
 </style>

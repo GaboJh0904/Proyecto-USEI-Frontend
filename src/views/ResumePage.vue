@@ -5,18 +5,21 @@
     </header>
 
     <main class="resume-container">
-      <h1 class="resume-title">Revisión de Respuestas</h1>
+     
 
       <div class="resume-form">
+        <h1 class="resume-title">Revisión de Respuestas</h1>
         <!-- Si no hay respuestas, mostrar un mensaje -->
-        <p v-if="Object.keys(filteredForm).length === 0">
+        <p v-if="Object.keys(filteredForm).length === 0" class="no-responses-message">
           No se encontraron respuestas para mostrar.
         </p>
         
         <!-- Mostrar respuestas si están presentes -->
-        <p v-else v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId">
-          <strong>{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
-        </p>
+        <div v-else class="response-list">
+          <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId" class="response-item">
+            <strong class="question-text">{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
+          </p>
+        </div>
         
         <div class="form-actions">
           <button class="back-button" @click="goBackToSurvey">Regresar a la Encuesta</button>
@@ -63,7 +66,7 @@ export default {
   methods: {
     async fetchPreguntas() {
       try {
-        const response = await axios.get('http://localhost:8082/pregunta');
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/pregunta');
         this.preguntas = response.data;
         console.log('Preguntas obtenidas:', this.preguntas); // Verificar si las preguntas son obtenidas correctamente
       } catch (error) {
@@ -112,7 +115,7 @@ export default {
         };
 
         // Enviar la notificación
-        await axios.post('http://localhost:8082/notificacion', notification);
+        await axios.post('${import.meta.env.VITE_BACKEND_URL}/notificacion', notification);
 
         // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
@@ -130,7 +133,7 @@ export default {
           console.log('Enviando respuesta:', payload); // Para depuración
 
           try {
-            await axios.post('http://localhost:8082/respuesta', payload);
+            await axios.post('${import.meta.env.VITE_BACKEND_URL}/respuesta', payload);
           } catch (error) {
             console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
           }
@@ -144,7 +147,7 @@ export default {
           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
         };
 
-        await axios.post('http://localhost:8082/estado_encuesta', estadoEncuesta);
+        await axios.post('${import.meta.env.VITE_BACKEND_URL}/estado_encuesta', estadoEncuesta);
 
         // Mostrar notificación de éxito
         Swal.fire({
@@ -172,82 +175,109 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
-* {
+*, h1 {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: 'Roboto', sans-serif;
 }
 
-header {
+header{
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
+  background-color: #263D42;
 }
 
 .resume-container {
-  padding-top: 80px;
+  padding: 110px 40px; /* Ajuste para que el contenido no sea cubierto por el header */
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
   align-items: center;
-  margin: 15px;
+  justify-content: flex-start;
 }
 
 .resume-form {
-  background-color: #CBDADB;
+  background-color: #F0F5EF;
   padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 48rem;
 }
 
 .resume-title {
-  font-size: 25px;
-  font-weight: bold;
-  color: #000000;
-  text-align: left;
+  font-size: 28px;
+  font-weight: 700;
+  color: #263D42;
+  text-align: center;
   margin-bottom: 1.5rem;
 }
 
-.resume-form p {
-  font-size: 1rem;
-  color: #000000;
-  margin-bottom: 1rem;
+.no-responses-message {
+  font-size: 18px;
+  color: #8B8B8B;
+  text-align: center;
+  margin: 2rem 0;
 }
 
-.resume-form strong {
-  font-weight: 500;
+.response-list {
+  margin: 1rem 0;
+}
+
+.response-item {
+  font-size: 1rem;
+  color: #34495e;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.75rem;
+}
+
+.question-text {
+  font-weight: 600;
   color: #263D42;
 }
 
 .form-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 1rem;
-  width: 100%;
+  margin-top: 2rem;
 }
 
-.submit-button, .back-button {
+.back-button,
+.submit-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.back-button {
+  background-color: #6c5b7b;
+  color: white;
+}
+
+.back-button:hover {
+  background-color: #574e6d;
+  transform: translateY(-2px);
+}
+
+.submit-button {
   background-color: #263D42;
   color: white;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 15px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
 }
 
-.submit-button:hover, .back-button:hover {
-  background-color: #1F2E34;
+.submit-button:hover {
+  background-color: #1e2f34;
+  transform: translateY(-2px);
 }
 </style>

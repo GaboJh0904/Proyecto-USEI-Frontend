@@ -120,7 +120,7 @@ export default {
   methods: {
     async fetchQuestions() {
       try {
-        const response = await axios.get('http://localhost:8082/pregunta');
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/pregunta');
         this.questions = response.data;
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
@@ -141,7 +141,7 @@ export default {
 
         if (this.isUpdating) {
           // Actualizar la pregunta existente
-          response = await axios.put(`http://localhost:8082/pregunta/${this.question.idPregunta}`, {
+          response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/pregunta/${this.question.idPregunta}`, {
             numPregunta: this.question.numPregunta,
             pregunta: this.question.pregunta,
             tipoPregunta: this.question.tipoPregunta,
@@ -150,7 +150,7 @@ export default {
           Swal.fire('Actualizado', 'La pregunta ha sido actualizada exitosamente.', 'success');
         } else {
           // Crear nueva pregunta
-          response = await axios.post('http://localhost:8082/pregunta', {
+          response = await axios.post('${import.meta.env.VITE_BACKEND_URL}/pregunta', {
             numPregunta: this.question.numPregunta,
             pregunta: this.question.pregunta,
             tipoPregunta: this.question.tipoPregunta,
@@ -177,7 +177,7 @@ export default {
     // Método para asociar la pregunta con la encuesta
     async asociarPreguntaConEncuesta(idPregunta) {
       try {
-        await axios.post('http://localhost:8082/encuesta_gestion', {
+        await axios.post('${import.meta.env.VITE_BACKEND_URL}/encuesta_gestion', {
           anio: new Date().getFullYear(), // Año actual
           semestre: 1, // Semestre, puedes hacerlo dinámico si es necesario
           encuestaIdEncuesta: { idEncuesta: this.question.encuestaIdEncuesta.idEncuesta }, // ID de la encuesta desde el parámetro
@@ -209,7 +209,7 @@ export default {
 
     async deleteQuestion(idPregunta) {
       try {
-        await axios.delete(`http://localhost:8082/pregunta/${idPregunta}`);
+        await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/pregunta/${idPregunta}`);
         Swal.fire('Eliminada', 'La pregunta ha sido eliminada.', 'success');
         this.fetchQuestions(); // Refrescar la lista después de eliminar
       } catch (error) {

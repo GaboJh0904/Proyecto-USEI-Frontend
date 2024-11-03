@@ -89,7 +89,7 @@ export default {
   methods: {
     async fetchEncuestas() {
       try {
-        const response = await axios.get('http://localhost:8082/encuesta');
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/encuesta');
         this.encuestas = response.data;
       } catch (error) {
         console.error('Error al obtener las encuestas:', error);
@@ -109,7 +109,7 @@ export default {
 
       try {
         // Crear nueva encuesta
-        const response = await axios.post('http://localhost:8082/encuesta', {
+        const response = await axios.post('${import.meta.env.VITE_BACKEND_URL}/encuesta', {
           titulo: this.encuestaForm.titulo,
           descripcion: this.encuestaForm.descripcion,
           fechaModificado: new Date().toISOString().split('T')[0], // Fecha de modificación actual
