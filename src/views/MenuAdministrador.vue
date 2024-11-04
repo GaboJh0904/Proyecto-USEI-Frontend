@@ -210,7 +210,7 @@
       this.$router.push('/subir-certificado');
     },
     goToEstudiantesRegistrados(){
-      this.$router.push('/estudiantes-registrados/');
+      this.$router.push('/estudiantes-registrados');
     }
 
   },

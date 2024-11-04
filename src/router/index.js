@@ -122,9 +122,10 @@ const router = createRouter({
     },
     {
       path: '/estudiantes-registrados',
-      name: 'estudiantes-registrados',
+      name: 'EstudiantesRegistrados',
       component: EstudiantesRegistrados,
     },
+    
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

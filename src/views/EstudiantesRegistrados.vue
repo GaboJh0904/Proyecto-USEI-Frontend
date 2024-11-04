@@ -1,7 +1,7 @@
 <template>
     <div>
       <header>
-        <NavBar :userRole="userRole" :userName="userName" />
+        <NavBar :userRole="userRole" />
       </header>
   
       <main class="user-management-container">
@@ -99,8 +99,8 @@
     },
     data() {
       return {
-        userRole: 'Administrador',
-        userName: 'Rosario Calisaya',
+        userRole: '', // Inicializa userRole aquí
+        userName: '',
         estudiantes: [],
         editingIndex: null,
         editedEstudiante: {},
@@ -205,11 +205,12 @@
         return labels[key];
       }
     },
-    created() {
+    mounted() {
+      this.userRole = localStorage.getItem('rol') || ''; // Asegúrate de asignar userRole aquí
       this.fetchEstudiantes();
     }
   };
-  </script>
+  </script>  
   
   <style scoped>
   .user-management-container {
