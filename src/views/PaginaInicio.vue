@@ -20,7 +20,7 @@
           <img src="@/components/images/graduados.jpg" alt="" />
         </div>
         <div class="about-container">
-          <h2>USEI</h2>
+          <h2>USEI HOLAA</h2>
           <h2>Lorem ipsum dolor sit, amet consectetur adipisicing elit.Architecto possimus consectetur nostrum laborum, rerum unde autem aut consequatur quibusdam pariatur assumenda mollitia libero omnis quae?<b>Universidad Catolica Boliviana</b></h2>
         </div>
         <div class="clear"></div>

@@ -74,6 +74,8 @@ import axios from 'axios';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import PaginationComponent from '@/components/PaginationComponent.vue';
+import { BASE_URL } from '@/config/globals';
+
 export default {
   name: 'RespuestasEstudiante',
   components: {
@@ -119,7 +121,7 @@ export default {
     async fetchFechaEncuesta() {
       const idEstudiante = this.$route.params.idEstudiante; 
       try {
-        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/estado_encuesta/estudiante/${idEstudiante}`);
+        const response = await axios.get(`${BASE_URL}/estado_encuesta/estudiante/${idEstudiante}`);
         if (response.data) {
           this.fechaEncuesta = response.data.fechaEstado; 
           this.estudiante = response.data.estudianteIdEstudiante;
@@ -143,7 +145,7 @@ export default {
     console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
 
     // Llamar a la API con el parámetro de búsqueda (searchQuery)
-    const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/respuesta/estudiante/${idEstudiante}`, {
+    const response = await axios.get(`${BASE_URL}/respuesta/estudiante/${idEstudiante}`, {
       params: {
         tipoPregunta: this.selectedFilter !== '' ? this.selectedFilter : null,
         sortBy: this.selectedSortBy || 'pregunta',
@@ -177,7 +179,7 @@ export default {
 
     async fetchTiposDePregunta() {
       try {
-        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/pregunta/tipos'); 
+        const response = await axios.get(`${BASE_URL}/pregunta/tipos`); 
         this.tiposPregunta = response.data; 
       } catch (error) {
         console.error('Error al obtener los tipos de pregunta:', error);
