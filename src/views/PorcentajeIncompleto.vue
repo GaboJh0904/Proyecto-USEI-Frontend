@@ -91,10 +91,10 @@
   </template>
   
   <script>
-  import { ref, onMounted } from 'vue';
   import Chart from 'chart.js/auto';
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
+  import { BASE_URL } from '@/config/globals';
   
   export default {
     name: 'SurveyPage',

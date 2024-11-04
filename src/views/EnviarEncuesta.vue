@@ -69,6 +69,7 @@ import axios from 'axios';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';  
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'EnviarEncuesta',
@@ -118,7 +119,7 @@ export default {
   methods: {
     async fetchEstudiantes() {
     try {
-        const response = await axios.get('http://localhost:8082/estado_certificado');
+        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/estado_certificado');
         if (response.data && Array.isArray(response.data)) {
             this.estudiantes = response.data;
         } else {
@@ -141,7 +142,7 @@ export default {
 
     try {
       // Enviar certificado
-      const response = await axios.post('http://localhost:8082/certificado/remision', null, {
+      const response = await axios.post(`${BASE_URL}/certificado/remision`, null, {
         params: {
           idEstudiante: idEstudiante
         }

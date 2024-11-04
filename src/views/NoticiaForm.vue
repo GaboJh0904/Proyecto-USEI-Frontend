@@ -168,6 +168,7 @@ import Swal from 'sweetalert2';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import PaginationComponent from '@/components/PaginationComponent.vue';
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'NoticiaForm',
@@ -246,7 +247,7 @@ export default {
       try {
         const estadoFilter = this.selectedStatus ? this.selectedStatus : ''; 
 
-        const response = await axios.get(`http://localhost:8082/noticia`, {
+        const response = await axios.get(`${BASE_URL}/noticia`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -268,7 +269,7 @@ export default {
     // Método para obtener noticias archivadas
     async fetchNoticiasArchivadas(page = 1) {
       try {
-        const response = await axios.get(`http://localhost:8082/noticia/archivadas/paginadas`, {
+        const response = await axios.get(`${BASE_URL}/noticia/archivadas/paginadas`, {
           params: {
             page: page - 1,
             size: this.perPage, 
@@ -334,7 +335,7 @@ export default {
         formData.append('fechaModificado', formattedDate);
         formData.append('UsuarioIdUsuario', 1);
 
-        await axios.post('http://localhost:8082/noticia', formData, {
+        await axios.post(`${BASE_URL}/noticia`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -390,7 +391,7 @@ export default {
           return;
         }
 
-        await axios.put(`http://localhost:8082/noticia/${this.editNoticiaId}`, formData, {
+        await axios.put(`${BASE_URL}/noticia/${this.editNoticiaId}`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
@@ -441,7 +442,7 @@ export default {
         return;
       }
       try {
-        await axios.delete(`http://localhost:8082/noticia/${idNoticia}`);
+        await axios.delete(`${BASE_URL}/noticia/${idNoticia}`);
         this.fetchNoticias();
         Swal.fire({
           title: 'Noticia Eliminada',
@@ -466,7 +467,7 @@ export default {
         return;
       }
       try {
-        await axios.put(`http://localhost:8082/noticia/archivado/${idNoticia}`);
+        await axios.put(`${BASE_URL}/noticia/archivado/${idNoticia}`);
         this.fetchNoticias();
         this.fetchNoticiasArchivadas();
 
@@ -493,7 +494,7 @@ export default {
         return;
       }
       try {
-        await axios.put(`http://localhost:8082/noticia/desarchivado/${idNoticia}`);
+        await axios.put(`${BASE_URL}/noticia/desarchivado/${idNoticia}`);
         this.fetchNoticias();
         this.fetchNoticiasArchivadas();
 

@@ -1,34 +1,34 @@
 <template>
-    <div>
-      <!-- Header Section -->
-      <section class="header-master">
-        <header>
-            <NavBar userRole="Administrador" />
-        </header>
-  
-        <div class="content-header" id="carrusel">
-          <div class="container">
-            <ImageCarousel />
-          </div>
+  <div>
+    <!-- Header Section -->
+    <section class="header-master">
+      <header>
+        <NavBar userRole="Administrador" />
+      </header>
+
+      <div class="content-header" id="carrusel">
+        <div class="container">
+          <ImageCarousel />
         </div>
-      </section>
-  
-      <!-- About Section -->
-      <section class="about">
-        <div class="container" id="about">
-          <div class="about-container">
-            <img src="@/components/images/graduados.jpg" alt="" />
-          </div>
-          <div class="about-container">
-            <h2>USEI</h2>
-            <h2>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto possimus consectetur nostrum laborum, rerum unde autem aut consequatur quibusdam pariatur assumenda mollitia libero omnis quae?<b>Universidad Catolica Boliviana</b></h2>
-          </div>
-          <div class="clear"></div>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about">
+      <div class="container" id="about">
+        <div class="about-container">
+          <img src="@/components/images/graduados.jpg" alt="" />
         </div>
-      </section>
-  
-      <!-- New Section (Icon Cards) -->
-      <section class="icon-cards">
+        <div class="about-container">
+          <h2>USEI</h2>
+          <h2>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto possimus consectetur nostrum laborum, rerum unde autem aut consequatur quibusdam pariatur assumenda mollitia libero omnis quae?<b>Universidad Catolica Boliviana</b></h2>
+        </div>
+        <div class="clear"></div>
+      </div>
+    </section>
+
+    <!-- New Section (Icon Cards) -->
+    <section class="icon-cards">
       <div class="container-cards" id="panel">
         <!-- Card 1 -->
         <div class="card-wrapper">
@@ -127,22 +127,34 @@
           </div>
         </div>
       </div>
-      <!-- Card 10 -->
-      <div class="card-wrapper">
+
+      <div class="container-cards">
+        <!-- Card 10 and Card 11 (Noticias y Estudiantes Registrados) -->
+        <div class="card-wrapper">
           <div class="card">
-            <img src="@/components/images/noticias.png" alt="Soporte" class="card-icon" />
+            <img src="@/components/images/noticias.png" alt="Noticias" class="card-icon" />
           </div>
           <h3>NOTICIAS/ANUNCIOS</h3>
           <div class="card-button-container">
             <button class="btn-ingresar" @click="goToNoticiaForm">Ingresar</button>
           </div>
         </div>
+        <div class="card-wrapper">
+          <div class="card">
+            <img src="@/components/images/estudiantes_registrados.png" alt="Estudiantes Registrados" class="card-icon" />
+          </div>
+          <h3>ESTUDIANTES REGISTRADOS</h3>
+          <div class="card-button-container">
+            <button class="btn-ingresar" @click="goToEstudiantesRegistrados">Ingresar</button>
+          </div>
+        </div>
+      </div>
     </section>
-  
-      <!-- Footer Section -->
-      <FooterComponent />
-    </div>
-  </template>
+
+    <!-- Footer Section -->
+    <FooterComponent />
+  </div>
+</template>
   
   <script>
   import NavBar from '@/components/NavBar.vue';
@@ -186,7 +198,6 @@
       this.$router.push('/enviar-encuesta');
     },
     goToEditarEncuesta() {
-      // Redirigir a la página de gestión de encuestas pasando el id_usuario como parámetro
       this.$router.push({ name: 'GestionEncuestas', params: { idUsuario: this.usuarioId } });
     },
     goToNoticiaForm() {
@@ -198,6 +209,9 @@
     goToSubirCertificado() {
       this.$router.push('/subir-certificado');
     },
+    goToEstudiantesRegistrados(){
+      this.$router.push('/estudiantes-registrados');
+    }
 
   },
   };

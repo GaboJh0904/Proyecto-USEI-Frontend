@@ -112,6 +112,8 @@
   import FooterComponent from '@/components/FooterComponent.vue';
   import PaginationComponent from '@/components/PaginationComponent.vue';
   import Swal from 'sweetalert2';
+  import { BASE_URL } from '@/config/globals';
+
   export default {
     name: 'subirCertificado',
     components: {
@@ -199,7 +201,7 @@
         formData.append('UsuarioIdUsuario', this.usuarioId);
 
         try {
-          const response = await axios.post('http://localhost:8082/certificado', formData, {
+          const response = await axios.post(`${BASE_URL}/certificado`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }
@@ -238,7 +240,7 @@
 
     async fetchCertificados() {
       try {
-        const response = await axios.get('http://localhost:8082/certificado');
+        const response = await axios.get(`${BASE_URL}/certificado`);
         this.certificados = response.data;
         console.log('Certificados obtenidos:', this.certificados); 
       } catch (error) {
@@ -258,7 +260,7 @@
      // Métodos para cambiar el estado del certificado
      async archivarCertificado(certificado) {
       try {
-        await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+        await axios.put(`${BASE_URL}/certificado/${certificado.idCertificado}/estado`, {
           estado: 'Archivado',
         });
         // alert('Certificado archivado exitosamente');
@@ -279,7 +281,7 @@
 
     async suspenderCertificado(certificado) {
       try {
-        await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+        await axios.put(`${BASE_URL}/certificado/${certificado.idCertificado}/estado`, {
           estado: 'Suspendido',
         });
         await Swal.fire({
@@ -311,10 +313,10 @@
         }).then(async (result) => {
           if (result.isConfirmed) {
             try {
-              await axios.put(`http://localhost:8082/certificado/${certificadoEnUso.idCertificado}/estado`, {
+              await axios.put(`${BASE_URL}/certificado/${certificadoEnUso.idCertificado}/estado`, {
                 estado: 'Suspendido',
               });
-              await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+              await axios.put(`${BASE_URL}/certificado/${certificado.idCertificado}/estado`, {
                 estado: 'En uso',
               });
             //   alert('El archivo se ha actualizo en uso correctamente y el anterior archivo fue suspendido.');
@@ -341,7 +343,7 @@
     },
     async activarCertificado(certificado) {
       try {
-        await axios.put(`http://localhost:8082/certificado/${certificado.idCertificado}/estado`, {
+        await axios.put(`${BASE_URL}/certificado/${certificado.idCertificado}/estado`, {
           estado: 'En uso',
         });
         // alert('Certificado activado exitosamente');

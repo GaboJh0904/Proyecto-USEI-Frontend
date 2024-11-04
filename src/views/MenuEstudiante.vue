@@ -73,7 +73,8 @@ import NavBar from '@/components/NavBar.vue';
 import ImageCarousel from '@/components/imageCarousel.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import axios from 'axios';
-import Swal from 'sweetalert2';  
+import Swal from 'sweetalert2'; 
+import { BASE_URL } from '@/config/globals'; 
 
 export default {
   name: "MenuEstudiante",
@@ -122,7 +123,7 @@ export default {
       return;
     }
 
-    const url = `http://localhost:8082/respuesta/llenado/${estudianteId}`; // Cambiar esta URL según tu API
+    const url = `${BASE_URL}/respuesta/llenado/${estudianteId}`; // Cambiar esta URL según tu API
     console.log('Verificando encuesta con la URL:', url); // Para depuración
 
     try {
