@@ -18,6 +18,8 @@ import FormularioSoporte from '@/views/FormularioSoporte.vue'
 import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
 import subirCertificado from '@/views/SubirCertificado.vue'
+import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -118,6 +120,11 @@ const router = createRouter({
       path: '/subir-certificado',
       name: 'subir-certificado',
       component: subirCertificado,
+    },
+    {
+      path: '/certificado-estudiante',
+      name: 'certificado-estudiante',
+      component: CertificadoEstudiante,
     },
   ],
   scrollBehavior(to, from, savedPosition) {
