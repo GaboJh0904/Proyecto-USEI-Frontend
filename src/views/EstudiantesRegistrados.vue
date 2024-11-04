@@ -8,25 +8,29 @@
         <h1 class="user-management-title">Estudiantes Registrados</h1>
   
         <!-- Botones de Guardar y Cancelar -->
-        <div v-if="editingIndex !== null" class="edit-controls">
-          <button @click="saveChanges" class="action-btn save-btn">Guardar</button>
-          <button @click="cancelChanges" class="action-btn cancel-btn">Cancelar</button>
+        <div v-if="editingIndex !== null" class="save-button-container">
+          <button @click="saveChanges" class="save-button">Guardar Cambios</button>
+          <button @click="cancelChanges" class="cancel-button">Cancelar</button>
         </div>
   
-        <!-- Filtro y opciones de visualización -->
+        <!-- Filtro, selección de columnas y número de registros -->
         <div class="filter-sort-container">
+          <!-- Barra de búsqueda -->
           <input v-model="searchTerm" placeholder="Buscar por CI o correo" @input="fetchEstudiantes(1)" />
   
+          <!-- Selección de cantidad de registros por página -->
           <select v-model="perPage" @change="fetchEstudiantes(1)">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
           </select>
   
+          <!-- Botón de orden ascendente/descendente -->
           <button class="sort-button" @click="toggleSortDirection">
             <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
           </button>
   
+          <!-- Mostrar/ocultar columnas -->
           <div class="columns-menu">
             <button @click="toggleColumnsMenu">Columnas</button>
             <div v-if="showColumnsMenu" class="columns-dropdown">
@@ -225,7 +229,7 @@
     margin-bottom: 1rem;
   }
   
-  .edit-controls {
+  .save-button-container {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
@@ -235,6 +239,19 @@
     display: flex;
     gap: 20px;
     margin-bottom: 20px;
+  }
+  
+  .filter-sort-container input {
+    width: 40%;
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+  }
+  
+  .filter-sort-container select {
+    padding: 8px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
   }
   
   .user-table-container {
@@ -319,5 +336,17 @@
     border-radius: 8px;
     color: white;
   }
+
+  .column-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.column-option span {
+  margin-right: 10px; 
+}
   </style>
   
