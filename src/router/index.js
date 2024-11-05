@@ -18,9 +18,14 @@ import FormularioSoporte from '@/views/FormularioSoporte.vue'
 import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
 import subirCertificado from '@/views/SubirCertificado.vue'
+<<<<<<< HEAD
 import EstudiantesRegistrados from '@/views/EstudiantesRegistrados.vue'
 import FormularioPlazos from '@/views/FormularioPlazos.vue'
 import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
+=======
+import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
+
+>>>>>>> PaolaQ-branch
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -137,6 +142,9 @@ const router = createRouter({
       path: '/porcentaje-incompleto',
       name: 'PorcentajeIncompleto',
       component: PorcentajeIncompleto,
+      path: '/certificado-estudiante',
+      name: 'certificado-estudiante',
+      component: CertificadoEstudiante,
     },
   ],
   scrollBehavior(to, from, savedPosition) {
