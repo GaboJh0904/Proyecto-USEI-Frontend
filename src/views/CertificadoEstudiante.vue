@@ -6,23 +6,22 @@
 
     <main class="contact-admin-container">
       <div class="contact-content">
-        <!-- Timeline de Estado -->
         <div class="status-timeline">
-          <!-- Primera entrada del timeline: Encuesta completada -->
-          <div class="timeline-item completed">
-            <div class="icon-wrapper check-icon">✔️</div>
-            <div class="status-text">Encuesta completada</div>
+          <div :class="['timeline-item', hasFilled ? 'completed' : 'incomplete']">
+            <div class="icon-wrapper check-icon">
+              <span v-if="hasFilled">✔️</span>
+              <span v-else>❗</span>
+            </div>
+            <div class="status-text">{{ hasFilled ? 'Encuesta completada' : 'No llenaste la encuesta' }}</div>
             <div class="line"></div>
           </div>
 
-          <!-- Segunda entrada del timeline: Certificado pendiente -->
-          <div class="timeline-item pending animated">
+           <div :class="['timeline-item', hasFilled ? 'pending animated' : 'disabled']">
             <div class="icon-wrapper pending-icon">📄</div>
-            <div class="status-text">Certificado no enviado</div>
-            <div class="line"></div>
+            <div class="status-text">Certificado: {{ estadoCertificado }}</div>
+            <div class="line" v-if="hasFilled"></div>
           </div>
 
-          <!-- Tercera entrada del timeline: Certificado listo (deshabilitado) -->
           <div class="timeline-item disabled">
             <div class="icon-wrapper disabled-icon">📄</div>
             <div class="status-text">Certificado listo</div>
@@ -38,14 +37,53 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
+import { BASE_URL } from '@/config/globals';
+import axios from 'axios'; 
 
 export default {
   name: "CertificadoEstudiante",
   components: {
     NavBar,
     FooterComponent
-  }
+  },
+  data() {
+    return {
+      hasFilled: false, 
+      estadoCertificado: ''
+    };
+  },
+  async mounted() {
+    // Obtener el ID del estudiante de localStorage
+    const estudianteId = localStorage.getItem('id_estudiante');
+    if (!estudianteId) {
+      console.error('ID del estudiante no encontrado en localStorage');
+      return;
+    }
+
+    try {
+        // Verificar si el estudiante completó la encuesta
+        const encuestaResponse = await axios.get(`${BASE_URL}/respuesta/llenado/${estudianteId}`);
+        this.hasFilled = encuestaResponse.data.filled;
+
+        // verificar el estado del certificado
+        if (this.hasFilled) {
+            const certificadoResponse = await axios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
+            if (certificadoResponse.status === 200) {
+                this.estadoCertificado = certificadoResponse.data; 
+            } else {
+                this.estadoCertificado = 'No enviado';
+            }
+        } else {
+            this.estadoCertificado = 'No enviado';
+        }
+    } catch (error) {
+        console.error('Error al verificar el estado de la encuesta o del certificado:', error);
+        this.estadoCertificado = 'No enviado'; 
+    }
+}
+
 };
+
 </script>
 
 <style scoped>
