@@ -22,17 +22,15 @@
             <div class="line" v-if="hasFilled"></div>
           </div>
 
-         <!-- Entrada de Certificado Listo -->
          <div :class="['timeline-item', estadoCertificado === 'enviado' ? 'completed' : 'disabled']">
             <div class="icon-wrapper disabled-icon">📄</div>
             <div class="status-text">Certificado listo</div>
           </div>
 
-          <!-- Contenedor del Certificado con animación de aparición -->
-          <transition name="fade-slide">
-            <div v-if="showCertificado" class="certificado-container">
+           <transition name="fade-slide">
+            <div v-if="showCertificado && archivoUrl" class="certificado-container">
               <h3>Certificado del Estudiante</h3>
-              <p> mostrar el certificado...</p>
+              <embed :src="archivoUrl" type="application/pdf" width="100%" height="500px" />
             </div>
           </transition>
         </div>
@@ -59,7 +57,8 @@ export default {
     return {
       hasFilled: false, 
       estadoCertificado: '',
-      showCertificado: false
+      showCertificado: false,
+      archivoUrl: ''
     };
   },
   async mounted() {
@@ -71,7 +70,6 @@ export default {
     }
 
     try {
-        // Verificar si el estudiante completó la encuesta
         const encuestaResponse = await axios.get(`${BASE_URL}/respuesta/llenado/${estudianteId}`);
         this.hasFilled = encuestaResponse.data.filled;
 
@@ -80,11 +78,17 @@ export default {
             const certificadoResponse = await axios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
             if (certificadoResponse.status === 200) {
                 this.estadoCertificado = certificadoResponse.data; 
-                  // Mostrar el contenedor solo si el estado del certificado es "Enviado"
-              if (this.estadoCertificado === 'enviado') {
-                setTimeout(() => {
-              this.showCertificado = true;
-            }, 2000);
+                  if (this.estadoCertificado === 'enviado') {
+                    const archivoResponse = await axios.get(`${BASE_URL}/estado_certificado/archivo/directo/${estudianteId}`, {
+                      responseType: 'blob'  
+                  });
+                  const url = URL.createObjectURL(archivoResponse.data);
+                  this.archivoUrl = url;
+
+
+                    setTimeout(() => {
+                      this.showCertificado = true;
+                    }, 2000);
               }
             } else {
                 this.estadoCertificado = 'No enviado';
@@ -144,8 +148,8 @@ header {
   gap: 5px;
   width: 200%;
   padding: 50px;
-  background-color: rgba(140, 115, 162, 0.1); /* Fondo con color y transparencia */
-  border-radius: 15px; /* Bordes redondeados */
+  background-color: rgba(140, 115, 162, 0.1); 
+  border-radius: 15px; 
 }
 
 .timeline-item {
@@ -227,7 +231,6 @@ header {
   }
 }
 
-/* Animación de rebote y cambio de color en la primera entrada */
 @keyframes bounce-color {
   0% {
     transform: scale(1);
@@ -246,7 +249,6 @@ header {
   }
 }
 
-/* Animación al pasar el cursor por encima de la primera entrada */
 .timeline-item.completed:hover .icon-wrapper {
   color: #ffffff;
   background-color: #628d78;
@@ -255,7 +257,6 @@ header {
   transition: all 0.3s ease;
 }
 
-/* Animación de desvanecimiento en la entrada */
 .timeline-item {
   opacity: 0;
   transform: translateY(20px);
@@ -297,7 +298,6 @@ header {
   animation: fadeInSlideUp 4s ease forwards;
 }
 
-/* Animación para la entrada del contenedor */
 @keyframes fadeInSlideUp {
   from {
     opacity: 0;
@@ -309,7 +309,6 @@ header {
   }
 }
 
-/* Transición para el contenedor de certificado */
 .fade-slide-enter-active {
   transition: all 0.5s ease-in;
 }
@@ -321,12 +320,7 @@ header {
   transform: translateY(20px);
 }
 
-/* Estilos adicionales para el timeline y animaciones */
-@keyframes bounce-color {
-  0% { transform: scale(1); color: #7babae; border-color: #548591; }
-  30% { transform: scale(1.2); color: #6d9176; border-color: #5b7b5f; }
-  100% { transform: scale(1); color: #5b7b73; border-color: #85b09a; }
-}
+
 
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
