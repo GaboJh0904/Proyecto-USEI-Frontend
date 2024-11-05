@@ -50,6 +50,7 @@
               <th v-if="visibleColumns.ci" @click="sort('ci')">CI</th>
               <th v-if="visibleColumns.correoInstitucional" @click="sort('correoInstitucional')">Correo Institucional</th>
               <th v-if="visibleColumns.acciones">Acciones</th>
+              <th>Enviar Certificado</th>
             </tr>
           </thead>
           <tbody>
@@ -70,6 +71,9 @@
                 <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.id)" class="action-btn delete-btn">
                   <i class="fas fa-trash-alt"></i>
                 </button>
+              </td>
+              <td class="centered-button-cell">
+                <button @click="sendCertificate(estudiante.id)" class="send-certificate-button">Enviar Certificado</button>
               </td>
             </tr>
           </tbody>
@@ -100,7 +104,7 @@ export default {
   },
   data() {
     return {
-      userRole: '', // Inicializa userRole aquí
+      userRole: '', 
       userName: '',
       estudiantes: [],
       editingIndex: null,
@@ -216,10 +220,19 @@ export default {
         acciones: 'Acciones'
       };
       return labels[key];
+    },
+    sendCertificate(id) {
+      Swal.fire({
+        title: 'Certificado Enviado',
+        text: `El certificado para el estudiante con ID ${id} ha sido enviado.`,
+        icon: 'success',
+        confirmButtonText: 'Aceptar'
+      });
+      // Aquí se puede agregar la lógica de envío real del certificado
     }
   },
   mounted() {
-    this.userRole = localStorage.getItem('rol') || ''; // Asegúrate de asignar userRole aquí
+    this.userRole = localStorage.getItem('rol') || ''; 
     this.fetchEstudiantes();
   }
 };
@@ -306,7 +319,7 @@ export default {
   border-radius: 15px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   overflow-x: auto;
 }
 
@@ -341,6 +354,39 @@ export default {
 
 .delete-btn {
   background-color: #8E6C88;
+}
+
+.centered-button-cell {
+  text-align: center;
+}
+
+.send-certificate-button {
+  -webkit-appearance: none;
+  border: 0;
+  outline: 0;
+  background: linear-gradient(-45deg, #ccdbdc, #80ced7, #63c7b2, #8e6c88, #263d42);
+  background-size: 200% 200%;
+  animation: gradientBG 4.5s ease infinite;
+  padding: 10px 20px;
+  color: black;
+  text-transform: uppercase;
+  border-radius: 100px;
+  font-size: 0.8rem; 
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .sort-button {
@@ -384,6 +430,6 @@ export default {
 }
 
 .column-option span {
-  margin-right: 10px; 
+  margin-right: 10px;
 }
 </style>
