@@ -34,7 +34,7 @@
 
         <div class="input-group">
           <label for="fechaFinalizacion">Fecha de Finalización:</label>
-          <input type="date" v-model="formData.fechaFinalizacion" id="fechaFinalizacion" required />
+          <input type="date" v-model="formData.fechaFinalizacion" :min="formData.fechaModificacion" id="fechaFinalizacion" required />
           <span v-if="!formData.fechaFinalizacion && showErrors" class="error-message">Este campo es obligatorio.</span>
         </div>
 
@@ -186,6 +186,20 @@ export default {
           confirmButtonText: 'Aceptar',
         });
         return;
+      }
+      // Validar que la fecha de finalización no sea anterior a la fecha de modificación
+      const fechaModificacion = new Date(this.formData.fechaModificacion);
+      const fechaFinalizacion = new Date(this.formData.fechaFinalizacion);
+
+      if (fechaFinalizacion < fechaModificacion) {
+          Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'La fecha de finalización no puede ser anterior a la fecha de modificación.',
+              confirmButtonColor: '#6b45b1',
+              confirmButtonText: 'Aceptar',
+          });
+          return;
       }
 
       try {
