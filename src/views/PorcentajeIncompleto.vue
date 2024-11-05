@@ -65,7 +65,7 @@
         </div>
 
         <!-- Botón para abrir la ventana modal -->
-        <button class="settings-btn" @click="showModal = true">Modificar Parámetros de Porcentaje</button>
+        <button class="settings-btn" @click="openModal">Modificar Parámetros de Porcentaje</button>
       </div>
   
       <!-- Ventana Modal -->
@@ -91,6 +91,7 @@
   </template>
   
   <script>
+  import axios from 'axios';
   import Chart from 'chart.js/auto';
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
@@ -105,15 +106,14 @@
     data() {
       return {
         showModal: false,
-        minPercentage: 70, // Valor predeterminado
+        minPercentage: 70,
         defaultMessage: "Por favor complete la encuesta.",
-        surveyData: { completed: 70, notCompleted: 30 },
+        surveyData: { completed: 0, notCompleted: 0 },
         customMessage: '',
         lastSentDate: '2024-10-30',
         students: [
           { id: 1, name: 'Juan Perez', year: 2020 },
           { id: 2, name: 'Maria Gomez', year: 2021 },
-          // Agrega más estudiantes ficticios
         ],
         searchTerm: '',
         filterYear: '',
@@ -132,20 +132,56 @@
       },
     },
     methods: {
+      async fetchSurveyData() {
+        try {
+          const response = await axios.get(`${BASE_URL}/estado_encuesta`);
+          const completedCount = response.data.filter(item => item.estado === 'Completado').length;
+          const notCompletedCount = response.data.filter(item => item.estado === 'Pendiente').length;
+          this.surveyData = { completed: completedCount, notCompleted: notCompletedCount };
+          this.renderChart();
+        } catch (error) {
+          console.error('Error fetching survey data:', error);
+        }
+      },async openModal() {
+        try {
+          const response = await axios.get(`${BASE_URL}/parametros_aviso/1`);
+          this.minPercentage = response.data.porcentaje;
+          this.defaultMessage = response.data.mensajePredeterminado;
+          this.lastSentDate = response.data.fechaNotificacion;
+          this.showModal = true;
+        } catch (error) {
+          console.error('Error fetching parameters:', error);
+        }
+      },
+      closeModal() {
+        this.showModal = false;
+      },
       sendEmails() {
         alert("Enviando correos a todos los estudiantes que no completaron la encuesta.");
       },
       sendEmail(id) {
         alert(`Enviando correo al estudiante con ID: ${id}`);
       },
-      closeModal() {
-        this.showModal = false;
-      },
-      saveSettings() {
-        alert(`Configuración guardada: 
-        Porcentaje mínimo: ${this.minPercentage}%, 
-        Mensaje predeterminado: ${this.defaultMessage}`);
-        this.closeModal();
+      async saveSettings() {
+        try {
+          const currentDate = new Date().toISOString().split('T')[0];
+          const data = {
+            porcentaje: this.minPercentage,
+            mensajePredeterminado: this.defaultMessage,
+            fechaCambio: currentDate,
+            fechaNotificacion: this.lastSentDate
+          };
+          await axios.put(`${BASE_URL}/parametros_aviso/1`, data, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          alert('Configuración guardada correctamente');
+          this.closeModal();
+        } catch (error) {
+          console.error('Error saving settings:', error);
+          alert('No se pudo guardar la configuración');
+        }
       },
       renderChart() {
         const ctx = document.getElementById('surveyChart').getContext('2d');
@@ -164,7 +200,7 @@
       },
     },
     mounted() {
-      this.renderChart();
+      this.fetchSurveyData();
     },
   };
   </script>

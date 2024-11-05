@@ -163,12 +163,41 @@ export default {
         telefono: true,
         correoInstitucional: true,
         acciones: true,
-      }
+      },
+      pendingPercentageThreshold: null,
+      surveyData: { completed: 0, notCompleted: 0 },
     };
   },
   methods: {
     handleFileUpload(event) {
       this.file = event.target.files[0];
+    },
+    async fetchPendingPercentageThreshold() {
+      try {
+        const response = await axios.get(`${BASE_URL}/parametros_aviso/1`);
+        this.pendingPercentageThreshold = response.data.porcentaje;
+      } catch (error) {
+        console.error('Error fetching threshold percentage:', error);
+      }
+    },
+    async fetchSurveyData() {
+      try {
+        const response = await axios.get(`${BASE_URL}/estado_encuesta`);
+        const completedCount = response.data.filter(item => item.estado === 'Completado').length;
+        const notCompletedCount = response.data.filter(item => item.estado === 'Pendiente').length;
+        const total = completedCount + notCompletedCount;
+
+        this.surveyData = { completed: completedCount, notCompleted: notCompletedCount };
+
+        if (total > 0) {
+          const pendingPercentage = (notCompletedCount / total) * 100;
+          if (this.pendingPercentageThreshold !== null && pendingPercentage > this.pendingPercentageThreshold) {
+            Swal.fire('Aviso', `${pendingPercentage.toFixed(2)}% de estudiantes no realizó la encuesta a tiempo de graduación.`, 'warning');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching survey data:', error);
+      }
     },
     async processCSV() {
       if (this.file) {
@@ -339,7 +368,10 @@ export default {
       };
       return labels[key];
     },
-
+    async fetchData() {
+      await this.fetchPendingPercentageThreshold();
+      await this.fetchSurveyData();
+    },
     fetchUserData() {
       this.userName = 'Rosario Calisaya';
       this.userRole = 'Administrador';
@@ -348,6 +380,7 @@ export default {
   created() {
     this.fetchUserData();
     this.fetchEstudiantes(); // Cargar la lista de estudiantes paginada al iniciar
+    this.fetchData(); // Llamada inicial para obtener el umbral y los datos de encuestas
   },
 };
 </script>
