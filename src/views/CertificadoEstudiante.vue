@@ -22,10 +22,19 @@
             <div class="line" v-if="hasFilled"></div>
           </div>
 
-          <div class="timeline-item disabled">
+         <!-- Entrada de Certificado Listo -->
+         <div :class="['timeline-item', estadoCertificado === 'enviado' ? 'completed' : 'disabled']">
             <div class="icon-wrapper disabled-icon">📄</div>
             <div class="status-text">Certificado listo</div>
           </div>
+
+          <!-- Contenedor del Certificado con animación de aparición -->
+          <transition name="fade-slide">
+            <div v-if="showCertificado" class="certificado-container">
+              <h3>Certificado del Estudiante</h3>
+              <p> mostrar el certificado...</p>
+            </div>
+          </transition>
         </div>
       </div>
     </main>
@@ -49,7 +58,8 @@ export default {
   data() {
     return {
       hasFilled: false, 
-      estadoCertificado: ''
+      estadoCertificado: '',
+      showCertificado: false
     };
   },
   async mounted() {
@@ -70,6 +80,12 @@ export default {
             const certificadoResponse = await axios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
             if (certificadoResponse.status === 200) {
                 this.estadoCertificado = certificadoResponse.data; 
+                  // Mostrar el contenedor solo si el estado del certificado es "Enviado"
+              if (this.estadoCertificado === 'enviado') {
+                setTimeout(() => {
+              this.showCertificado = true;
+            }, 2000);
+              }
             } else {
                 this.estadoCertificado = 'No enviado';
             }
@@ -267,12 +283,53 @@ header {
     opacity: 1;
     transform: translateY(0);
   }
+
 }
 
-/* Estilos responsivos para pantallas más pequeñas */
-@media (max-width: 768px) {
-  .contact-content {
-    flex-direction: column;
+.certificado-container {
+  margin-top: 20px;
+  padding: 15px;
+  width: 100%;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+  animation: fadeInSlideUp 4s ease forwards;
+}
+
+/* Animación para la entrada del contenedor */
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Transición para el contenedor de certificado */
+.fade-slide-enter-active {
+  transition: all 0.5s ease-in;
+}
+.fade-slide-leave-active {
+  transition: all 0.5s ease-out;
+}
+.fade-slide-enter, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Estilos adicionales para el timeline y animaciones */
+@keyframes bounce-color {
+  0% { transform: scale(1); color: #7babae; border-color: #548591; }
+  30% { transform: scale(1.2); color: #6d9176; border-color: #5b7b5f; }
+  100% { transform: scale(1); color: #5b7b73; border-color: #85b09a; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
