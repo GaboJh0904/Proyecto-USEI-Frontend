@@ -19,6 +19,7 @@ import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
 import subirCertificado from '@/views/SubirCertificado.vue'
 import EstudiantesRegistrados from '@/views/EstudiantesRegistrados.vue'
+import FormularioPlazos from '@/views/FormularioPlazos.vue'
 import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -105,6 +106,11 @@ const router = createRouter({
       path: '/formulario-soporte',
       name: 'FormularioSoporte',
       component: FormularioSoporte
+    },
+    {
+      path: '/formulario-plazos', // Nueva ruta para Formulario de Plazos
+      name: 'FormularioPlazos',
+      component: FormularioPlazos, // Usa el nuevo componente
     },
     {
       path: '/respuestas-estudiante/:idEstudiante',
