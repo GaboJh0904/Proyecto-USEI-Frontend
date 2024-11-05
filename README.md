@@ -54,5 +54,7 @@ npm install papaparse
 ```sh
 npm install vuejs-paginate-next
 ```
-
-
+## chart intalar 
+```sh
+npm install chart
+```
