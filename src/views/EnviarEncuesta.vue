@@ -119,8 +119,8 @@ export default {
   methods: {
     async fetchEstudiantes() {
     try {
-        const response = await axios.get('${import.meta.env.VITE_BACKEND_URL}/estado_certificado');
-        if (response.data && Array.isArray(response.data)) {
+      const response = await axios.get(`${BASE_URL}/estado_certificado`);
+      if (response.data && Array.isArray(response.data)) {
             this.estudiantes = response.data;
         } else {
             console.error('Respuesta inesperada:', response.data);
