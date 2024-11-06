@@ -22,6 +22,7 @@ import EstudiantesRegistrados from '@/views/EstudiantesRegistrados.vue'
 import FormularioPlazos from '@/views/FormularioPlazos.vue'
 import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
+import Dashboard from '@/views/Dashboard.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -110,9 +111,9 @@ const router = createRouter({
       component: FormularioSoporte
     },
     {
-      path: '/formulario-plazos', // Nueva ruta para Formulario de Plazos
+      path: '/formulario-plazos', 
       name: 'FormularioPlazos',
-      component: FormularioPlazos, // Usa el nuevo componente
+      component: FormularioPlazos, 
     },
     {
       path: '/respuestas-estudiante/:idEstudiante',
@@ -120,9 +121,9 @@ const router = createRouter({
       component: RespuestasEstudiante
     },
     {
-      path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
+      path: '/vista-respuestas/:idEstudiante', 
       name: 'VerRespuestas',
-      component: VerRespuestas, // Componente que muestra las respuestas
+      component: VerRespuestas, 
     },
     {
       path: '/subir-certificado',
@@ -144,6 +145,11 @@ const router = createRouter({
       path: '/certificado-estudiante',
       name: 'certificado-estudiante',
       component: CertificadoEstudiante,
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: Dashboard,
     },
   ],
   scrollBehavior(to, from, savedPosition) {
