@@ -37,6 +37,7 @@
   <script>
   import axios from 'axios';
   import Swal from 'sweetalert2';  // Utiliza SweetAlert para mensajes
+  import { BASE_URL } from '@/config/globals';
   
   export default {
     name: 'ChangePasswordPopup',
@@ -70,7 +71,7 @@
           // Obtener el idEstudiante desde localStorage
           const idEstudiante = localStorage.getItem('idEstudianteCorreo');
           // Llamada al backend para cambiar la contraseña
-          await axios.put(`http://localhost:8082/estudiante/new-password?idEstudiante=${idEstudiante}`, {
+          await axios.put(`${BASE_URL}/estudiante/new-password?idEstudiante=${idEstudiante}`, {
             newPassword: this.newPassword
           });
 
@@ -84,7 +85,7 @@
           };
 
           // Enviar la notificación
-          await axios.post('http://localhost:8082/notificacion', notification);
+          await axios.post(`${BASE_URL}/notificacion`, notification);
   
           // Manejar respuesta exitosa
           Swal.fire({

@@ -19,6 +19,10 @@ import RespuestasEstudiante from '@/views/RespuestasEstudiante.vue'
 import VerRespuestas from '../views/VerRespuestas.vue'
 import subirCertificado from '@/views/SubirCertificado.vue'
 import EstudiantesRegistrados from '@/views/EstudiantesRegistrados.vue'
+import FormularioPlazos from '@/views/FormularioPlazos.vue'
+import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
+import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
@@ -106,6 +110,11 @@ const router = createRouter({
       component: FormularioSoporte
     },
     {
+      path: '/formulario-plazos', // Nueva ruta para Formulario de Plazos
+      name: 'FormularioPlazos',
+      component: FormularioPlazos, // Usa el nuevo componente
+    },
+    {
       path: '/respuestas-estudiante/:idEstudiante',
       name: 'RespuestasEstudiante',
       component: RespuestasEstudiante
@@ -126,6 +135,16 @@ const router = createRouter({
       component: EstudiantesRegistrados,
     },
     
+    {
+      path: '/porcentaje-incompleto',
+      name: 'PorcentajeIncompleto',
+      component: PorcentajeIncompleto,
+    },
+    {
+      path: '/certificado-estudiante',
+      name: 'certificado-estudiante',
+      component: CertificadoEstudiante,
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

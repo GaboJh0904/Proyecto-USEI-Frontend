@@ -37,7 +37,7 @@
           </div>
           <h3>CERTIFICADOS</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToCertificadoEstudiante">Ingresar</button>
           </div>
         </div>
         <!-- Card 2 -->
@@ -161,6 +161,9 @@ export default {
   
   goToContactAdmin() {
     this.$router.push('/contacto-admin');
+  },
+  goToCertificadoEstudiante() {
+    this.$router.push('/certificado-estudiante');
   },
 },
 };
