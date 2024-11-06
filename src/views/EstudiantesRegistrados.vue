@@ -56,9 +56,11 @@
           <tbody>
             <tr v-for="(estudiante, index) in estudiantes" :key="estudiante.id">
               <td v-if="visibleColumns.ci">
-                <input v-if="editingIndex === index" v-model="editedEstudiante.ci" />
+                <!-- Campo CI no editable cuando está en modo de edición -->
+                <input v-if="editingIndex === index" v-model="editedEstudiante.ci" readonly />
                 <span v-else>{{ estudiante.ci }}</span>
               </td>
+
               <td v-if="visibleColumns.correoInstitucional">
                 <input v-if="editingIndex === index" v-model="editedEstudiante.correoInstitucional" />
                 <span v-if="emailError" class="error-message">{{ emailError }}</span>
@@ -73,7 +75,7 @@
                 </button>
               </td>
               <td class="centered-button-cell">
-                <button @click="sendCertificate(estudiante.id)" class="send-certificate-button">Enviar Certificado</button>
+                <button @click="sendCertificate(estudiante.idEstudiante)" class="send-certificate-button">Enviar Certificado</button>
               </td>
             </tr>
           </tbody>
@@ -104,7 +106,7 @@ export default {
   },
   data() {
     return {
-      userRole: '', 
+      userRole: '',
       userName: '',
       estudiantes: [],
       editingIndex: null,
@@ -119,6 +121,7 @@ export default {
       visibleColumns: {
         ci: true,
         correoInstitucional: true,
+        correoPersonal: true,
         acciones: true
       },
       emailError: ''
@@ -149,34 +152,38 @@ export default {
     },
     saveChanges() {
       if (this.editingIndex !== null) {
-        if (!this.editedEstudiante.ci || !this.editedEstudiante.correoInstitucional) {
-          Swal.fire('Error', 'Todos los campos deben estar completos', 'error');
-          return;
-        }
-        
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(this.editedEstudiante.correoInstitucional)) {
-          Swal.fire({
-            title: 'Error',
-            text: 'Por favor, ingrese un correo electrónico válido.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-          });
+        if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
+          Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
           return;
         }
 
-        this.estudiantes[this.editingIndex] = { ...this.editedEstudiante };
-        this.editingIndex = null;
-        Swal.fire('Guardado', 'Cambios guardados exitosamente', 'success');
+        const estudianteActualizado = {
+          correoInstitucional: this.editedEstudiante.correoInstitucional
+        };
+
+        axios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
+          this.editingIndex = null;
+          Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
+        })
+        .catch(error => {
+          console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
+          Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
+        });
       }
     },
     cancelChanges() {
       this.editingIndex = null;
     },
-    deleteEstudiante(id) {
+    deleteEstudiante(idEstudiante) {
       Swal.fire({
         title: '¿Estás seguro?',
-        text: 'Esta acción no se puede deshacer',
+        text: 'No podrás revertir esta acción',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#80CED7',
@@ -185,8 +192,18 @@ export default {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          this.estudiantes = this.estudiantes.filter(estudiante => estudiante.id !== id);
-          Swal.fire('Eliminado', 'Estudiante eliminado correctamente', 'success');
+          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+            .then(() => {
+              this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
+              Swal.fire(
+                'Eliminado',
+                'El estudiante ha sido eliminado correctamente',
+                'success'
+              );
+            })
+            .catch(error => {
+              Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
+            });
         }
       });
     },
@@ -217,26 +234,36 @@ export default {
       const labels = {
         ci: 'CI',
         correoInstitucional: 'Correo Institucional',
+        correoPersonal: 'Correo Personal',
         acciones: 'Acciones'
       };
       return labels[key];
     },
-    sendCertificate(id) {
-      Swal.fire({
-        title: 'Certificado Enviado',
-        text: `El certificado para el estudiante con ID ${id} ha sido enviado.`,
-        icon: 'success',
-        confirmButtonText: 'Aceptar'
-      });
-      // Aquí se puede agregar la lógica de envío real del certificado
-    }
+    async sendCertificate(idEstudiante) {
+      try {
+        await axios.post(`${BASE_URL}/certificado/remision`, null, {
+          params: {
+            idEstudiante: idEstudiante
+          }
+        });
+        Swal.fire({
+          title: 'Certificado Enviado',
+          text: `El certificado para el estudiante con ID ${idEstudiante} ha sido enviado.`,
+          icon: 'success',
+          confirmButtonText: 'Aceptar'
+        });
+      } catch (error) {
+        Swal.fire('Error', 'No se pudo enviar el certificado', 'error');
+      }
+    },
   },
   mounted() {
-    this.userRole = localStorage.getItem('rol') || ''; 
+    this.userRole = localStorage.getItem('rol') || '';
     this.fetchEstudiantes();
   }
 };
 </script>
+
 
 <style scoped>
 .user-management-container {
@@ -362,6 +389,7 @@ export default {
 
 .send-certificate-button {
   -webkit-appearance: none;
+  appearance: none;
   border: 0;
   outline: 0;
   background: linear-gradient(-45deg, #ccdbdc, #80ced7, #63c7b2, #8e6c88, #263d42);
