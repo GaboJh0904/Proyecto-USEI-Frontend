@@ -139,6 +139,8 @@ const router = createRouter({
       path: '/porcentaje-incompleto',
       name: 'PorcentajeIncompleto',
       component: PorcentajeIncompleto,
+    },
+    {
       path: '/certificado-estudiante',
       name: 'certificado-estudiante',
       component: CertificadoEstudiante,
