@@ -12,13 +12,13 @@
           <div class="chart-section">
             <canvas id="surveyChart"></canvas>
           </div>
-          <div class="year-selector">
+          <!--<div class="year-selector">
             <label for="yearSelect">Año:</label>
             <select v-model="selectedYear" @change="updateChart" id="yearSelect">
               <option value="">Todos</option>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
-          </div>
+          </div>-->
         </div>
 
         <!-- Botón para enviar correos electrónicos -->
@@ -33,8 +33,8 @@
         <!-- Tabla de estudiantes que no completaron la encuesta -->
         <div class="table-section">
           <div class="table-controls">
-            <input v-model="searchTerm" class="search-input" placeholder="Buscar por nombre..." />
-            <select v-model="filterYear" class="filter-select">
+            <input v-model="searchTerm" class="search-input" placeholder="Buscar por nombre..." @input="fetchPendingStudents"/>
+            <select v-model="filterYear" class="filter-select" @change="fetchPendingStudents">
               <option value="">Filtrar por año</option>
               <option v-for="year in years" :key="year" :value="year">{{ year }}</option>
             </select>
@@ -44,24 +44,35 @@
             <thead>
               <tr>
                 <th>N°</th>
-                <th>ID</th>
+                <th>CI</th>
                 <th>Nombre</th>
+                <th>Apellido</th>
                 <th>Año de Ingreso</th>
+                <th>Telefono</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(student, index) in filteredStudents" :key="student.id">
+              <tr v-for="(student, index) in filteredStudents" :key="student.ci">
                 <td>{{ index + 1 }}</td>
-                <td>{{ student.id }}</td>
+                <td>{{ student.ci }}</td>
                 <td>{{ student.name }}</td>
+                <td>{{ student.lastName }}</td>
                 <td>{{ student.year }}</td>
+                <td>{{ student.phone }}</td>
                 <td>
-                  <button class="action-btn" @click="sendEmail(student.id)">Enviar Correo</button>
+                  <button class="action-btn" @click="sendEmail(student.mail)">Enviar Correo</button>
                 </td>
               </tr>
             </tbody>
           </table>
+
+          <!-- Controles de paginación -->
+          <div class="pagination-controls">
+            <button @click="changePage(currentPage - 1)" :disabled="currentPage === 1">Anterior</button>
+            <span>Página {{ currentPage }} de {{ totalPages }}</span>
+            <button @click="changePage(currentPage + 1)" :disabled="currentPage === totalPages">Siguiente</button>
+          </div>
         </div>
 
         <!-- Botón para abrir la ventana modal -->
@@ -95,6 +106,7 @@
   import Chart from 'chart.js/auto';
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
+  import Swal from 'sweetalert2';  // Utiliza SweetAlert para mensajes
   import { BASE_URL } from '@/config/globals';
   
   export default {
@@ -111,14 +123,14 @@
         surveyData: { completed: 0, notCompleted: 0 },
         customMessage: '',
         lastSentDate: '2024-10-30',
-        students: [
-          { id: 1, name: 'Juan Perez', year: 2020 },
-          { id: 2, name: 'Maria Gomez', year: 2021 },
-        ],
+        students: [],
         searchTerm: '',
         filterYear: '',
         selectedYear: '',
-        years: [2020, 2021, 2022],
+        years: [2020, 2021, 2022, 2023, 2024],
+        currentPage: 1,
+        pageSize: 10,
+        totalPages: 1,
       };
     },
     computed: {
@@ -142,7 +154,37 @@
         } catch (error) {
           console.error('Error fetching survey data:', error);
         }
-      },async openModal() {
+      },
+      async fetchPendingStudents() {
+        try {
+          const response = await axios.get(`${BASE_URL}/estado_encuesta/pendientes/paginated`, {
+            params: {
+              page: this.currentPage - 1,
+              size: this.pageSize,
+            },
+          });
+          // Ajuste para mapear los datos del DTO
+          this.students = response.data.content.map(student => ({
+            id: student.idEstudiante,
+            ci: student.ci,
+            name: student.nombre,
+            lastName: student.apellido,
+            year: student.anio,
+            phone: student.telefono,
+            mail: student.correoInstitucional,
+          }));
+          this.totalPages = response.data.totalPages;
+        } catch (error) {
+          console.error('Error fetching pending students:', error);
+        }
+      },
+      changePage(page) {
+        if (page >= 1 && page <= this.totalPages) {
+          this.currentPage = page;
+          this.fetchPendingStudents();
+        }
+      },
+      async openModal() {
         try {
           const response = await axios.get(`${BASE_URL}/parametros_aviso/1`);
           this.minPercentage = response.data.porcentaje;
@@ -156,11 +198,80 @@
       closeModal() {
         this.showModal = false;
       },
-      sendEmails() {
-        alert("Enviando correos a todos los estudiantes que no completaron la encuesta.");
+      async sendEmails() {
+        // Mostrar mensaje de carga
+        Swal.fire({
+          title: 'Enviando correos...',
+          text: 'Por favor espera un momento.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        try{
+          await axios.post(`${BASE_URL}/estado_encuesta/recordatorio_correo`);
+
+          // Cerrar el mensaje de carga
+        Swal.close();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Correos enviados',
+          text: 'Se han enviado correos recodatorios a todos lo estudiantes.',
+          confirmButtonText: 'Aceptar',
+        });
+        } catch (error) {
+          // Cerrar el mensaje de carga si hay error
+          Swal.close();
+
+        // Mostrar mensaje de error
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo enviar el código de verificación. Intente nuevamente.',
+            confirmButtonText: 'Aceptar',
+          });
+        }
       },
-      sendEmail(id) {
-        alert(`Enviando correo al estudiante con ID: ${id}`);
+      async sendEmail(correoInstitucional) {
+        // Mostrar mensaje de carga
+        Swal.fire({
+          title: 'Enviando correo...',
+          text: 'Por favor espera un momento.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+        try{
+          await axios.post(`${BASE_URL}/estado_encuesta/recordatorio_personal`, {
+            correo: correoInstitucional,
+            cuerpo: this.customMessage
+        });
+        // Cerrar el mensaje de carga
+        Swal.close();
+
+        // Manejar respuesta exitosa
+        Swal.fire({
+            icon: 'success',
+            title: 'Correo enviado',
+            text: 'Correo recordatorio enviado correctamente.',
+            confirmButtonText: 'Aceptar',
+          });
+  
+          // Cerrar el popup
+          this.$emit('close');
+        } catch (error) {
+          // Cerrar el mensaje de carga si hay error
+          Swal.close();
+          // Manejar errores
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al enviar el correo',
+            text: 'Ha ocurrido un error, por favor intenta nuevamente.',
+            confirmButtonText: 'Aceptar',
+          });
+        }
       },
       async saveSettings() {
         try {
@@ -201,11 +312,32 @@
     },
     mounted() {
       this.fetchSurveyData();
+      this.fetchPendingStudents();
     },
   };
   </script>
   
   <style scoped>
+  /* Estilos de la tabla, botones y paginación */
+  .pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+  }
+
+  .pagination-controls button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .pagination-controls span {
+    margin: 0 10px;
+  }
+  
   /* Estilos generales */
   .survey-page {
     padding: 30px;
