@@ -70,9 +70,10 @@
                 <button v-if="editingIndex !== index" @click="editEstudiante(index)" class="action-btn edit-btn">
                   <i class="fas fa-pencil-alt"></i>
                 </button>
-                <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.id)" class="action-btn delete-btn">
+                <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.idEstudiante)" class="action-btn delete-btn">
                   <i class="fas fa-trash-alt"></i>
                 </button>
+
               </td>
               <td class="centered-button-cell">
                 <button @click="sendCertificate(estudiante.idEstudiante)" class="send-certificate-button">Enviar Certificado</button>
@@ -121,7 +122,6 @@ export default {
       visibleColumns: {
         ci: true,
         correoInstitucional: true,
-        correoPersonal: true,
         acciones: true
       },
       emailError: ''
@@ -181,32 +181,37 @@ export default {
       this.editingIndex = null;
     },
     deleteEstudiante(idEstudiante) {
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: 'No podrás revertir esta acción',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#80CED7',
-        cancelButtonColor: '#8E6C88',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
-            .then(() => {
-              this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
-              Swal.fire(
-                'Eliminado',
-                'El estudiante ha sido eliminado correctamente',
-                'success'
-              );
-            })
-            .catch(error => {
-              Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
-            });
-        }
-      });
-    },
+  if (!idEstudiante) {
+    console.error("ID del estudiante no definido");
+    return;
+  }
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: 'No podrás revertir esta acción',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#80CED7',
+    cancelButtonColor: '#8E6C88',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+        .then(() => {
+          this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
+          Swal.fire(
+            'Eliminado',
+            'El estudiante ha sido eliminado correctamente',
+            'success'
+          );
+        })
+        .catch(error => {
+          Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
+        });
+    }
+  });
+},
+
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
       this.fetchEstudiantes(pageNumber);
@@ -234,7 +239,6 @@ export default {
       const labels = {
         ci: 'CI',
         correoInstitucional: 'Correo Institucional',
-        correoPersonal: 'Correo Personal',
         acciones: 'Acciones'
       };
       return labels[key];
@@ -263,7 +267,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 .user-management-container {
