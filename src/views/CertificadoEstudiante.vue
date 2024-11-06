@@ -7,7 +7,8 @@
     <main class="contact-admin-container">
       <div class="contact-content">
         <div class="status-timeline">
-          <div :class="['timeline-item', hasFilled ? 'completed' : 'incomplete']">
+            <!-- Estado de la Encuesta -->
+          <div :class="['timeline-item', hasFilled ? 'completed' : 'incomplete animated']">
             <div class="icon-wrapper check-icon">
               <span v-if="hasFilled">✔️</span>
               <span v-else>❗</span>
@@ -15,14 +16,18 @@
             <div class="status-text">{{ hasFilled ? 'Encuesta completada' : 'No llenaste la encuesta' }}</div>
             <div class="line"></div>
           </div>
-
-           <div :class="['timeline-item', hasFilled ? 'pending animated' : 'disabled']">
-            <div class="icon-wrapper pending-icon">📄</div>
+          <!-- Estado del Certificado -->
+          <div :class="['timeline-item', hasFilled && estadoCertificado === 'pendiente' ? 'pending animated' : (estadoCertificado === 'enviado' ? 'completed' : 'disabled')]">
+            <div class="icon-wrapper pending-icon">
+              <span v-if="estadoCertificado === 'enviado'">✔️</span>
+              <span v-else>📄</span>
+            </div>
             <div class="status-text">Certificado: {{ estadoCertificado }}</div>
             <div class="line" v-if="hasFilled"></div>
           </div>
 
-         <div :class="['timeline-item', estadoCertificado === 'enviado' ? 'completed' : 'disabled']">
+        <!-- Certificado Listo -->
+          <div :class="['timeline-item', estadoCertificado === 'enviado' ? 'completed animated' : 'disabled']">
             <div class="icon-wrapper disabled-icon">📄</div>
             <div class="status-text">Certificado listo</div>
           </div>
@@ -46,6 +51,8 @@ import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import { BASE_URL } from '@/config/globals';
 import axios from 'axios'; 
+import Swal from 'sweetalert2';
+
 
 export default {
   name: "CertificadoEstudiante",
@@ -89,19 +96,44 @@ export default {
                     setTimeout(() => {
                       this.showCertificado = true;
                     }, 2000);
+                    Swal.fire({
+                    icon: 'success',
+                    title: '¡Certificado listo!',
+                    text: 'El certificado ha sido enviado a su correo electrónico y está listo para visualizar.'
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'info',
+                    title: 'Certificado no enviado',
+                    text: 'El certificado aún no ha sido enviado.'
+                  });
+                }
+              } else {
+                this.estadoCertificado = 'No enviado';
+                Swal.fire({
+                  icon: 'info',
+                  title: 'Certificado no enviado',
+                  text: 'El certificado aún no ha sido enviado.'
+                });
               }
             } else {
-                this.estadoCertificado = 'No enviado';
+              this.estadoCertificado = 'No enviado';
+              Swal.fire({
+                icon: 'warning',
+                title: 'Encuesta no completada',
+                text: 'Para recibir tu certificado debes llenar la encuesta.'
+              });
             }
-        } else {
-            this.estadoCertificado = 'No enviado';
-        }
-    } catch (error) {
-        console.error('Error al verificar el estado de la encuesta o del certificado:', error);
-        this.estadoCertificado = 'No enviado'; 
-    }
-}
-
+          } catch (error) {
+            console.error('Error al verificar el estado de la encuesta o del certificado:', error);
+            this.estadoCertificado = 'No enviado'; 
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Ocurrió un error al verificar el estado del certificado o la encuesta.'
+            });
+          }
+  }
 };
 
 </script>
@@ -114,6 +146,18 @@ export default {
   padding: 0;
   box-sizing: border-box;
   font-family: 'Roboto', sans-serif;
+}
+.animated .icon-wrapper {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.timeline-item.pending .icon-wrapper {
+  border-color: #ff6b6b;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.timeline-item.disabled .icon-wrapper {
+  border-color: #cccccc;
+  color: #cccccc;
 }
 
 header {
