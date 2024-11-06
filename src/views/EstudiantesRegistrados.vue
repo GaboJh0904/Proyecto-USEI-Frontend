@@ -15,17 +15,12 @@
 
       <!-- Filtro, selección de columnas y número de registros -->
       <div class="filter-sort-container">
-        <!-- Barra de búsqueda -->
         <input v-model="searchTerm" placeholder="Buscar por CI o correo" @input="fetchEstudiantes(1)" />
-
-        <!-- Selección de cantidad de registros por página -->
         <select v-model="perPage" @change="fetchEstudiantes(1)">
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="20">20</option>
         </select>
-
-        <!-- Botón de orden ascendente/descendente -->
         <button class="sort-button" @click="toggleSortDirection">
           <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
         </button>
@@ -56,7 +51,6 @@
           <tbody>
             <tr v-for="(estudiante, index) in estudiantes" :key="estudiante.id">
               <td v-if="visibleColumns.ci">
-                <!-- Campo CI no editable cuando está en modo de edición -->
                 <input v-if="editingIndex === index" v-model="editedEstudiante.ci" readonly />
                 <span v-else>{{ estudiante.ci }}</span>
               </td>
@@ -73,7 +67,6 @@
                 <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.idEstudiante)" class="action-btn delete-btn">
                   <i class="fas fa-trash-alt"></i>
                 </button>
-
               </td>
               <td class="centered-button-cell">
                 <button @click="sendCertificate(estudiante.idEstudiante)" class="send-certificate-button">Enviar Certificado</button>
@@ -149,11 +142,21 @@ export default {
     editEstudiante(index) {
       this.editingIndex = index;
       this.editedEstudiante = { ...this.estudiantes[index] };
+      this.emailError = '';
+    },
+    validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
     },
     saveChanges() {
       if (this.editingIndex !== null) {
         if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
           Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
+          return;
+        }
+        
+        if (!this.validateEmail(this.editedEstudiante.correoInstitucional)) {
+          this.emailError = 'Formato de correo inválido';
           return;
         }
 
@@ -169,6 +172,7 @@ export default {
         .then(response => {
           this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
           this.editingIndex = null;
+          this.emailError = '';
           Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
         })
         .catch(error => {
@@ -179,39 +183,39 @@ export default {
     },
     cancelChanges() {
       this.editingIndex = null;
+      this.emailError = '';
     },
     deleteEstudiante(idEstudiante) {
-  if (!idEstudiante) {
-    console.error("ID del estudiante no definido");
-    return;
-  }
-  Swal.fire({
-    title: '¿Estás seguro?',
-    text: 'No podrás revertir esta acción',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#80CED7',
-    cancelButtonColor: '#8E6C88',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
-        .then(() => {
-          this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
-          Swal.fire(
-            'Eliminado',
-            'El estudiante ha sido eliminado correctamente',
-            'success'
-          );
-        })
-        .catch(error => {
-          Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
-        });
-    }
-  });
-},
-
+      if (!idEstudiante) {
+        console.error("ID del estudiante no definido");
+        return;
+      }
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'No podrás revertir esta acción',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#80CED7',
+        cancelButtonColor: '#8E6C88',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+            .then(() => {
+              this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
+              Swal.fire(
+                'Eliminado',
+                'El estudiante ha sido eliminado correctamente',
+                'success'
+              );
+            })
+            .catch(error => {
+              Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
+            });
+        }
+      });
+    },
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
       this.fetchEstudiantes(pageNumber);
