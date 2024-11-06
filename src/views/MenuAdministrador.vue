@@ -148,6 +148,19 @@
             <button class="btn-ingresar" @click="goToEstudiantesRegistrados">Ingresar</button>
           </div>
         </div>
+
+         <!--Card 11 para Plazos -->
+         <div class="card-wrapper">
+          <div class="card">
+            <img src="@/components/images/plazos_icon.png" alt="Plazos" class="card-icon" />
+          </div>
+          <h3>PLAZOS</h3>
+          <div class="card-button-container">
+            <button class="btn-ingresar" @click="goToPlazos">Ingresar</button>
+          </div>
+        </div>
+
+
       </div>
     </section>
 
@@ -211,6 +224,9 @@
     },
     goToEstudiantesRegistrados(){
       this.$router.push('/estudiantes-registrados');
+    },
+    goToPlazos() {
+      this.$router.push('/formulario-plazos');
     }
 
   },

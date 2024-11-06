@@ -7,7 +7,8 @@
     <main class="contact-admin-container">
       <div class="contact-content">
         <div class="status-timeline">
-          <div :class="['timeline-item', hasFilled ? 'completed' : 'incomplete']">
+            <!-- Estado de la Encuesta -->
+          <div :class="['timeline-item', hasFilled ? 'completed' : 'incomplete animated']">
             <div class="icon-wrapper check-icon">
               <span v-if="hasFilled">✔️</span>
               <span v-else>❗</span>
@@ -15,17 +16,28 @@
             <div class="status-text">{{ hasFilled ? 'Encuesta completada' : 'No llenaste la encuesta' }}</div>
             <div class="line"></div>
           </div>
-
-           <div :class="['timeline-item', hasFilled ? 'pending animated' : 'disabled']">
-            <div class="icon-wrapper pending-icon">📄</div>
+          <!-- Estado del Certificado -->
+          <div :class="['timeline-item', hasFilled && estadoCertificado === 'pendiente' ? 'pending animated' : (estadoCertificado === 'enviado' ? 'completed' : 'disabled')]">
+            <div class="icon-wrapper pending-icon">
+              <span v-if="estadoCertificado === 'enviado'">✔️</span>
+              <span v-else>📄</span>
+            </div>
             <div class="status-text">Certificado: {{ estadoCertificado }}</div>
             <div class="line" v-if="hasFilled"></div>
           </div>
 
-          <div class="timeline-item disabled">
+        <!-- Certificado Listo -->
+          <div :class="['timeline-item', estadoCertificado === 'enviado' ? 'completed animated' : 'disabled']">
             <div class="icon-wrapper disabled-icon">📄</div>
             <div class="status-text">Certificado listo</div>
           </div>
+
+           <transition name="fade-slide">
+            <div v-if="showCertificado && archivoUrl" class="certificado-container">
+              <h3>Certificado del Estudiante</h3>
+              <embed :src="archivoUrl" type="application/pdf" width="100%" height="500px" />
+            </div>
+          </transition>
         </div>
       </div>
     </main>
@@ -39,6 +51,8 @@ import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import { BASE_URL } from '@/config/globals';
 import axios from 'axios'; 
+import Swal from 'sweetalert2';
+
 
 export default {
   name: "CertificadoEstudiante",
@@ -49,7 +63,9 @@ export default {
   data() {
     return {
       hasFilled: false, 
-      estadoCertificado: ''
+      estadoCertificado: '',
+      showCertificado: false,
+      archivoUrl: ''
     };
   },
   async mounted() {
@@ -61,7 +77,6 @@ export default {
     }
 
     try {
-        // Verificar si el estudiante completó la encuesta
         const encuestaResponse = await axios.get(`${BASE_URL}/respuesta/llenado/${estudianteId}`);
         this.hasFilled = encuestaResponse.data.filled;
 
@@ -70,18 +85,55 @@ export default {
             const certificadoResponse = await axios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
             if (certificadoResponse.status === 200) {
                 this.estadoCertificado = certificadoResponse.data; 
-            } else {
-                this.estadoCertificado = 'No enviado';
-            }
-        } else {
-            this.estadoCertificado = 'No enviado';
-        }
-    } catch (error) {
-        console.error('Error al verificar el estado de la encuesta o del certificado:', error);
-        this.estadoCertificado = 'No enviado'; 
-    }
-}
+                  if (this.estadoCertificado === 'enviado') {
+                    const archivoResponse = await axios.get(`${BASE_URL}/estado_certificado/archivo/directo/${estudianteId}`, {
+                      responseType: 'blob'  
+                  });
+                  const url = URL.createObjectURL(archivoResponse.data);
+                  this.archivoUrl = url;
 
+
+                    setTimeout(() => {
+                      this.showCertificado = true;
+                    }, 2000);
+                    Swal.fire({
+                    icon: 'success',
+                    title: '¡Certificado listo!',
+                    text: 'El certificado ha sido enviado a su correo electrónico y está listo para visualizar.'
+                  });
+                } else {
+                  Swal.fire({
+                    icon: 'info',
+                    title: 'Certificado no enviado',
+                    text: 'El certificado aún no ha sido enviado.'
+                  });
+                }
+              } else {
+                this.estadoCertificado = 'No enviado';
+                Swal.fire({
+                  icon: 'info',
+                  title: 'Certificado no enviado',
+                  text: 'El certificado aún no ha sido enviado.'
+                });
+              }
+            } else {
+              this.estadoCertificado = 'No enviado';
+              Swal.fire({
+                icon: 'warning',
+                title: 'Encuesta no completada',
+                text: 'Para recibir tu certificado debes llenar la encuesta.'
+              });
+            }
+          } catch (error) {
+            console.error('Error al verificar el estado de la encuesta o del certificado:', error);
+            this.estadoCertificado = 'No enviado'; 
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Ocurrió un error al verificar el estado del certificado o la encuesta.'
+            });
+          }
+  }
 };
 
 </script>
@@ -94,6 +146,18 @@ export default {
   padding: 0;
   box-sizing: border-box;
   font-family: 'Roboto', sans-serif;
+}
+.animated .icon-wrapper {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.timeline-item.pending .icon-wrapper {
+  border-color: #ff6b6b;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.timeline-item.disabled .icon-wrapper {
+  border-color: #cccccc;
+  color: #cccccc;
 }
 
 header {
@@ -128,8 +192,8 @@ header {
   gap: 5px;
   width: 200%;
   padding: 50px;
-  background-color: rgba(140, 115, 162, 0.1); /* Fondo con color y transparencia */
-  border-radius: 15px; /* Bordes redondeados */
+  background-color: rgba(140, 115, 162, 0.1); 
+  border-radius: 15px; 
 }
 
 .timeline-item {
@@ -211,7 +275,6 @@ header {
   }
 }
 
-/* Animación de rebote y cambio de color en la primera entrada */
 @keyframes bounce-color {
   0% {
     transform: scale(1);
@@ -230,7 +293,6 @@ header {
   }
 }
 
-/* Animación al pasar el cursor por encima de la primera entrada */
 .timeline-item.completed:hover .icon-wrapper {
   color: #ffffff;
   background-color: #628d78;
@@ -239,7 +301,6 @@ header {
   transition: all 0.3s ease;
 }
 
-/* Animación de desvanecimiento en la entrada */
 .timeline-item {
   opacity: 0;
   transform: translateY(20px);
@@ -267,12 +328,46 @@ header {
     opacity: 1;
     transform: translateY(0);
   }
+
 }
 
-/* Estilos responsivos para pantallas más pequeñas */
-@media (max-width: 768px) {
-  .contact-content {
-    flex-direction: column;
+.certificado-container {
+  margin-top: 20px;
+  padding: 15px;
+  width: 100%;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+  animation: fadeInSlideUp 4s ease forwards;
+}
+
+@keyframes fadeInSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-slide-enter-active {
+  transition: all 0.5s ease-in;
+}
+.fade-slide-leave-active {
+  transition: all 0.5s ease-out;
+}
+.fade-slide-enter, .fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 </style>
