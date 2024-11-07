@@ -82,8 +82,7 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-import Swal from 'sweetalert2';  
-import axios from 'axios';
+import Swal from 'sweetalert2';
 import { BASE_URL } from '@/config/globals';
 
 export default {
@@ -170,7 +169,7 @@ export default {
 
     async fetchQuestions() {
       try {
-        const response = await axios.get(`${BASE_URL}/pregunta`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/pregunta`);
         let questions = response.data;
 
         // Filtrar solo preguntas con estado ACTIVO
@@ -179,7 +178,7 @@ export default {
         // Para cada pregunta, obtener sus opciones (si aplica)
         for (let question of questions) {
           if (question.tipoPregunta === 'Seleccion' || question.tipoPregunta === 'Multiple') {
-            const optionsResponse = await axios.get(`${BASE_URL}/opciones_pregunta/pregunta/${question.idPregunta}`);
+            const optionsResponse = await this.$protectedAxios.get(`${BASE_URL}/opciones_pregunta/pregunta/${question.idPregunta}`);
             question.opciones = optionsResponse.data;
           } else {
             question.opciones = []; // No hay opciones para preguntas de tipo 'Texto'

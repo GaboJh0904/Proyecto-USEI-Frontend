@@ -126,7 +126,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';
@@ -174,7 +173,7 @@ export default {
     },
     async fetchPendingPercentageThreshold() {
       try {
-        const response = await axios.get(`${BASE_URL}/parametros_aviso/1`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/parametros_aviso/1`);
         this.pendingPercentageThreshold = response.data.porcentaje;
       } catch (error) {
         console.error('Error fetching threshold percentage:', error);
@@ -182,7 +181,7 @@ export default {
     },
     async fetchSurveyData() {
       try {
-        const response = await axios.get(`${BASE_URL}/estado_encuesta`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta`);
         const completedCount = response.data.filter(item => item.estado === 'Completado').length;
         const notCompletedCount = response.data.filter(item => item.estado === 'Pendiente').length;
         const total = completedCount + notCompletedCount;
@@ -205,7 +204,7 @@ export default {
         formData.append('file', this.file);
 
         try {
-          const response = await axios.post(`${BASE_URL}/estudiante/csv-estudiantes`, formData, {
+          await this.$protectedAxios.post(`${BASE_URL}/estudiante/csv-estudiantes`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
@@ -221,7 +220,7 @@ export default {
 
     async fetchEstudiantes(page = 1) {
       try {
-        const response = await axios.get(`${BASE_URL}/estudiante`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estudiante`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -239,7 +238,7 @@ export default {
     },
 
     enviarInvitaciones() {
-      axios.post(`${BASE_URL}/estudiante/enlaceInvitacion`) 
+      this.$protectedAxios.post(`${BASE_URL}/estudiante/enlaceInvitacion`) 
         .then(() => {
           Swal.fire('Éxito', 'Invitaciones enviadas correctamente', 'success');
         })
@@ -281,7 +280,7 @@ export default {
           correoInstitucional: this.editedEstudiante.correoInstitucional,
         };
 
-        axios.put(`${BASE_URL}/estudiante/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+        this.$protectedAxios.put(`${BASE_URL}/estudiante/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -312,7 +311,7 @@ export default {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+          this.$protectedAxios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
             .then(() => {
               this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
               Swal.fire(

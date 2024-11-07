@@ -46,7 +46,6 @@
   </template>
   
   <script>
-  import axios from 'axios';
   import Swal from 'sweetalert2';  // Utiliza SweetAlert para mensajes
   import { BASE_URL } from '@/config/globals';
   
@@ -74,7 +73,7 @@
         });
       try {
         // Consumir la API para enviar el código de verificación
-        const response = await axios.post(`${BASE_URL}/estudiante/codigoVerificacion/${this.email}`);
+        const response = await this.$publicAxios.post(`${BASE_URL}/estudiante/codigoVerificacion/${this.email}`);
         
         // Cerrar el mensaje de carga
         Swal.close();

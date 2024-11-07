@@ -88,7 +88,6 @@ import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import PaginationComponent from '@/components/PaginationComponent.vue';
 import Swal from 'sweetalert2';
-import axios from 'axios';
 import { BASE_URL } from '@/config/globals';
 
 export default {
@@ -123,7 +122,7 @@ export default {
   methods: {
     async fetchEstudiantes(page = 1) {
       try {
-        const response = await axios.get(`${BASE_URL}/estudiante`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estudiante`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -164,7 +163,7 @@ export default {
           correoInstitucional: this.editedEstudiante.correoInstitucional
         };
 
-        axios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+        this.$protectedAxios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -201,7 +200,7 @@ export default {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+          this.$protectedAxios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
             .then(() => {
               this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
               Swal.fire(
@@ -249,7 +248,7 @@ export default {
     },
     async sendCertificate(idEstudiante) {
       try {
-        await axios.post(`${BASE_URL}/certificado/remision`, null, {
+        await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
           params: {
             idEstudiante: idEstudiante
           }

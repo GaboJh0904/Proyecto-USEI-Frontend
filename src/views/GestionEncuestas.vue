@@ -50,7 +50,6 @@
   </template>
   
   <script>
-  import axios from 'axios';
   import Swal from 'sweetalert2';
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
@@ -83,7 +82,7 @@
   methods: {
     async fetchEncuestas() {
       try {
-        const response = await axios.get(`${BASE_URL}/encuesta`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/encuesta`);
         this.encuestas = response.data;
       } catch (error) {
         console.error('Error al obtener las encuestas:', error);
@@ -103,7 +102,7 @@
 
       try {
         // Crear nueva encuesta
-        const response = await axios.post(`${BASE_URL}/encuesta`, {
+        await this.$protectedAxios.post(`${BASE_URL}/encuesta`, {
           titulo: this.encuestaForm.titulo,
           descripcion: this.encuestaForm.descripcion,
           fechaModificado: new Date().toISOString().split('T')[0], // Fecha de modificación actual

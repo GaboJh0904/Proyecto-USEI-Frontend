@@ -12,7 +12,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import 'flickity/css/flickity.css';
 import Flickity from 'flickity';
 import imagesLoaded from 'imagesloaded';
@@ -58,7 +57,7 @@ export default {
   },
   async mounted() {
   try {
-    const response = await axios.get(`${BASE_URL}/noticia/carrusel`);
+    const response = await this.$publicAxios.get(`${BASE_URL}/noticia/carrusel`);
     this.noticias = response.data;
     console.log(this.noticias);
     this.$nextTick(() => {

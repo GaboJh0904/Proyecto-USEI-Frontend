@@ -72,7 +72,6 @@
 import NavBar from '@/components/NavBar.vue';
 import ImageCarousel from '@/components/imageCarousel.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-import axios from 'axios';
 import Swal from 'sweetalert2'; 
 import { BASE_URL } from '@/config/globals'; 
 
@@ -127,7 +126,7 @@ export default {
     console.log('Verificando encuesta con la URL:', url); // Para depuración
 
     try {
-      const response = await axios.get(url);
+      const response = await this.$protectedAxios.get(url);
       const hasFilled = response.data.filled; // API debe devolver si el estudiante ya llenó la encuesta
 
       if (hasFilled) {

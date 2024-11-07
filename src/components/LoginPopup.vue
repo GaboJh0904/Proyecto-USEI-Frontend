@@ -31,7 +31,6 @@
 </template>
   
 <script>
-import axios from 'axios';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';  
 import { BASE_URL } from '@/config/globals';
@@ -82,6 +81,8 @@ export default {
 
           // Guardar el token en localStorage
           localStorage.setItem('authToken', token);
+
+          console.log(expiresIn);
 
           // Guardar otros datos en localStorage
           localStorage.setItem('id_estudiante', data.id_estudiante);

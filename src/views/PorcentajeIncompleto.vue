@@ -102,7 +102,6 @@
   </template>
   
   <script>
-  import axios from 'axios';
   import Chart from 'chart.js/auto';
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
@@ -146,7 +145,7 @@
     methods: {
       async fetchSurveyData() {
         try {
-          const response = await axios.get(`${BASE_URL}/estado_encuesta`);
+          const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta`);
           const completedCount = response.data.filter(item => item.estado === 'Completado').length;
           const notCompletedCount = response.data.filter(item => item.estado === 'Pendiente').length;
           this.surveyData = { completed: completedCount, notCompleted: notCompletedCount };
@@ -157,7 +156,7 @@
       },
       async fetchPendingStudents() {
         try {
-          const response = await axios.get(`${BASE_URL}/estado_encuesta/pendientes/paginated`, {
+          const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/pendientes/paginated`, {
             params: {
               page: this.currentPage - 1,
               size: this.pageSize,
@@ -186,7 +185,7 @@
       },
       async openModal() {
         try {
-          const response = await axios.get(`${BASE_URL}/parametros_aviso/1`);
+          const response = await this.$protectedAxios.get(`${BASE_URL}/parametros_aviso/1`);
           this.minPercentage = response.data.porcentaje;
           this.defaultMessage = response.data.mensajePredeterminado;
           this.lastSentDate = response.data.fechaNotificacion;
@@ -209,7 +208,7 @@
           }
         });
         try{
-          await axios.post(`${BASE_URL}/estado_encuesta/recordatorio_correo`);
+          await this.$protectedAxios.post(`${BASE_URL}/estado_encuesta/recordatorio_correo`);
 
           // Cerrar el mensaje de carga
         Swal.close();
@@ -244,7 +243,7 @@
           }
         });
         try{
-          await axios.post(`${BASE_URL}/estado_encuesta/recordatorio_personal`, {
+          await this.$protectedAxios.post(`${BASE_URL}/estado_encuesta/recordatorio_personal`, {
             correo: correoInstitucional,
             cuerpo: this.customMessage
         });
@@ -282,7 +281,7 @@
             fechaCambio: currentDate,
             fechaNotificacion: this.lastSentDate
           };
-          await axios.put(`${BASE_URL}/parametros_aviso/1`, data, {
+          await this.$protectedAxios.put(`${BASE_URL}/parametros_aviso/1`, data, {
             headers: {
               'Content-Type': 'application/json',
             },
