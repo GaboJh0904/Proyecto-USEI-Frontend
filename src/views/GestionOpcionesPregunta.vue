@@ -49,7 +49,6 @@
   </div>
 </template>
 <script>
-import axios from 'axios'; // Importamos axios para realizar solicitudes HTTP
 import Swal from 'sweetalert2'; // Importamos SweetAlert para las alertas
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
@@ -79,7 +78,7 @@ export default {
     // Método para obtener todas las opciones de una pregunta por su ID
     async fetchOptions() {
       try {
-        const response = await axios.get(`${BASE_URL}/opciones_pregunta/pregunta/${this.$route.params.idPregunta}`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/opciones_pregunta/pregunta/${this.$route.params.idPregunta}`);
         console.log('Opciones recibidas:', response.data); 
         this.options = [...response.data]; // Reasigna el array para asegurar la reactividad
       } catch (error) {
@@ -99,11 +98,11 @@ export default {
       try {
         if (this.isUpdating) {
           // Actualizar opción existente
-          await axios.put(`${BASE_URL}/opciones_pregunta/${this.option.idOpciones}`, this.option);
+          await this.$protectedAxios.put(`${BASE_URL}/opciones_pregunta/${this.option.idOpciones}`, this.option);
           Swal.fire('Actualizado', 'La opción ha sido actualizada exitosamente.', 'success');
         } else {
           // Crear nueva opción
-          await axios.post(`${BASE_URL}/opciones_pregunta`, this.option);
+          await this.$protectedAxios.post(`${BASE_URL}/opciones_pregunta`, this.option);
           Swal.fire('Agregado', 'La nueva opción ha sido agregada exitosamente.', 'success');
         }
         this.resetForm(); // Limpiar el formulario después de enviar
@@ -135,7 +134,7 @@ export default {
     // Método para eliminar una opción por su ID
     async deleteOption(optionId) {
       try {
-        await axios.delete(`${BASE_URL}/opciones_pregunta/${optionId}`);
+        await this.$protectedAxios.delete(`${BASE_URL}/opciones_pregunta/${optionId}`);
         Swal.fire('Eliminado', 'La opción ha sido eliminada exitosamente.', 'success');
         this.fetchOptions(); // Refrescar la lista de opciones después de eliminar
       } catch (error) {

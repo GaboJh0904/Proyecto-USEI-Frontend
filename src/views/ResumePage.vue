@@ -36,7 +36,6 @@
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';  
-import axios from 'axios';
 import { BASE_URL } from '@/config/globals';
 
 export default {
@@ -67,7 +66,7 @@ export default {
   methods: {
     async fetchPreguntas() {
       try {
-        const response = await axios.get(`${BASE_URL}/pregunta`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/pregunta`);
         this.preguntas = response.data;
         console.log('Preguntas obtenidas:', this.preguntas); // Verificar si las preguntas son obtenidas correctamente
       } catch (error) {
@@ -116,7 +115,7 @@ export default {
         };
 
         // Enviar la notificación
-        await axios.post(`${BASE_URL}/notificacion`, notification);
+        await this.$protectedAxios.post(`${BASE_URL}/notificacion`, notification);
 
         // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
@@ -134,21 +133,21 @@ export default {
           console.log('Enviando respuesta:', payload); // Para depuración
 
           try {
-            await axios.post(`${BASE_URL}/respuesta`, payload);
+            await this.$protectedAxios.post(`${BASE_URL}/respuesta`, payload);
           } catch (error) {
             console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
           }
         }
-
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
         // Cambiar el estado de la encuesta a "Completada"
         const estadoEncuesta = {
           estado: 'Completado',
-          fechaEstado: new Date().toISOString(), // Fecha actual
+          fechaEstado: response.data.fechaEstado,
           estudianteIdEstudiante: { idEstudiante: estudianteId },
           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
         };
 
-        await axios.post(`${BASE_URL}/estado_encuesta`, estadoEncuesta);
+        await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
 
         // Mostrar notificación de éxito
         Swal.fire({
