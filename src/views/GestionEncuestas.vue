@@ -46,53 +46,51 @@
         </div>
       </div>
     </main>
-
+  
     <FooterComponent />
   </div>
 </template>
-
-
-<script>
-import axios from 'axios';
-import Swal from 'sweetalert2';
-import NavBar from '@/components/NavBar.vue';
-import FooterComponent from '@/components/FooterComponent.vue';
-import { BASE_URL } from '@/config/globals';
-
-export default {
-name: 'GestionEncuestas',
-components: {
-  NavBar,
-  FooterComponent
-},
-data() {
-  return {
-    encuestas: [],
-    showForm: false,
-    encuestaForm: {
-      titulo: '',
-      descripcion: ''
-    },
-    usuarioId: null, // Para almacenar el ID del usuario recibido de la ruta
-  };
-},
-mounted() {
-  // Obtener el idUsuario de los parámetros de la ruta (query params)
-  this.usuarioId = this.$route.params.idUsuario;
-
-  // Cargar todas las encuestas al montar el componente
-  this.fetchEncuestas();
-},
-methods: {
-  async fetchEncuestas() {
-    try {
-      const response = await axios.get(`${BASE_URL}/encuesta`);
-      this.encuestas = response.data;
-    } catch (error) {
-      console.error('Error al obtener las encuestas:', error);
-      Swal.fire('Error', 'No se pudieron cargar las encuestas.', 'error');
-    }
+  
+  <script>
+  import Swal from 'sweetalert2';
+  import NavBar from '@/components/NavBar.vue';
+  import FooterComponent from '@/components/FooterComponent.vue';
+  import { BASE_URL } from '@/config/globals';
+  
+  export default {
+  name: 'GestionEncuestas',
+  components: {
+    NavBar,
+    FooterComponent
   },
+  data() {
+    return {
+      encuestas: [],
+      showForm: false,
+      encuestaForm: {
+        titulo: '',
+        descripcion: ''
+      },
+      usuarioId: null, // Para almacenar el ID del usuario recibido de la ruta
+    };
+  },
+  mounted() {
+    // Obtener el idUsuario de los parámetros de la ruta (query params)
+    this.usuarioId = this.$route.params.idUsuario;
+
+    // Cargar todas las encuestas al montar el componente
+    this.fetchEncuestas();
+  },
+  methods: {
+    async fetchEncuestas() {
+      try {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/encuesta`);
+        this.encuestas = response.data;
+      } catch (error) {
+        console.error('Error al obtener las encuestas:', error);
+        Swal.fire('Error', 'No se pudieron cargar las encuestas.', 'error');
+      }
+    },
 
   showCreateEncuestaForm() {
     this.showForm = true; // Mostrar el formulario para crear una nueva encuesta
@@ -124,7 +122,7 @@ methods: {
       }
 
       // Crear nueva encuesta
-      await axios.post(`${BASE_URL}/encuesta`, {
+      await this.$protectedAxios.post(`${BASE_URL}/encuesta`, {
         titulo: this.encuestaForm.titulo,
         descripcion: this.encuestaForm.descripcion,
         fechaModificado: new Date().toISOString().split('T')[0],

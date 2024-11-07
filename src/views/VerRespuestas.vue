@@ -41,7 +41,6 @@
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';
-import axios from 'axios';
 import { BASE_URL } from '@/config/globals';
 
 
@@ -75,7 +74,7 @@ export default {
         this.currentPage = page;
 
         // Llamar a la API para obtener las respuestas
-        const response = await axios.get(`${BASE_URL}/respuesta/estudiante/${idEstudiante}`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/respuesta/estudiante/${idEstudiante}`, {
           params: {
             page: this.currentPage,
             pageSize: this.pageSize,

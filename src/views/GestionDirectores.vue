@@ -83,7 +83,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import { BASE_URL } from '@/config/globals';
@@ -121,7 +120,7 @@ export default {
     // Método para obtener la lista de usuarios desde el backend
     async fetchUsers() {
       try {
-        const response = await axios.get(`${BASE_URL}/usuario`);
+        const response = await this.$protectedAxios.get(`${BASE_URL}/usuario`);
         this.users = response.data;
       } catch (error) {
         console.error('Error al cargar los usuarios:', error);
@@ -131,7 +130,7 @@ export default {
     // Añadir un nuevo usuario
     async addUser() {
       try {
-        const response = await axios.post(`${BASE_URL}/usuario`, this.currentUser);
+        const response = await this.$protectedAxios.post(`${BASE_URL}/usuario`, this.currentUser);
         this.users.push(response.data);
         this.resetForm();
       } catch (error) {
@@ -149,7 +148,7 @@ export default {
     // Actualizar un usuario existente
     async updateUser() {
       try {
-        const response = await axios.put(`${BASE_URL}/usuario/${this.editUserId}`, this.currentUser);
+        const response = await this.$protectedAxios.put(`${BASE_URL}/usuario/${this.editUserId}`, this.currentUser);
         const index = this.users.findIndex(user => user.id_usuario === this.editUserId);
         if (index !== -1) {
           this.users.splice(index, 1, response.data);
@@ -164,7 +163,7 @@ export default {
     // Eliminar un usuario
     async deleteUser(userId) {
       try {
-        await axios.delete(`${BASE_URL}/usuario/${userId}`);
+        await this.$protectedAxios.delete(`${BASE_URL}/usuario/${userId}`);
         this.users = this.users.filter(user => user.id_usuario !== userId);
       } catch (error) {
         console.error('Error al eliminar el usuario:', error);

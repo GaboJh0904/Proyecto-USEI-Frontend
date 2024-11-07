@@ -193,16 +193,17 @@ const router = createRouter({
 // Verifica la autenticación antes de cada navegación
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const token = localStorage.getItem('authToken');
   const userRole = localStorage.getItem('rol'); // Obtén el rol del usuario desde el almacenamiento
 
   // Si la ruta requiere autenticación y no hay token, redirige al inicio
-  if (requiresAuth && !userRole) {
+  if (requiresAuth && !token) {
     return next({ path: '/' });
   }
 
   // Verificar si la ruta tiene roles definidos en `meta` y si el rol del usuario tiene acceso
   const allowedRoles = to.meta.roles;
-  if (allowedRoles && !allowedRoles.includes(userRole)) {
+  if (requiresAuth && allowedRoles && !allowedRoles.includes(userRole)) {
     // Redirigir a una página de acceso denegado si el usuario no tiene permiso
     return next({ name: 'AccesoDenegado' }); // Asume que tienes una ruta `AccesoDenegado`
   }

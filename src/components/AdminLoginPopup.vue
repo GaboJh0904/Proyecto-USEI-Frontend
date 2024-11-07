@@ -25,7 +25,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Swal from 'sweetalert2';  // Importar SweetAlert
 import { BASE_URL } from '@/config/globals';
 
@@ -43,7 +42,7 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await axios.post(`${BASE_URL}/usuario/login`, this.loginRequest);
+        const response = await this.$publicAxios.post(`${BASE_URL}/usuario/login`, this.loginRequest);
 
         // Verifica si el inicio de sesión fue exitoso
         if (response.data.status === '200 OK') {

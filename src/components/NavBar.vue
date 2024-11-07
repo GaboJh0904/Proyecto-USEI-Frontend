@@ -117,13 +117,13 @@
 
 
 <script>
-import axios from 'axios';
 import LoginPopup from '@/components/LoginPopup.vue';
 import RegisterPopup from '@/components/RegisterPopup.vue';
 import UserProfilePopup from '@/components/UserProfilePopup.vue';
 import AdminLoginPopup from '@/components/AdminLoginPopup.vue';
 import ChangePasswordPopup from '@/components/ChangePasswordPopup.vue';
 import CodeVerificationPopup from './CodeVerificationPopup.vue';
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'NavBar',
@@ -265,7 +265,7 @@ export default {
     async loadNotifications(page = this.currentPage) {
       const estudianteId = this.estudianteId; // Usar la variable estudianteId ya asignada
       try {
-        const response = await axios.get(`http://localhost:8082/notificacion/estudiante/${estudianteId}`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/notificacion/estudiante/${estudianteId}`, {
           params: {
             page: page,
             size: this.pageSize
@@ -293,7 +293,7 @@ export default {
     async markAsRead(notification, index) {
       if (!notification.read) { // Solo marcar como leída si no lo está
         try {
-          await axios.put(`http://localhost:8082/notificacion/${notification.id}/lectura`);
+          await this.$protectedAxios.put(`${BASE_URL}/notificacion/${notification.id}/lectura`);
           
           // Actualizar el estado de la notificación localmente
           this.notifications[index].read = true;

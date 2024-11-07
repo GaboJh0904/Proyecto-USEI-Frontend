@@ -94,7 +94,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
@@ -144,7 +143,7 @@ export default {
           return;
         }
 
-        const response = await axios.get(`${BASE_URL}/plazo/all`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/plazo/all`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -238,7 +237,7 @@ export default {
           fechaModificacion: new Date(this.formData.fechaModificacion).toISOString().split('T')[0],
           usuarioIdUsuario: { idUsuario: userId },
         };
-        await axios.post(`${BASE_URL}/plazo`, data);
+        await this.$protectedAxios.post(`${BASE_URL}/plazo`, data);
 
         this.loading = false;
         this.showErrors = false;
