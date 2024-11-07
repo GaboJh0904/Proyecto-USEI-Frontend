@@ -31,8 +31,9 @@
             <apexchart type="bar" :options="barChartOptions" :series="barChartData" class="chart-bar" />
   
             <!-- Gráfico de Torta -->
+            <!-- Gráfico de Torta -->
             <apexchart type="pie" :options="pieChartOptions" :series="pieChartData" class="chart-pie" />
-          </div>
+            </div>
         </div>
       </main>
       <FooterComponent />
@@ -44,6 +45,8 @@
   import NavBar from '@/components/NavBar.vue';
   import FooterComponent from '@/components/FooterComponent.vue';
   import ApexCharts from "vue3-apexcharts";
+  import { BASE_URL } from '@/config/globals';
+
   
   export default {
     name: 'Dashboard',
@@ -55,6 +58,7 @@
     data() {
       return {
         usuarioId: null,
+        //-----------valores predefinidos para grafico de barras
         selectedFilter1: "",
         selectedFilter2: "",
         filterOptions1: ["2022", "2023", "2024"],
@@ -72,28 +76,49 @@
             title: { text: "Carreras" }
           },
           title: { text: "Certificados Emitidos por Carrera", align: 'center' },
-          colors: ['#66DA26'],
+          colors: ['#6c5b7b'],
           dataLabels: { enabled: true },
         },
+        //-------------------------------------------------
+
+        //----------grafico de torta
+        pieChartData: [], 
         pieChartOptions: {
-          chart: {
+        chart: {
             animations: { enabled: true, easing: 'easeinout', speed: 1200 },
             toolbar: { show: false },
             background: 'rgba(107, 184, 188, 0.2)',
-          },
-          labels: ["Completado", "No Completado"],
-          title: { text: "Encuesta de Estudiantes Completada", align: 'center' },
-          colors: ['#4a787b', '#77a6a6'],
-          dataLabels: { enabled: true },
+        },
+        labels: ["Completado", "No Completado"], 
+        title: { text: "Encuesta de Estudiantes Completada", align: 'center' },
+        colors: ['#4a787b', '#77a6a6'],
+        dataLabels: { enabled: true },
         },
       };
     },
+
+    mounted() {
+  this.updateCharts();
+},
+
     methods: {
-      updateCharts() {
-        // Actualizar datos de gráficos basados en filtros seleccionados
-        this.barChartData = [{ name: "Datos Filtrados", data: [15, 10, 18, 20] }];
-        this.pieChartData = [65, 35];
-      },
+    //----------------grafico de torta
+    async updateCharts() {
+    try {
+      // Obtener estudiantes que completaron la encuesta
+      const completadosResponse = await axios.get(`${BASE_URL}/estado_encuesta/completadas`);
+      const completados = completadosResponse.data;
+
+      // Obtener estudiantes que no completaron la encuesta
+      const noCompletadosResponse = await axios.get(`${BASE_URL}/estudiante/no_completaron_encuesta`);
+      const noCompletados = noCompletadosResponse.data;
+
+      // Actualizar los datos del gráfico de torta 
+      this.pieChartData = [completados.length, noCompletados.length];
+    } catch (error) {
+      console.error("Error al actualizar los gráficos: ", error);
+    }
+  },
     },
   };
   </script>
