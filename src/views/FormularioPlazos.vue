@@ -18,7 +18,7 @@
     <!-- Plazos Form -->
     <div v-else class="support-form">
       <div class="header">
-        <img src="@/components/images/soporte.png" alt="Support icon" class="support-icon" />
+        <img src="@/components/images/plazos.png" alt="Support icon" class="support-icon" />
         <h2>Formulario de Plazos</h2>
       </div>
       <form @submit.prevent="submitPlazo">
@@ -65,24 +65,26 @@
         </button>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Fecha de Finalización</th>
-            <th>Estado</th>
-            <th>Fecha de Modificación</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="plazo in plazos" :key="plazo.id_plazo">
-            <td>{{ plazo.usuarioNombre }}</td>
-            <td>{{ plazo.fechaFinalizacion }}</td>
-            <td>{{ plazo.estado }}</td>
-            <td>{{ plazo.fechaModificacion }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Fecha de Finalización</th>
+              <th>Estado</th>
+              <th>Fecha de Modificación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="plazo in plazos" :key="plazo.id_plazo">
+              <td>{{ plazo.usuarioNombre }}</td>
+              <td>{{ plazo.fechaFinalizacion }}</td>
+              <td>{{ plazo.estado }}</td>
+              <td>{{ plazo.fechaModificacion }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
     </div>
@@ -390,7 +392,6 @@ textarea, select, input {
   border: 1px solid #ccc;
 }
 
-
 .dropdown-page-size {
   width: auto; 
   max-width: 80px; 
@@ -426,13 +427,18 @@ button:hover {
   border-radius: 8px;
   margin-top: 110px;
   width: 300px;
-  height: 528px;
+  height: 430px;
+  overflow-y: auto;
+}
+
+.table-container {
+  max-height: 400px;
   overflow-y: auto;
 }
 
 .filter-sort-container {
   display: flex;
-  justify-content: space-between; /* Alinea los elementos en una sola línea */
+  justify-content: space-between;
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;

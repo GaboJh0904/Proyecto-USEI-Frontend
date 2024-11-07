@@ -58,3 +58,7 @@ npm install vuejs-paginate-next
 ```sh
 npm install chart
 ```
+## ApexCharts 
+```sh
+npm install --save vue3-apexcharts
+```

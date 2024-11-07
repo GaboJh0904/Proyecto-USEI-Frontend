@@ -81,7 +81,8 @@ const router = createRouter({
     {
       path: '/en-progreso', // Nueva ruta
       name: 'EnProgreso',
-      component: EnProgreso
+      component: EnProgreso,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/editar-encuesta/:idEncuesta/preguntas', // Nueva ruta
@@ -126,7 +127,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
-      path: '/formulario-plazos', // Nueva ruta para Formulario de Plazos
+      path: '/formulario-plazos', 
       name: 'FormularioPlazos',
       component: FormularioPlazos, // Usa el nuevo componente
       meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
@@ -138,7 +139,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
-      path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
+      path: '/vista-respuestas/:idEstudiante', 
       name: 'VerRespuestas',
       component: VerRespuestas, // Componente que muestra las respuestas
       meta: { requiresAuth: true, roles: ['estudiante']  } // Rutas protegidas

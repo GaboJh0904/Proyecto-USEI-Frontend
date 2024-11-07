@@ -112,8 +112,8 @@ export default {
       // Limpiar todos los datos del localStorage
       localStorage.clear();
       
-      // Redirigir a la página de inicio
-      this.router.push({ name: 'inicio' }); // Redirigir a la vista Página de inicio
+      localStorage.removeItem('authToken');
+      this.$router.push('/'); // Redirige a la página de login
     }
   }
 };
