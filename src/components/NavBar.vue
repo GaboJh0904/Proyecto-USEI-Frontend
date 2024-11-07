@@ -5,7 +5,7 @@
     </div>
     <div class="nav-links">
       <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
-      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados">
+      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos">
         <!-- Botón "Volver" con icono -->
         <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
           <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
@@ -190,7 +190,11 @@ export default {
     },
     isEstudiantesRegistrados() {
       return this.$route.path === '/estudiantes-registrados'
-    }
+    },
+    isFormularioPlazos() {
+      return this.$route.path === '/formulario-plazos'
+    },
+
   },
   watch: {
     estudianteId(newVal, oldVal) {

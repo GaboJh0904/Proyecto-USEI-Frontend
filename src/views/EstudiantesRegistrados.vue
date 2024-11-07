@@ -15,17 +15,12 @@
 
       <!-- Filtro, selección de columnas y número de registros -->
       <div class="filter-sort-container">
-        <!-- Barra de búsqueda -->
         <input v-model="searchTerm" placeholder="Buscar por CI o correo" @input="fetchEstudiantes(1)" />
-
-        <!-- Selección de cantidad de registros por página -->
         <select v-model="perPage" @change="fetchEstudiantes(1)">
           <option value="5">5</option>
           <option value="10">10</option>
           <option value="20">20</option>
         </select>
-
-        <!-- Botón de orden ascendente/descendente -->
         <button class="sort-button" @click="toggleSortDirection">
           <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
         </button>
@@ -56,9 +51,10 @@
           <tbody>
             <tr v-for="(estudiante, index) in estudiantes" :key="estudiante.id">
               <td v-if="visibleColumns.ci">
-                <input v-if="editingIndex === index" v-model="editedEstudiante.ci" />
+                <input v-if="editingIndex === index" v-model="editedEstudiante.ci" readonly />
                 <span v-else>{{ estudiante.ci }}</span>
               </td>
+
               <td v-if="visibleColumns.correoInstitucional">
                 <input v-if="editingIndex === index" v-model="editedEstudiante.correoInstitucional" />
                 <span v-if="emailError" class="error-message">{{ emailError }}</span>
@@ -68,12 +64,12 @@
                 <button v-if="editingIndex !== index" @click="editEstudiante(index)" class="action-btn edit-btn">
                   <i class="fas fa-pencil-alt"></i>
                 </button>
-                <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.id)" class="action-btn delete-btn">
+                <button v-if="editingIndex !== index" @click="deleteEstudiante(estudiante.idEstudiante)" class="action-btn delete-btn">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </td>
               <td class="centered-button-cell">
-                <button @click="sendCertificate(estudiante.id)" class="send-certificate-button">Enviar Certificado</button>
+                <button @click="sendCertificate(estudiante.idEstudiante)" class="send-certificate-button">Enviar Certificado</button>
               </td>
             </tr>
           </tbody>
@@ -104,7 +100,7 @@ export default {
   },
   data() {
     return {
-      userRole: '', 
+      userRole: '',
       userName: '',
       estudiantes: [],
       editingIndex: null,
@@ -146,37 +142,57 @@ export default {
     editEstudiante(index) {
       this.editingIndex = index;
       this.editedEstudiante = { ...this.estudiantes[index] };
+      this.emailError = '';
+    },
+    validateEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
     },
     saveChanges() {
       if (this.editingIndex !== null) {
-        if (!this.editedEstudiante.ci || !this.editedEstudiante.correoInstitucional) {
-          Swal.fire('Error', 'Todos los campos deben estar completos', 'error');
+        if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
+          Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
           return;
         }
         
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(this.editedEstudiante.correoInstitucional)) {
-          Swal.fire({
-            title: 'Error',
-            text: 'Por favor, ingrese un correo electrónico válido.',
-            icon: 'error',
-            confirmButtonText: 'Aceptar'
-          });
+        if (!this.validateEmail(this.editedEstudiante.correoInstitucional)) {
+          this.emailError = 'Formato de correo inválido';
           return;
         }
 
-        this.estudiantes[this.editingIndex] = { ...this.editedEstudiante };
-        this.editingIndex = null;
-        Swal.fire('Guardado', 'Cambios guardados exitosamente', 'success');
+        const estudianteActualizado = {
+          correoInstitucional: this.editedEstudiante.correoInstitucional
+        };
+
+        axios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
+          this.editingIndex = null;
+          this.emailError = '';
+          Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
+        })
+        .catch(error => {
+          console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
+          Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
+        });
       }
     },
     cancelChanges() {
       this.editingIndex = null;
+      this.emailError = '';
     },
-    deleteEstudiante(id) {
+    deleteEstudiante(idEstudiante) {
+      if (!idEstudiante) {
+        console.error("ID del estudiante no definido");
+        return;
+      }
       Swal.fire({
         title: '¿Estás seguro?',
-        text: 'Esta acción no se puede deshacer',
+        text: 'No podrás revertir esta acción',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#80CED7',
@@ -185,8 +201,18 @@ export default {
         cancelButtonText: 'Cancelar'
       }).then((result) => {
         if (result.isConfirmed) {
-          this.estudiantes = this.estudiantes.filter(estudiante => estudiante.id !== id);
-          Swal.fire('Eliminado', 'Estudiante eliminado correctamente', 'success');
+          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+            .then(() => {
+              this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
+              Swal.fire(
+                'Eliminado',
+                'El estudiante ha sido eliminado correctamente',
+                'success'
+              );
+            })
+            .catch(error => {
+              Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
+            });
         }
       });
     },
@@ -221,18 +247,26 @@ export default {
       };
       return labels[key];
     },
-    sendCertificate(id) {
-      Swal.fire({
-        title: 'Certificado Enviado',
-        text: `El certificado para el estudiante con ID ${id} ha sido enviado.`,
-        icon: 'success',
-        confirmButtonText: 'Aceptar'
-      });
-      // Aquí se puede agregar la lógica de envío real del certificado
-    }
+    async sendCertificate(idEstudiante) {
+      try {
+        await axios.post(`${BASE_URL}/certificado/remision`, null, {
+          params: {
+            idEstudiante: idEstudiante
+          }
+        });
+        Swal.fire({
+          title: 'Certificado Enviado',
+          text: `El certificado para el estudiante con ID ${idEstudiante} ha sido enviado.`,
+          icon: 'success',
+          confirmButtonText: 'Aceptar'
+        });
+      } catch (error) {
+        Swal.fire('Error', 'No se pudo enviar el certificado', 'error');
+      }
+    },
   },
   mounted() {
-    this.userRole = localStorage.getItem('rol') || ''; 
+    this.userRole = localStorage.getItem('rol') || '';
     this.fetchEstudiantes();
   }
 };
@@ -362,6 +396,7 @@ export default {
 
 .send-certificate-button {
   -webkit-appearance: none;
+  appearance: none;
   border: 0;
   outline: 0;
   background: linear-gradient(-45deg, #ccdbdc, #80ced7, #63c7b2, #8e6c88, #263d42);

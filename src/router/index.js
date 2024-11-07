@@ -22,6 +22,7 @@ import EstudiantesRegistrados from '@/views/EstudiantesRegistrados.vue'
 import FormularioPlazos from '@/views/FormularioPlazos.vue'
 import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
+import Dashboard from '@/views/Dashboard.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -125,7 +126,7 @@ const router = createRouter({
       meta: { requiresAuth: true } // Rutas protegidas
     },
     {
-      path: '/formulario-plazos', // Nueva ruta para Formulario de Plazos
+      path: '/formulario-plazos', 
       name: 'FormularioPlazos',
       component: FormularioPlazos, // Usa el nuevo componente
       meta: { requiresAuth: true } // Rutas protegidas
@@ -137,7 +138,7 @@ const router = createRouter({
       meta: { requiresAuth: true } // Rutas protegidas
     },
     {
-      path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
+      path: '/vista-respuestas/:idEstudiante', 
       name: 'VerRespuestas',
       component: VerRespuestas, // Componente que muestra las respuestas
       meta: { requiresAuth: true } // Rutas protegidas
@@ -165,6 +166,12 @@ const router = createRouter({
       path: '/certificado-estudiante',
       name: 'certificado-estudiante',
       component: CertificadoEstudiante,
+      meta: { requiresAuth: true } // Rutas protegidas
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: Dashboard,
       meta: { requiresAuth: true } // Rutas protegidas
     },
   ],
