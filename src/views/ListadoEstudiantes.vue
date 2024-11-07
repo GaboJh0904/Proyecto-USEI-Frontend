@@ -119,6 +119,9 @@
       <div class="send-invitacion-container">
         <button @click="enviarInvitaciones" class="send-invitacion-btn">Enviar invitación</button>
       </div>
+      <div class="send-invitacion-container">
+        <button @click="goToPorcentajeIncompleto" class="send-invitacion-btn">Estudiantes Pendientes</button>
+      </div>
     </main>
 
     <FooterComponent />
@@ -299,6 +302,9 @@ export default {
     },
     cancelChanges() {
       this.editingIndex = null;
+    },
+    goToPorcentajeIncompleto() {
+      this.$router.push('/porcentaje-incompleto');
     },
     deleteEstudiante(idEstudiante) {
       Swal.fire({
