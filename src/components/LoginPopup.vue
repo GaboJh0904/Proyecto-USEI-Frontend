@@ -34,6 +34,7 @@
 import axios from 'axios';
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';  
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'LoginPopup',
@@ -65,47 +66,43 @@ export default {
       }
 
       try {
-        const response = await axios.post('http://localhost:8082/estudiante/login', {
+        const response = await this.$publicAxios.post(`${BASE_URL}/estudiante/login`, {
           ci: this.ci,
           contrasena: this.password,
-          role: this.role  // Enviar también el rol seleccionado
+          role: this.role,  // Enviar también el rol seleccionado
         });
+        
         console.log('Respuesta del servidor:', response.data);
 
         // Manejar respuesta exitosa
         if (response.data.status === "200 OK") {
+          const { token, expiresIn, data } = response.data;
           console.log('Inicio de sesión correcto');
-          console.log('ID del estudiante:', response.data.result.id_estudiante); // Mostrar el ID del estudiante
-          const estudianteId = response.data.result.id_estudiante;
+          console.log('ID del estudiante:', data.id_estudiante);
 
-          if (estudianteId) {
-        console.log('ID del estudiante:', estudianteId); // Mostrar el ID del estudiante
-        localStorage.setItem('id_estudiante', estudianteId); // Guardar el id del estudiante en localStorage
-      } else {
-        console.error('ID del estudiante no está presente en la respuesta.');
-        return; // Si no hay ID de estudiante, no continuar
-      }
+          // Guardar el token en localStorage
+          localStorage.setItem('authToken', token);
 
-      // Guardar otros datos en localStorage
-      localStorage.setItem('ci', response.data.result.ci);
-      localStorage.setItem('correoInsitucional', response.data.result.correoInsitucional);
-      localStorage.setItem('nombre', response.data.result.nombre);
-      localStorage.setItem('apellido', response.data.result.apellido);
-      localStorage.setItem('rol', response.data.result.rol);
-      localStorage.setItem('telefono', response.data.result.telefono);
-
+          // Guardar otros datos en localStorage
+          localStorage.setItem('id_estudiante', data.id_estudiante);
+          localStorage.setItem('ci', data.ci);
+          localStorage.setItem('correoInstitucional', data.correoInstitucional);
+          localStorage.setItem('nombre', data.nombre);
+          localStorage.setItem('apellido', data.apellido);
+          localStorage.setItem('rol', data.rol);
+          localStorage.setItem('telefono', data.telefono);
 
           // Usar SweetAlert para mostrar éxito
           Swal.fire({
             icon: 'success',
             title: 'Inicio de sesión correcto',
-            text: `Bienvenido/a, ${response.data.result.nombre}`,
+            text: `Bienvenido/a, ${data.nombre}`,
             confirmButtonText: 'Continuar',
           }).then(() => {
             // Redirigir al usuario dependiendo del rol después de confirmar
-            if (response.data.result.rol === 'admin') {
+            if (data.rol === 'admin') {
               this.$router.push({ name: 'menuAdministrador' });
-            } else if (response.data.result.rol === 'director') {
+            } else if (data.rol === 'director') {
               this.$router.push({ name: 'menuDirector' });
             } else {
               this.$router.push({ name: 'menuEstudiante' });
@@ -119,7 +116,7 @@ export default {
           Swal.fire({
             icon: 'error',
             title: 'Credenciales incorrectas',
-            text: error.response.data.error, // Mostrar el mensaje de error devuelto por el backend
+            text: error.response.data.error || 'Por favor, verifique sus credenciales.',
             confirmButtonText: 'Aceptar',
           });
         } else {

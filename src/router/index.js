@@ -37,113 +37,135 @@ const router = createRouter({
     {
       path: '/menu-estudiante', // Ruta MenuEstudiante
       name: 'menuEstudiante',
-      component: MenuEstudiante
+      component: MenuEstudiante,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/menu-administrador', // Ruta MenuAdministrador
       name: 'menuAdministrador',
-      component: MenuAdministrador
+      component: MenuAdministrador,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/menu-director', // Ruta MenuDirector
       name: 'menuDirector',
-      component: MenuDirector
+      component: MenuDirector,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path:'/encuesta-estudiante',
       name: 'encuestaEstudiante',
-      component: EncuestaEstudiante
+      component: EncuestaEstudiante,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/resumen', 
       name: 'ResumePage',
-      component: ResumePage
+      component: ResumePage,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/gestion-directores', 
       name: 'GestionDirectores',
-      component: GestionDirectores
+      component: GestionDirectores,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/enviar-encuesta', 
       name: 'EnviarEncuesta',
-      component: EnviarEncuesta
+      component: EnviarEncuesta,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/en-progreso', // Nueva ruta
       name: 'EnProgreso',
-      component: EnProgreso
+      component: EnProgreso,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/editar-encuesta/:idEncuesta/preguntas', // Nueva ruta
       name: 'EditarEncuesta',
-      component: EditarEncuesta
+      component: EditarEncuesta,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/listado-estudiantes', // Nueva ruta
       name: 'ListadoEstudiantes',
-      component: ListadoEstudiantes
+      component: ListadoEstudiantes,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/preguntas/:idPregunta/opciones',
       name: 'GestionOpcionesPregunta',
-      component: GestionOpcionesPregunta
+      component: GestionOpcionesPregunta,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/noticia-form',
       name: 'NoticiaForm',
-      component: NoticiaForm
+      component: NoticiaForm,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/gestion-encuestas/:idUsuario',
       name: 'GestionEncuestas',
-      component: GestionEncuestas
+      component: GestionEncuestas,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/contacto-admin',
       name: 'ContactoAdmin',
-      component: ContactoAdmin
+      component: ContactoAdmin,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/formulario-soporte',
       name: 'FormularioSoporte',
-      component: FormularioSoporte
+      component: FormularioSoporte,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/formulario-plazos', // Nueva ruta para Formulario de Plazos
       name: 'FormularioPlazos',
       component: FormularioPlazos, // Usa el nuevo componente
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/respuestas-estudiante/:idEstudiante',
       name: 'RespuestasEstudiante',
-      component: RespuestasEstudiante
+      component: RespuestasEstudiante,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/vista-respuestas/:idEstudiante', // Ruta con el parámetro dinámico
       name: 'VerRespuestas',
       component: VerRespuestas, // Componente que muestra las respuestas
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/subir-certificado',
       name: 'subir-certificado',
       component: subirCertificado,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/estudiantes-registrados',
       name: 'EstudiantesRegistrados',
       component: EstudiantesRegistrados,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     
     {
       path: '/porcentaje-incompleto',
       name: 'PorcentajeIncompleto',
       component: PorcentajeIncompleto,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
     {
       path: '/certificado-estudiante',
       name: 'certificado-estudiante',
       component: CertificadoEstudiante,
+      meta: { requiresAuth: true } // Rutas protegidas
     },
   ],
   scrollBehavior(to, from, savedPosition) {
@@ -154,5 +176,19 @@ const router = createRouter({
     }
   },
 })
+
+// Verifica la autenticación antes de cada navegación
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const token = localStorage.getItem('authToken');
+
+  if (requiresAuth && !token) {
+    // Si la ruta requiere autenticación y no hay token, redirige al inicio o login
+    next({ path: '/' }); // Puedes cambiar '/' a la ruta de login específica
+  } else {
+    // Si el usuario está autenticado o la ruta no requiere autenticación, permite el acceso
+    next();
+  }
+});
 
 export default router

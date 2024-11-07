@@ -16,6 +16,7 @@ import axios from 'axios';
 import 'flickity/css/flickity.css';
 import Flickity from 'flickity';
 import imagesLoaded from 'imagesloaded';
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: "FlickityCarousel",
@@ -26,7 +27,7 @@ export default {
   },
   methods: {
     getImageUrl(imageFileName) {
-      const imageUrl = `http://localhost:8082/imagenes/${imageFileName}`;
+      const imageUrl = `${BASE_URL}/imagenes/${imageFileName}`;
       console.log(`Cargando imagen desde: ${imageUrl}`); 
       return imageUrl;
     },
@@ -57,7 +58,7 @@ export default {
   },
   async mounted() {
   try {
-    const response = await axios.get('http://localhost:8082/noticia/carrusel');
+    const response = await axios.get(`${BASE_URL}/noticia/carrusel`);
     this.noticias = response.data;
     console.log(this.noticias);
     this.$nextTick(() => {
