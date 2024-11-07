@@ -88,7 +88,6 @@ import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import PaginationComponent from '@/components/PaginationComponent.vue';
 import Swal from 'sweetalert2';
-import axios from 'axios';
 import { BASE_URL } from '@/config/globals';
 
 export default {
@@ -123,7 +122,7 @@ export default {
   methods: {
     async fetchEstudiantes(page = 1) {
       try {
-        const response = await axios.get(`${BASE_URL}/estudiante`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estudiante`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -164,27 +163,61 @@ export default {
       correoInstitucional: this.editedEstudiante.correoInstitucional
     };
 
-    axios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-    .then(response => {
-      this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
+        this.$protectedAxios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        .then(response => {
+          this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
+          this.editingIndex = null;
+          this.emailError = '';
+          Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
+
+          // Volver a cargar la lista de estudiantes para sincronizar los datos
+          this.fetchEstudiantes(this.currentPage);
+        })
+        .catch(error => {
+          console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
+          Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
+        });
+      }
+    },
+    cancelChanges() {
       this.editingIndex = null;
       this.emailError = '';
-      Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
-      
-      // Volver a cargar la lista de estudiantes para sincronizar los datos
-      this.fetchEstudiantes(this.currentPage);
-    })
-    .catch(error => {
-      console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
-      Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
-    });
-  }
-},
-
+    },
+    deleteEstudiante(idEstudiante) {
+      if (!idEstudiante) {
+        console.error("ID del estudiante no definido");
+        return;
+      }
+      Swal.fire({
+        title: '¿Estás seguro?',
+        text: 'No podrás revertir esta acción',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#80CED7',
+        cancelButtonColor: '#8E6C88',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.$protectedAxios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
+            .then(() => {
+              this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
+              Swal.fire(
+                'Eliminado',
+                'El estudiante ha sido eliminado correctamente',
+                'success'
+              );
+            })
+            .catch(error => {
+              Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
+            });
+        }
+      });
+    },
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
       this.fetchEstudiantes(pageNumber);
@@ -218,7 +251,7 @@ export default {
     },
     async sendCertificate(idEstudiante) {
       try {
-        await axios.post(`${BASE_URL}/certificado/remision`, null, {
+        await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
           params: {
             idEstudiante: Number(idEstudiante)
           }

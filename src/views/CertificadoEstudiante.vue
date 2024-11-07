@@ -50,7 +50,6 @@
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import { BASE_URL } from '@/config/globals';
-import axios from 'axios'; 
 import Swal from 'sweetalert2';
 
 
@@ -77,16 +76,16 @@ export default {
     }
 
     try {
-        const encuestaResponse = await axios.get(`${BASE_URL}/respuesta/llenado/${estudianteId}`);
+        const encuestaResponse = await this.$protectedAxios.get(`${BASE_URL}/respuesta/llenado/${estudianteId}`);
         this.hasFilled = encuestaResponse.data.filled;
 
         // verificar el estado del certificado
         if (this.hasFilled) {
-            const certificadoResponse = await axios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
+            const certificadoResponse = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
             if (certificadoResponse.status === 200) {
                 this.estadoCertificado = certificadoResponse.data; 
                   if (this.estadoCertificado === 'enviado') {
-                    const archivoResponse = await axios.get(`${BASE_URL}/estado_certificado/archivo/directo/${estudianteId}`, {
+                    const archivoResponse = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/archivo/directo/${estudianteId}`, {
                       responseType: 'blob'  
                   });
                   const url = URL.createObjectURL(archivoResponse.data);

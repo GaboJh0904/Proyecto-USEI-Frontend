@@ -95,7 +95,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Swal from 'sweetalert2';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
@@ -158,7 +157,7 @@ export default {
         }
 
         // Solicitud al backend con paginación, filtrado y ordenación
-        const response = await axios.get(`${BASE_URL}/soporte/paginado`, {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/soporte/paginado`, {
           params: {
             page: page - 1,
             size: this.perPage,
@@ -217,7 +216,7 @@ export default {
         this.formData.usuario.idUsuario = userId;
         this.formData.fecha = new Date().toISOString().split('.')[0];
 
-        const response = await axios.post(`${BASE_URL}/soporte`, this.formData);
+        await this.$protectedAxios.post(`${BASE_URL}/soporte`, this.formData);
 
         this.loading = false;
         this.showErrors = false; // Resetea los errores si el envío es exitoso

@@ -23,6 +23,7 @@ import FormularioPlazos from '@/views/FormularioPlazos.vue'
 import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
 import Dashboard from '@/views/Dashboard.vue'
+import AccesoDenegado from '@/components/AccesoDenegado.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -39,43 +40,43 @@ const router = createRouter({
       path: '/menu-estudiante', // Ruta MenuEstudiante
       name: 'menuEstudiante',
       component: MenuEstudiante,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['estudiante'] } // Rutas protegidas
     },
     {
       path: '/menu-administrador', // Ruta MenuAdministrador
       name: 'menuAdministrador',
       component: MenuAdministrador,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador'] } // Rutas protegidas
     },
     {
       path: '/menu-director', // Ruta MenuDirector
       name: 'menuDirector',
       component: MenuDirector,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Director']  } // Rutas protegidas
     },
     {
       path:'/encuesta-estudiante',
       name: 'encuestaEstudiante',
       component: EncuestaEstudiante,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['estudiante']  } // Rutas protegidas
     },
     {
       path: '/resumen', 
       name: 'ResumePage',
       component: ResumePage,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['estudiante']  } // Rutas protegidas
     },
     {
       path: '/gestion-directores', 
       name: 'GestionDirectores',
       component: GestionDirectores,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/enviar-encuesta', 
       name: 'EnviarEncuesta',
       component: EnviarEncuesta,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/en-progreso', // Nueva ruta
@@ -87,93 +88,98 @@ const router = createRouter({
       path: '/editar-encuesta/:idEncuesta/preguntas', // Nueva ruta
       name: 'EditarEncuesta',
       component: EditarEncuesta,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador'] } // Rutas protegidas
     },
     {
       path: '/listado-estudiantes', // Nueva ruta
       name: 'ListadoEstudiantes',
       component: ListadoEstudiantes,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/preguntas/:idPregunta/opciones',
       name: 'GestionOpcionesPregunta',
       component: GestionOpcionesPregunta,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/noticia-form',
       name: 'NoticiaForm',
       component: NoticiaForm,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/gestion-encuestas/:idUsuario',
       name: 'GestionEncuestas',
       component: GestionEncuestas,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/contacto-admin',
       name: 'ContactoAdmin',
       component: ContactoAdmin,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['estudiante']  } // Rutas protegidas
     },
     {
       path: '/formulario-soporte',
       name: 'FormularioSoporte',
       component: FormularioSoporte,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/formulario-plazos', 
       name: 'FormularioPlazos',
       component: FormularioPlazos, // Usa el nuevo componente
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/respuestas-estudiante/:idEstudiante',
       name: 'RespuestasEstudiante',
       component: RespuestasEstudiante,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/vista-respuestas/:idEstudiante', 
       name: 'VerRespuestas',
       component: VerRespuestas, // Componente que muestra las respuestas
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['estudiante']  } // Rutas protegidas
     },
     {
       path: '/subir-certificado',
       name: 'subir-certificado',
       component: subirCertificado,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/estudiantes-registrados',
       name: 'EstudiantesRegistrados',
       component: EstudiantesRegistrados,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     
     {
       path: '/porcentaje-incompleto',
       name: 'PorcentajeIncompleto',
       component: PorcentajeIncompleto,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador']  } // Rutas protegidas
     },
     {
       path: '/certificado-estudiante',
       name: 'certificado-estudiante',
       component: CertificadoEstudiante,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['estudiante']  } // Rutas protegidas
     },
     {
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
-      meta: { requiresAuth: true } // Rutas protegidas
+      meta: { requiresAuth: true, roles: ['Administrador'] } // Rutas protegidas
     },
+    {
+      path: '/acceso-denegado',
+      name: 'AccesoDenegado',
+      component: AccesoDenegado // Componente que muestra un mensaje de acceso denegado
+    },    
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -188,14 +194,23 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
   const token = localStorage.getItem('authToken');
+  const userRole = localStorage.getItem('rol'); // Obtén el rol del usuario desde el almacenamiento
 
+  // Si la ruta requiere autenticación y no hay token, redirige al inicio
   if (requiresAuth && !token) {
-    // Si la ruta requiere autenticación y no hay token, redirige al inicio o login
-    next({ path: '/' }); // Puedes cambiar '/' a la ruta de login específica
-  } else {
-    // Si el usuario está autenticado o la ruta no requiere autenticación, permite el acceso
-    next();
+    return next({ path: '/' });
   }
+
+  // Verificar si la ruta tiene roles definidos en `meta` y si el rol del usuario tiene acceso
+  const allowedRoles = to.meta.roles;
+  if (requiresAuth && allowedRoles && !allowedRoles.includes(userRole)) {
+    // Redirigir a una página de acceso denegado si el usuario no tiene permiso
+    return next({ name: 'AccesoDenegado' }); // Asume que tienes una ruta `AccesoDenegado`
+  }
+
+  // Si todo está bien, permitir el acceso a la ruta
+  next();
 });
+
 
 export default router

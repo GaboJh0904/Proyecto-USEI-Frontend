@@ -100,8 +100,8 @@
 </template>
 
 <script>
-import axios from 'axios';
 import Swal from 'sweetalert2'; // Importar SweetAlert
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'RegisterPopup',
@@ -180,7 +180,7 @@ export default {
       };
 
       try {
-        const response = await axios.post('http://localhost:8082/estudiante', estudianteData, {
+        await this.$publicAxios.post(`${BASE_URL}/estudiante`, estudianteData, {
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
