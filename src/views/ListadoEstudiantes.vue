@@ -114,7 +114,7 @@
         </table>
       </div>
 
-      <PaginationComponent :page-count="totalPages" @page-changed="handlePageClick" />
+      <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
 
       <div class="send-invitacion-container">
         <button @click="enviarInvitaciones" class="send-invitacion-btn">Enviar invitación</button>
@@ -172,6 +172,7 @@ export default {
     handleFileUpload(event) {
       this.file = event.target.files[0];
     },
+    
     async fetchPendingPercentageThreshold() {
       try {
         const response = await axios.get(`${BASE_URL}/parametros_aviso/1`);
@@ -223,7 +224,7 @@ export default {
       try {
         const response = await axios.get(`${BASE_URL}/estudiante`, {
           params: {
-            page: page - 1,
+            page: page - 1, 
             size: this.perPage,
             filter: this.searchTerm,
             sortBy: this.sortBy,
@@ -329,11 +330,10 @@ export default {
     },
 
     handlePageClick(pageNumber) {
-      this.currentPage = pageNumber;
-      this.fetchEstudiantes();
+      this.currentPage = pageNumber; // Actualiza currentPage al número de página clickeada
+      this.fetchEstudiantes(pageNumber); // Llama a fetchEstudiantes con la página actualizada
     },
-
-    sort(field) {
+    ort(field) {
       if (this.sortBy === field) {
         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
       } else {
