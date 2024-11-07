@@ -116,6 +116,8 @@
     },
     data() {
       return {
+        userRole: '',
+        userName: '',
         showModal: false,
         minPercentage: 70,
         defaultMessage: "Por favor complete la encuesta.",
@@ -310,6 +312,7 @@
       },
     },
     mounted() {
+      this.userRole = localStorage.getItem('rol') || '';
       this.fetchSurveyData();
       this.fetchPendingStudents();
     },
@@ -339,13 +342,13 @@
   
   /* Estilos generales */
   .survey-page {
-    padding: 30px;
-    max-width: 900px;
-    margin: auto;
-    background-color: #f7f9fb;
-    border-radius: 10px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  }
+  padding: 30px;
+  max-width: 900px;
+  margin: 60px auto 80px; /* Agrega margen superior e inferior */
+  background-color: #f7f9fb;
+  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+}
   
   .title {
     font-size: 1.8em;
@@ -358,7 +361,7 @@
   .send-all-btn, .settings-btn {
     margin: 15px 0;
     padding: 12px 20px;
-    background-color: #007BFF;
+    background-color: #8e6c88;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -368,7 +371,7 @@
   }
   
   .send-all-btn:hover, .settings-btn:hover {
-    background-color: #0056b3;
+    background-color: #80ced7;
   }
 
   .message-input {
@@ -423,7 +426,7 @@
 }
 
 .student-table th {
-  background-color: #007BFF;
+  background-color: #263d42;
   color: #fff;
   font-weight: bold;
 }
@@ -499,9 +502,9 @@
     font-weight: bold;
     color: #555;
   }
-  
-  .modal-content input[type="number"],
-  .modal-content textarea {
+
+.modal-content input[type="number"],
+.modal-content textarea {
     width: 100%;
     padding: 8px;
     margin-top: 5px;
@@ -511,14 +514,14 @@
     font-size: 1em;
   }
   
-  .modal-buttons {
+.modal-buttons {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
   }
   
-  .save-btn {
-    background-color: #28a745;
+.save-btn {
+    background-color: #63c7b2;
     color: #fff;
     padding: 10px 15px;
     border: none;
@@ -527,12 +530,12 @@
     transition: background-color 0.3s ease;
   }
   
-  .save-btn:hover {
-    background-color: #218838;
+.save-btn:hover {
+    background-color: #ccdbdc;
   }
   
-  .cancel-btn {
-    background-color: #6c757d;
+.cancel-btn {
+    background-color: #263d42;
     color: #fff;
     padding: 10px 15px;
     border: none;
@@ -541,25 +544,30 @@
     transition: background-color 0.3s ease;
   }
   
-  .cancel-btn:hover {
-    background-color: #5a6268;
+.cancel-btn:hover {
+    background-color: #ccdbdc;
   }
 
-  .header-section {
+.header-section {
   position: sticky;
   top: 0;
   z-index: 100;
+  background-color: #ffffff;
 }
 
 .chart-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px; 
 }
+
 
 .chart-section {
   flex: 3;
+  max-width: 300px; 
+  max-height: 300px; 
+  margin: 0 auto; 
 }
 
 .year-selector {
@@ -571,5 +579,5 @@
 .year-selector label {
   margin-right: 10px;
 }
-  </style>
+</style>
   
