@@ -239,7 +239,7 @@ export default {
     },
 
     enviarInvitaciones() {
-      axios.post(`${BASE_URL}/estudiante/enlaceInvitacion`) 
+      axios.post(`${BASE_URL}/estudiante/enviarEnlace`) 
         .then(() => {
           Swal.fire('Éxito', 'Invitaciones enviadas correctamente', 'success');
         })

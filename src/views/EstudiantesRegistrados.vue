@@ -149,73 +149,42 @@ export default {
       return emailRegex.test(email);
     },
     saveChanges() {
-      if (this.editingIndex !== null) {
-        if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
-          Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
-          return;
-        }
-        
-        if (!this.validateEmail(this.editedEstudiante.correoInstitucional)) {
-          this.emailError = 'Formato de correo inválido';
-          return;
-        }
+  if (this.editingIndex !== null) {
+    if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
+      Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
+      return;
+    }
+    
+    if (!this.validateEmail(this.editedEstudiante.correoInstitucional)) {
+      this.emailError = 'Formato de correo inválido';
+      return;
+    }
 
-        const estudianteActualizado = {
-          correoInstitucional: this.editedEstudiante.correoInstitucional
-        };
+    const estudianteActualizado = {
+      correoInstitucional: this.editedEstudiante.correoInstitucional
+    };
 
-        axios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        .then(response => {
-          this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
-          this.editingIndex = null;
-          this.emailError = '';
-          Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
-        })
-        .catch(error => {
-          console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
-          Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
-        });
-      }
-    },
-    cancelChanges() {
+    axios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => {
+      this.estudiantes[this.editingIndex].correoInstitucional = response.data.correoInstitucional;
       this.editingIndex = null;
       this.emailError = '';
-    },
-    deleteEstudiante(idEstudiante) {
-      if (!idEstudiante) {
-        console.error("ID del estudiante no definido");
-        return;
-      }
-      Swal.fire({
-        title: '¿Estás seguro?',
-        text: 'No podrás revertir esta acción',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#80CED7',
-        cancelButtonColor: '#8E6C88',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          axios.delete(`${BASE_URL}/estudiante/${idEstudiante}`)
-            .then(() => {
-              this.estudiantes = this.estudiantes.filter(e => e.idEstudiante !== idEstudiante);
-              Swal.fire(
-                'Eliminado',
-                'El estudiante ha sido eliminado correctamente',
-                'success'
-              );
-            })
-            .catch(error => {
-              Swal.fire('Error', 'No se pudo eliminar al estudiante', 'error');
-            });
-        }
-      });
-    },
+      Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
+      
+      // Volver a cargar la lista de estudiantes para sincronizar los datos
+      this.fetchEstudiantes(this.currentPage);
+    })
+    .catch(error => {
+      console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
+      Swal.fire('Error', error.response ? error.response.data : 'No se pudieron guardar los cambios', 'error');
+    });
+  }
+},
+
     handlePageClick(pageNumber) {
       this.currentPage = pageNumber;
       this.fetchEstudiantes(pageNumber);
@@ -251,7 +220,7 @@ export default {
       try {
         await axios.post(`${BASE_URL}/certificado/remision`, null, {
           params: {
-            idEstudiante: idEstudiante
+            idEstudiante: Number(idEstudiante)
           }
         });
         Swal.fire({
