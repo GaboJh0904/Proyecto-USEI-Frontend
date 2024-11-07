@@ -238,7 +238,7 @@ export default {
     },
 
     enviarInvitaciones() {
-      this.$protectedAxios.post(`${BASE_URL}/estudiante/enlaceInvitacion`) 
+      this.$protectedAxios.post(`${BASE_URL}/estudiante/enviarEnlace`) 
         .then(() => {
           Swal.fire('Éxito', 'Invitaciones enviadas correctamente', 'success');
         })

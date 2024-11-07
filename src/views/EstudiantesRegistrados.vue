@@ -148,20 +148,20 @@ export default {
       return emailRegex.test(email);
     },
     saveChanges() {
-      if (this.editingIndex !== null) {
-        if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
-          Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
-          return;
-        }
-        
-        if (!this.validateEmail(this.editedEstudiante.correoInstitucional)) {
-          this.emailError = 'Formato de correo inválido';
-          return;
-        }
+  if (this.editingIndex !== null) {
+    if (!this.editedEstudiante.correoInstitucional || this.editedEstudiante.correoInstitucional.trim() === '') {
+      Swal.fire('Error', 'El campo correo institucional no puede estar vacío', 'error');
+      return;
+    }
+    
+    if (!this.validateEmail(this.editedEstudiante.correoInstitucional)) {
+      this.emailError = 'Formato de correo inválido';
+      return;
+    }
 
-        const estudianteActualizado = {
-          correoInstitucional: this.editedEstudiante.correoInstitucional
-        };
+    const estudianteActualizado = {
+      correoInstitucional: this.editedEstudiante.correoInstitucional
+    };
 
         this.$protectedAxios.put(`${BASE_URL}/estudiante/update-ci-correo/${this.editedEstudiante.idEstudiante}`, estudianteActualizado, {
           headers: {
@@ -173,6 +173,9 @@ export default {
           this.editingIndex = null;
           this.emailError = '';
           Swal.fire('Guardado', 'Cambios realizados con éxito', 'success');
+
+          // Volver a cargar la lista de estudiantes para sincronizar los datos
+          this.fetchEstudiantes(this.currentPage);
         })
         .catch(error => {
           console.error('Error en la solicitud PUT:', error.response ? error.response.data : error.message);
@@ -250,7 +253,7 @@ export default {
       try {
         await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
           params: {
-            idEstudiante: idEstudiante
+            idEstudiante: Number(idEstudiante)
           }
         });
         Swal.fire({

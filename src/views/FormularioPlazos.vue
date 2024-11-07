@@ -45,6 +45,7 @@
         </div>
 
         <button type="submit">Enviar</button>
+        <button type="button" @click.prevent="enviarRecordatorio">Enviar Recordatorio</button>
       </form>
     </div>
 
@@ -149,16 +150,16 @@ export default {
             sortBy: this.sortBy,
             sortDirection: this.sortDirection,
             filter: this.filterTerm,
-            idUsuario: localStorage.getItem('id_usuario'),
+            idUsuario: userId,
           },
         });
 
         this.plazos = response.data.content.map(plazo => {
-         return {
+          return {
             ...plazo,
             fechaFinalizacion: new Date(plazo.fechaFinalizacion).toLocaleDateString(),
             fechaModificacion: new Date(plazo.fechaModificacion).toLocaleDateString(),
-            usuarioNombre: plazo.usuarioIdUsuario ? plazo.usuarioIdUsuario.nombre : 'Usuario desconocido'          
+            usuarioNombre: plazo.usuarioIdUsuario ? plazo.usuarioIdUsuario.nombre : 'Usuario desconocido',
           };
         });
         this.totalPages = response.data.totalPages;
@@ -174,6 +175,32 @@ export default {
         });
       }
     },
+    
+    async enviarRecordatorio() {
+  try {
+    this.loading = true;
+    await axios.post(`${BASE_URL}/plazo/recordatorio`);
+
+    this.loading = false;
+    Swal.fire({
+      icon: 'success',
+      title: 'Éxito',
+      text: 'Recordatorio enviado a los estudiantes que no han completado la encuesta.',
+      confirmButtonColor: '#49caa1',
+      confirmButtonText: 'Aceptar',
+    });
+  } catch (error) {
+    console.error('Error al enviar el recordatorio:', error);
+    this.loading = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Hubo un error al enviar el recordatorio.',
+      confirmButtonColor: '#6b45b1',
+      confirmButtonText: 'Aceptar',
+    });
+  }
+},
 
     async submitPlazo() {
       this.showErrors = true;
@@ -187,19 +214,6 @@ export default {
           confirmButtonText: 'Aceptar',
         });
         return;
-      }
-      const fechaModificacion = new Date(this.formData.fechaModificacion);
-      const fechaFinalizacion = new Date(this.formData.fechaFinalizacion);
-
-      if (fechaFinalizacion < fechaModificacion) {
-          Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'La fecha de finalización no puede ser anterior a la fecha de modificación.',
-              confirmButtonColor: '#6b45b1',
-              confirmButtonText: 'Aceptar',
-          });
-          return;
       }
 
       try {
@@ -217,16 +231,11 @@ export default {
           return;
         }
         
-        const fechaFinalizacion = new Date(this.formData.fechaFinalizacion).toISOString().split('T')[0];
-        const fechaModificacion = new Date(this.formData.fechaModificacion).toISOString().split('T')[0];
-        
         const data = {
-            estado: this.formData.estado,
-            fechaFinalizacion: fechaFinalizacion,
-            fechaModificacion: fechaModificacion,
-            usuarioIdUsuario: {
-                idUsuario: userId
-            }
+          estado: this.formData.estado,
+          fechaFinalizacion: new Date(this.formData.fechaFinalizacion).toISOString().split('T')[0],
+          fechaModificacion: new Date(this.formData.fechaModificacion).toISOString().split('T')[0],
+          usuarioIdUsuario: { idUsuario: userId },
         };
         await this.$protectedAxios.post(`${BASE_URL}/plazo`, data);
 
