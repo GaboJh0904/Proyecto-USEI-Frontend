@@ -27,6 +27,7 @@
 <script>
 import axios from 'axios';
 import Swal from 'sweetalert2';  // Importar SweetAlert
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'AdminLoginPopup',
@@ -42,29 +43,29 @@ export default {
   methods: {
     async login() {
       try {
-        const response = await axios.post('http://localhost:8082/usuario/login', this.loginRequest);
-        const userData = response.data.result;
+        const response = await axios.post(`${BASE_URL}/usuario/login`, this.loginRequest);
 
         // Verifica si el inicio de sesión fue exitoso
         if (response.data.status === '200 OK') {
-          // Guardar los datos del usuario, incluyendo el id_usuario en el localStorage
-          const usuarioId = userData.id_usuario;  // Suponiendo que el backend devuelve el id_usuario
+          const token = response.data.token;
+          const userData = response.data.data;
 
-          // Almacenar el ID y otros datos en el localStorage
-          localStorage.setItem('id_usuario', usuarioId);
+          // Almacenar el token y los datos del usuario en el localStorage
+          localStorage.setItem('authToken', token);
+          localStorage.setItem('id_usuario', userData.id_usuario);
           localStorage.setItem('correo', userData.correo);
           localStorage.setItem('usuario', userData.usuario);
           localStorage.setItem('nombre', userData.nombre);
           localStorage.setItem('rol', userData.rol);
 
-          console.log('Inicio de sesión correcto. ID del usuario:', usuarioId);
+          console.log('Inicio de sesión correcto. ID del usuario:', userData.id_usuario);
 
           // Mostrar un mensaje de éxito con SweetAlert
           Swal.fire({
             icon: 'success',
             title: 'Inicio de sesión correcto',
             text: `Bienvenido/a ${userData.nombre}`,
-            confirmButtonText: 'Continuar'
+            confirmButtonText: 'Continuar',
           }).then(() => {
             // Redirigir según el rol obtenido
             if (userData.rol === 'Administrador') {
@@ -77,7 +78,7 @@ export default {
                 icon: 'error',
                 title: 'Error',
                 text: this.message,
-                confirmButtonText: 'Aceptar'
+                confirmButtonText: 'Aceptar',
               });
             }
           });
@@ -94,7 +95,7 @@ export default {
           icon: 'error',
           title: 'Error de inicio de sesión',
           text: this.message,
-          confirmButtonText: 'Aceptar'
+          confirmButtonText: 'Aceptar',
         });
       }
     },
@@ -120,7 +121,7 @@ export default {
         confirmButtonText: 'Aceptar',
       });
     },
-  }
+  },
 };
 </script>
 
