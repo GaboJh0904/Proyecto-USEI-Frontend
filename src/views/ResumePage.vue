@@ -5,16 +5,22 @@
     </header>
 
     <main class="resume-container">
+     
+
       <div class="resume-form">
         <h1 class="resume-title">Revisión de Respuestas</h1>
+        <!-- Si no hay respuestas, mostrar un mensaje -->
         <p v-if="Object.keys(filteredForm).length === 0" class="no-responses-message">
           No se encontraron respuestas para mostrar.
         </p>
+        
+        <!-- Mostrar respuestas si están presentes -->
         <div v-else class="response-list">
           <p v-for="(respuesta, preguntaId) in filteredForm" :key="preguntaId" class="response-item">
             <strong class="question-text">{{ getPreguntaTexto(preguntaId) }}:</strong> {{ respuesta }}
           </p>
         </div>
+        
         <div class="form-actions">
           <button class="back-button" @click="goBackToSurvey">Regresar a la Encuesta</button>
           <button class="submit-button" @click="submitSurvey">Enviar</button>
@@ -29,7 +35,7 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2';  
 import { BASE_URL } from '@/config/globals';
 
 export default {
@@ -40,12 +46,13 @@ export default {
   },
   data() {
     return {
-      form: this.$route.query,
-      preguntas: [],
-      encuestaId: this.$route.params.idEncuesta || 1,
+      form: this.$route.query, // Recibe los datos del formulario desde query params
+      preguntas: [], // Lista de preguntas obtenida desde la base de datos
+      encuestaId: this.$route.params.idEncuesta || 1, // ID dinámico de la encuesta (cambiar según sea necesario)
     };
   },
   computed: {
+    // Excluir 'estudianteId' del formulario para mostrar sólo las preguntas y respuestas
     filteredForm() {
       const { estudianteId, ...preguntasRespuestas } = this.form;
       console.log('Datos recibidos en la vista de resumen:', preguntasRespuestas);
@@ -53,6 +60,7 @@ export default {
     }
   },
   mounted() {
+    // Obtener todas las preguntas para mostrar el texto en el resumen
     this.fetchPreguntas();
   },
   methods: {
@@ -60,13 +68,14 @@ export default {
       try {
         const response = await this.$protectedAxios.get(`${BASE_URL}/pregunta`);
         this.preguntas = response.data;
-        console.log('Preguntas obtenidas:', this.preguntas);
+        console.log('Preguntas obtenidas:', this.preguntas); // Verificar si las preguntas son obtenidas correctamente
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
         Swal.fire('Error', 'Ocurrió un problema al cargar las preguntas.', 'error');
       }
     },
 
+    // Método para obtener el texto de una pregunta según su ID
     getPreguntaTexto(idPregunta) {
       const pregunta = this.preguntas.find(p => p.idPregunta == idPregunta);
       return pregunta ? pregunta.pregunta : `Pregunta no encontrada para ID: ${idPregunta}`;
@@ -84,6 +93,7 @@ export default {
           throw new Error('El ID del estudiante no está disponible.');
         }
 
+        // Verificar si hay preguntas y respuestas
         if (Object.keys(this.filteredForm).length === 0) {
           Swal.fire({
             icon: 'warning',
@@ -94,21 +104,24 @@ export default {
           return;
         }
 
+        // Registrar notificación
         const notification = {
           titulo: "Encuesta completada exitosamente",
           contenido: "La encuesta se completó exitosamente, se le envió su certificado a su correo personal. Solicite apoyo si no recibió su certificado.",
-          fecha: new Date().toISOString(),
-          estadoNotificacion: false,
-          estudianteIdEstudiante: { idEstudiante: estudianteId },
-          tipoNotificacionIdNotificacion: { idNotificacion: 1 }
+          fecha: new Date().toISOString(), // Fecha actual
+          estadoNotificacion: false, // Estado inicial como no leído
+          estudianteIdEstudiante: { idEstudiante: estudianteId }, // ID del estudiante corregido
+          tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
         };
 
+        // Enviar la notificación
         await this.$protectedAxios.post(`${BASE_URL}/notificacion`, notification);
 
+        // Enviar respuestas del estudiante a la API
         for (const [preguntaId, respuesta] of Object.entries(this.filteredForm)) {
           if (!respuesta) {
             console.warn(`La pregunta con ID ${preguntaId} no tiene respuesta.`);
-            continue;
+            continue; // Saltar respuestas vacías
           }
 
           const payload = {
@@ -117,7 +130,7 @@ export default {
             estudianteIdEstudiante: { idEstudiante: estudianteId }
           };
 
-          console.log('Enviando respuesta:', payload);
+          console.log('Enviando respuesta:', payload); // Para depuración
 
           try {
             await this.$protectedAxios.post(`${BASE_URL}/respuesta`, payload);
@@ -125,29 +138,29 @@ export default {
             console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
           }
         }
+        // const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
+        // // Cambiar el estado de la encuesta a "Completada"
+        // const estadoEncuesta = {
+        //   estado: 'Completado',
+        //   fechaEstado: response.data.fechaEstado,
+        //   estudianteIdEstudiante: { idEstudiante: estudianteId },
+        //   encuestaIdEncuesta: { idEncuesta: this.encuestaId }
+        // };
 
-        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
+        // await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
+ // const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
+        // Cambiar el estado de la encuesta a "Completada"
         
         const estadoEncuesta = {
           estado: 'Completado',
-          fechaEstado: response.data.fechaEstado,
-          estudianteIdEstudiante: { idEstudiante: estudianteId },
-          encuestaIdEncuesta: { idEncuesta: this.encuestaId }
-        };
-
-        await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
-        
-        /*
-        const estadoEncuesta = {
-          estado: 'Completado',
-          fechaEstado: new Date().toISOString(),
+          fechaEstado: new Date().toISOString(), // Fecha actual
           estudianteIdEstudiante: { idEstudiante: estudianteId },
           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
         };
 
         await this.$protectedAxios.post(`${BASE_URL}/estado_encuesta`, estadoEncuesta);
-        */
 
+        // Mostrar notificación de éxito
         Swal.fire({
           icon: 'success',
           title: '¡Encuesta enviada!',
@@ -155,11 +168,13 @@ export default {
           confirmButtonText: 'Aceptar'
         });
 
+        // Limpiar respuestas guardadas en localStorage
         localStorage.removeItem('surveyAnswers');
         this.$router.push('/menu-estudiante');
       } catch (error) {
         console.error('Detalles del error:', error.response ? error.response.data : error);
 
+        // Mostrar mensaje de error
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -171,7 +186,6 @@ export default {
   }
 };
 </script>
-
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -182,7 +196,7 @@ export default {
   font-family: 'Roboto', sans-serif;
 }
 
-header {
+header{
   position: fixed;
   top: 0;
   width: 100%;
@@ -191,7 +205,7 @@ header {
 }
 
 .resume-container {
-  padding: 110px 40px;
+  padding: 110px 40px; /* Ajuste para que el contenido no sea cubierto por el header */
   min-height: 100vh;
   background-color: #ffffff;
   display: flex;

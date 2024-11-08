@@ -1,1 +1,1 @@
-export const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:9191/usei';
+export const BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8082';
