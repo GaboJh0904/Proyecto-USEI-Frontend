@@ -63,16 +63,20 @@
         selectedFilter2: "",
         filterOptions1: ["2022", "2023", "2024"],
         filterOptions2: ["Primer Periodo", "Segundo Periodo", "Tercer Periodo"],
-        barChartData: [{ name: "Certificados Emitidos", data: [20, 15, 10, 25] }],
-        pieChartData: [70, 30], // 70% completado, 30% no completado
+
+
+        barChartData: [{ name: "Certificados Emitidos", data: [] }],
+        pieChartData: [], 
         barChartOptions: {
+                ...this.barChartOptions,
+
           chart: {
             animations: { enabled: true, speed: 800 },
             toolbar: { show: false },
             background: 'rgba(74, 120, 123, 0.2)',
           },
           xaxis: {
-            categories: ["Ingeniería", "Medicina", "Derecho", "Administración"],
+            categories: [],
             title: { text: "Carreras" }
           },
           title: { text: "Certificados Emitidos por Carrera", align: 'center' },
@@ -115,6 +119,40 @@
 
       // Actualizar los datos del gráfico de torta 
       this.pieChartData = [completados.length, noCompletados.length];
+
+      // Obtener datos para el gráfico de barras (Certificados emitidos por carrera)
+        const certificadosResponse = await axios.get(`${BASE_URL}/estado_certificado/certificados-emitidos`, {
+            params: {
+                year: this.selectedFilter1 || null,
+            }
+        });
+
+        const certificadosData = certificadosResponse.data;
+
+        // Mapear los datos para obtener las carreras y los conteos
+        const carreras = certificadosData.map(item => item.carrera); // Extraer nombres de carrera
+        const cantidades = certificadosData.map(item => item.cantidad ?? 0); // Asegurar que no hay valores undefined en cantidades
+
+        // Imprimir en consola para verificar
+        console.log("Carreras:", carreras); // Esto debería mostrar ['Psicología'] o cualquier carrera que obtengas
+        console.log("Cantidades:", cantidades); // Esto debería mostrar [1] o los valores correspondientes
+
+        // Actualizar datos del gráfico de barras
+        this.barChartData = [
+            {
+                name: "Certificados Emitidos",
+                data: cantidades,
+            }
+        ];
+        
+        // Actualizar el eje X del gráfico de barras
+        this.barChartOptions = {
+            ...this.barChartOptions, // Copiamos las opciones anteriores
+            xaxis: {
+                ...this.barChartOptions.xaxis, // Copiamos las opciones de xaxis anteriores
+                categories: carreras // Actualizar el eje X con los nombres de las carreras
+            }
+        };
     } catch (error) {
       console.error("Error al actualizar los gráficos: ", error);
     }
