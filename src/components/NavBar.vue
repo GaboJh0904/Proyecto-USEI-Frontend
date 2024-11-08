@@ -196,8 +196,10 @@ export default {
     },
     isPorcentajeIncompleto() {
       return this.$route.path === '/porcentaje-incompleto'
-    }
-
+    },
+    isGestionEncuesta() {
+      return this.$route.path === '/gestion-encuestas'
+    },
   },
   watch: {
     estudianteId(newVal, oldVal) {
