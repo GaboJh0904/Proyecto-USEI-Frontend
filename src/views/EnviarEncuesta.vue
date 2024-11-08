@@ -133,6 +133,12 @@ export default {
           confirmButtonText: 'Continuar'
         });
 
+        await Swal.fire({
+          icon: 'success',
+          title: 'Certificado enviado correctamente',
+          confirmButtonText: 'Continuar'
+        });
+
         this.fetchEstudiantes();
         
       } catch (error) {
