@@ -161,7 +161,7 @@ export default {
         localStorage.removeItem('surveyAnswers');
         this.$router.push('/menu-estudiante');
       } catch (error) {
-        console.error('Detalles del error:', error);
+        console.error('Detalles del error:', error.response ? error.response.data : error);
 
         // Mostrar mensaje de error
         Swal.fire({

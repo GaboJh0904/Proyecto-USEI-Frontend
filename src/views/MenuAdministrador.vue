@@ -113,7 +113,7 @@
           </div>
           <h3>DATOS</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToDashboard">Ingresar</button>
           </div>
         </div>
         <!-- Card 9 -->
@@ -227,7 +227,10 @@
     },
     goToPlazos() {
       this.$router.push('/formulario-plazos');
-    }
+    },
+    goToDashboard(){
+        this.$router.push('/dashboard');
+    },
 
   },
   };
