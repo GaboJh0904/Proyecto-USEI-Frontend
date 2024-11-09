@@ -23,7 +23,7 @@
         <a v-if="!userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
 
         <!-- Opciones si el usuario está logueado -->
-        <a v-if="userRole" href="#noticias" class="navigation-link">Noticias</a>
+        <a v-if="userRole" href="#noticias" class="navigation-link">News</a>
         <a v-if="userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
         <a v-if="userRole" href="#panel" class="navigation-link">Panel</a>
         <a v-if="userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
