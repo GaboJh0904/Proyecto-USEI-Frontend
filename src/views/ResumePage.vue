@@ -138,16 +138,27 @@ export default {
             console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
           }
         }
-        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
+        // const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
+        // // Cambiar el estado de la encuesta a "Completada"
+        // const estadoEncuesta = {
+        //   estado: 'Completado',
+        //   fechaEstado: response.data.fechaEstado,
+        //   estudianteIdEstudiante: { idEstudiante: estudianteId },
+        //   encuestaIdEncuesta: { idEncuesta: this.encuestaId }
+        // };
+
+        // await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
+ // const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
         // Cambiar el estado de la encuesta a "Completada"
+        
         const estadoEncuesta = {
           estado: 'Completado',
-          fechaEstado: response.data.fechaEstado,
+          fechaEstado: new Date().toISOString(), // Fecha actual
           estudianteIdEstudiante: { idEstudiante: estudianteId },
           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
         };
 
-        await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
+        await this.$protectedAxios.post(`${BASE_URL}/estado_encuesta`, estadoEncuesta);
 
         // Mostrar notificación de éxito
         Swal.fire({
@@ -161,7 +172,7 @@ export default {
         localStorage.removeItem('surveyAnswers');
         this.$router.push('/menu-estudiante');
       } catch (error) {
-        console.error('Detalles del error:', error);
+        console.error('Detalles del error:', error.response ? error.response.data : error);
 
         // Mostrar mensaje de error
         Swal.fire({

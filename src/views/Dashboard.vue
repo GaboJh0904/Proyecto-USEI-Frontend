@@ -8,22 +8,22 @@
           <center><h2>Dashboard</h2></center>
         </div>
   
-        <!-- Contenedor de subida de archivos PDF -->
         <div class="upload-container">
           <!-- Campos de filtrado -->
           <div class="filter-container">
-            <label for="filter1">Año:</label>
-            <select v-model="selectedFilter1" @change="updateCharts">
-              <option value="">Seleccione una opción</option>
-              <option v-for="option in filterOptions1" :key="option" :value="option">{{ option }}</option>
-            </select>
-  
-            <label for="filter2">Periodo:</label>
-            <select v-model="selectedFilter2" @change="updateCharts">
-              <option value="">Seleccione una opción</option>
-              <option v-for="option in filterOptions2" :key="option" :value="option">{{ option }}</option>
-            </select>
-          </div>
+  <label for="filter1">Año:</label>
+  <select v-model="selectedFilter1" @change="updateCharts">
+    <option value="">Seleccione una opción</option>
+    <option v-for="option in filterOptions1" :key="option" :value="option">{{ option }}</option>
+  </select>
+
+  <label for="filter2">Periodo:</label>
+  <select v-model="selectedFilter2" @change="updateCharts">
+    <option value="">Seleccione una opción</option>
+    <option v-for="option in filterOptions2" :key="option" :value="option">{{ option }}</option>
+  </select>
+</div>
+
   
           <!-- Gráficos -->
           <div class="charts-container">
@@ -61,8 +61,8 @@
         //-----------valores predefinidos para grafico de barras
         selectedFilter1: "",
         selectedFilter2: "",
-        filterOptions1: ["2022", "2023", "2024"],
-        filterOptions2: ["Primer Periodo", "Segundo Periodo", "Tercer Periodo"],
+        filterOptions1: [],
+        filterOptions2: [],
 
 
         barChartData: [{ name: "Certificados Emitidos", data: [] }],
@@ -86,28 +86,30 @@
         //-------------------------------------------------
 
         //----------grafico de torta
-        pieChartData: [], 
+        pieChartData: [],
         pieChartOptions: {
-        chart: {
+          chart: {
             animations: { enabled: true, easing: 'easeinout', speed: 1200 },
             toolbar: { show: false },
             background: 'rgba(107, 184, 188, 0.2)',
-        },
-        labels: ["Completado", "No Completado"], 
-        title: { text: "Encuesta de Estudiantes Completada", align: 'center' },
-        colors: ['#4a787b', '#77a6a6'],
-        dataLabels: { enabled: true },
+          },
+          labels: ["Completado", "No Completado"],
+          title: { text: "Encuesta de Estudiantes Completada", align: 'center' },
+          colors: ['#4a787b', '#77a6a6'],
+          dataLabels: { enabled: true },
         },
       };
     },
 
     mounted() {
   this.updateCharts();
+  this.fetchFilterOptions();
+
 },
 
     methods: {
     //----------------grafico de torta
-    async updateCharts() {
+    async fetchFilterOptions() {
     try {
       // Obtener estudiantes que completaron la encuesta
       const completadosResponse = await axios.get(`${BASE_URL}/estado_encuesta/completadas`);
@@ -115,7 +117,7 @@
 
       // Obtener estudiantes que no completaron la encuesta
       const noCompletadosResponse = await axios.get(`${BASE_URL}/estudiante/no_completaron_encuesta`);
-      const noCompletados = noCompletadosResponse.data;
+      const noCompletados = noCompletadosResponse.data; 
 
       // Actualizar los datos del gráfico de torta 
       this.pieChartData = [completados.length, noCompletados.length];
@@ -129,13 +131,12 @@
 
         const certificadosData = certificadosResponse.data;
 
-        // Mapear los datos para obtener las carreras y los conteos
-        const carreras = certificadosData.map(item => item.carrera); // Extraer nombres de carrera
-        const cantidades = certificadosData.map(item => item.cantidad ?? 0); // Asegurar que no hay valores undefined en cantidades
+        const carreras = certificadosData.map(item => item.carrera); 
+        const cantidades = certificadosData.map(item => item.cantidad ?? 0); 
 
-        // Imprimir en consola para verificar
-        console.log("Carreras:", carreras); // Esto debería mostrar ['Psicología'] o cualquier carrera que obtengas
-        console.log("Cantidades:", cantidades); // Esto debería mostrar [1] o los valores correspondientes
+        // Imprimir 
+        console.log("Carreras:", carreras); 
+        console.log("Cantidades:", cantidades);
 
         // Actualizar datos del gráfico de barras
         this.barChartData = [
@@ -147,16 +148,72 @@
         
         // Actualizar el eje X del gráfico de barras
         this.barChartOptions = {
-            ...this.barChartOptions, // Copiamos las opciones anteriores
+            ...this.barChartOptions, 
             xaxis: {
-                ...this.barChartOptions.xaxis, // Copiamos las opciones de xaxis anteriores
-                categories: carreras // Actualizar el eje X con los nombres de las carreras
+                ...this.barChartOptions.xaxis, 
+                categories: carreras 
             }
         };
+      const response = await axios.get(`${BASE_URL}/estudiante/opciones_filtro`);
+      this.filterOptions1 = response.data.anios; 
+      this.filterOptions2 = response.data.periodos; 
     } catch (error) {
-      console.error("Error al actualizar los gráficos: ", error);
+      console.error("Error al obtener las opciones de filtro: ", error);
     }
   },
+  async updateCharts() {
+  try {
+    // Obtener estudiantes que completaron la encuesta con filtros de año y periodo
+    const completadosResponse = await axios.get(`${BASE_URL}/estado_encuesta/completadas`, {
+      params: {
+        anio: this.selectedFilter1,
+        semestre: this.selectedFilter2,
+      },
+    });
+    const completados = completadosResponse.data;
+
+    // Obtener estudiantes que no completaron la encuesta con filtros de año y periodo
+    const noCompletadosResponse = await axios.get(`${BASE_URL}/estudiante/no_completaron_encuesta`, {
+      params: {
+        anio: this.selectedFilter1,
+        semestre: this.selectedFilter2,
+      },
+    });
+    const noCompletados = noCompletadosResponse.data;
+
+    this.pieChartData = [completados.length, noCompletados.length];
+
+ // Obtener datos para el gráfico de barras (Certificados Emitidos por Carrera)
+ const certificadosResponse = await axios.get(`${BASE_URL}/estado_certificado/certificados-emitidos`, {
+      params: {
+        anio: this.selectedFilter1 || null,
+        semestre: this.selectedFilter2 || null,
+      },
+    });
+
+    const certificadosData = certificadosResponse.data;
+ const carreras = certificadosData.map(item => item.carrera);
+    const cantidades = certificadosData.map(item => item.cantidad ?? 0);
+
+    this.barChartData = [
+      {
+        name: "Certificados Emitidos",
+        data: cantidades,
+      },
+    ];
+    this.barChartOptions = {
+      ...this.barChartOptions,
+      xaxis: {
+        ...this.barChartOptions.xaxis,
+        categories: carreras,
+      },
+    };
+
+  } catch (error) {
+    console.error("Error al actualizar los gráficos: ", error);
+  }
+},
+
     },
   };
   </script>
