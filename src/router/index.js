@@ -24,6 +24,7 @@ import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import AccesoDenegado from '@/components/AccesoDenegado.vue'
+import SoporteDirector from '@/views/SoporteDirector.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -37,7 +38,7 @@ const router = createRouter({
       component: PaginaInicio
     },
     {
-      path: '/menu-estudiante', // Ruta MenuEstudiante
+      path: '/menu-estudiante',
       name: 'menuEstudiante',
       component: MenuEstudiante,
       meta: { requiresAuth: true, roles: ['estudiante'] } // Rutas protegidas
@@ -179,7 +180,13 @@ const router = createRouter({
       path: '/acceso-denegado',
       name: 'AccesoDenegado',
       component: AccesoDenegado // Componente que muestra un mensaje de acceso denegado
-    },    
+    },  
+    {
+      path: '/soporte-director',
+      name: 'SoporteDirector',
+      component: SoporteDirector,
+      meta: { requiresAuth: true, roles: ['Director'] }
+    },  
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
