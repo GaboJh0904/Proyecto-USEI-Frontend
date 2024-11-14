@@ -138,28 +138,17 @@ export default {
             console.error(`Error al enviar la respuesta de la pregunta ${preguntaId}:`, error);
           }
         }
-        // const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
-        // // Cambiar el estado de la encuesta a "Completada"
-        // const estadoEncuesta = {
-        //   estado: 'Completado',
-        //   fechaEstado: response.data.fechaEstado,
-        //   estudianteIdEstudiante: { idEstudiante: estudianteId },
-        //   encuestaIdEncuesta: { idEncuesta: this.encuestaId }
-        // };
+         const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
+         // Cambiar el estado de la encuesta a "Completada"
+         const estadoEncuesta = {
+           estado: 'Completado',
+           fechaEstado: new Date().toISOString(),
+           estudianteIdEstudiante: { idEstudiante: estudianteId },
+           encuestaIdEncuesta: { idEncuesta: this.encuestaId }
+         };
 
-        // await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
- // const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudianteId}`);
-        // Cambiar el estado de la encuesta a "Completada"
-        
-        const estadoEncuesta = {
-          estado: 'Completado',
-          fechaEstado: new Date().toISOString(), // Fecha actual
-          estudianteIdEstudiante: { idEstudiante: estudianteId },
-          encuestaIdEncuesta: { idEncuesta: this.encuestaId }
-        };
-
-        await this.$protectedAxios.post(`${BASE_URL}/estado_encuesta`, estadoEncuesta);
-
+         await this.$protectedAxios.put(`${BASE_URL}/estado_encuesta/${response.data.idEstEncuesta}`, estadoEncuesta);
+         
         // Mostrar notificación de éxito
         Swal.fire({
           icon: 'success',
