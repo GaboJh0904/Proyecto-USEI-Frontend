@@ -24,6 +24,7 @@ import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import AccesoDenegado from '@/components/AccesoDenegado.vue'
+import ReporteDash from '@/views/ReporteDash.vue' // Importa la nueva vista
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -173,6 +174,12 @@ const router = createRouter({
       path: '/dashboard',
       name: 'dashboard',
       component: Dashboard,
+      meta: { requiresAuth: true, roles: ['Administrador'] } // Rutas protegidas
+    },
+    {
+      path: '/reporte-dash', // Nueva ruta para ReporteDash
+      name: 'ReporteDash',
+      component: ReporteDash,
       meta: { requiresAuth: true, roles: ['Administrador'] } // Rutas protegidas
     },
     {
