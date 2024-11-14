@@ -120,7 +120,6 @@ export default {
         Swal.fire('Error', 'ID del estudiante no encontrado', 'error');
         return;
       }
-
     try {
       // Enviar certificado
       await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
@@ -128,6 +127,11 @@ export default {
           idEstudiante: idEstudiante
         }
       });
+        await Swal.fire({
+          icon: 'success',
+          title: 'Certificado enviado correctamente',
+          confirmButtonText: 'Continuar'
+        });
 
         await Swal.fire({
           icon: 'success',
