@@ -60,6 +60,16 @@
             <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
           </div>
         </div>
+      <!-- Card 4 -->
+      <div class="card-wrapper">
+          <div class="card">
+            <img src="@/components/images/soporte-director.png" alt="Reportes" class="card-icon" />
+          </div>
+          <h3>SOPORTE</h3>
+          <div class="card-button-container">
+            <button class="btn-ingresar" @click="goToSoporteDirector">Ingresar</button>
+          </div>
+        </div>
       </div>
     </section>
   
@@ -80,8 +90,8 @@
       FooterComponent  
     },
     methods: {
-      goToEnProgreso(){
-        this.$router.push('/en-progreso');
+      goToSoporteDirector(){
+        this.$router.push('/soporte-director');
       }
     },
   };

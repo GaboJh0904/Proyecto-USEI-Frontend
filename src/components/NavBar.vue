@@ -5,7 +5,7 @@
     </div>
     <div class="nav-links">
       <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
-      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta">
+      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector">
         <!-- Botón "Volver" con icono -->
         <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
           <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
@@ -23,7 +23,7 @@
         <a v-if="!userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
 
         <!-- Opciones si el usuario está logueado -->
-        <a v-if="userRole" href="#noticias" class="navigation-link">News</a>
+        <a v-if="userRole" href="#noticias" class="navigation-link">Noticias</a>
         <a v-if="userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
         <a v-if="userRole" href="#panel" class="navigation-link">Panel</a>
         <a v-if="userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
@@ -200,6 +200,9 @@ export default {
     isGestionEncuesta() {
       return this.$route.path === '/gestion-encuestas'
     },
+    isSoporteDirector() {
+      return this.$route.path === '/soporte-director'
+    }
   },
   watch: {
     estudianteId(newVal, oldVal) {
