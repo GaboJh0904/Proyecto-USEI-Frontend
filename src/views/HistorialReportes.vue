@@ -1,86 +1,108 @@
 <template>
-    <div>
-      <header>
-        <NavBar :userRole="userRole" :userName="userName" />
-      </header>
-      <main class="user-management-container">
-        <h1 class="user-management-title">Historial de Reportes</h1>
-        
-        <!-- Filtro y Ordenamiento -->
-        <div class="filter-sort-container">
-          <input
-            type="text"
-            placeholder="Filtrar por título..."
-            v-model="filterText"
-            class="filter-input"
-          />
-          <button @click="toggleSortOrder" class="sort-button">
-            Ordenar {{ sortOrder === 'asc' ? 'Ascendente' : 'Descendente' }}
-          </button>
+  <div>
+    <header>
+      <NavBar :userRole="userRole" :userName="userName" />
+    </header>
+    <main class="user-management-container">
+      <h1 class="user-management-title">Historial de Reportes</h1>
+      
+      <!-- Filtro y Ordenamiento -->
+      <div class="filter-sort-container">
+        <input
+          type="text"
+          placeholder="Filtrar por título..."
+          v-model="filterText"
+          @input="fetchReportes"
+          class="filter-input"
+        />
+        <button @click="toggleSortOrder" class="sort-button">
+          Ordenar {{ sortOrder === 'asc' ? 'Ascendente' : 'Descendente' }}
+        </button>
+      </div>
+      
+      <!-- Lista de Reportes -->
+      <div v-for="reporte in reportes" :key="reporte.id" class="report-item">
+        <div>
+          <p class="report-title">{{ reporte.titulo }}</p>
+          <p class="report-date">{{ reporte.fecha }}</p>
         </div>
-        
-        <!-- Lista de Reportes -->
-        <div v-for="reporte in filteredAndSortedReports" :key="reporte.id" class="report-item">
-          <div>
-            <p class="report-title">{{ reporte.titulo }}</p>
-            <p class="report-date">{{ reporte.fecha }}</p>
-          </div>
-          <div class="report-actions">
-            <button @click="descargarReporte(reporte.id)" class="action-btn download-btn">Descargar</button>
-            <button @click="eliminarReporte(reporte.id)" class="action-btn delete-btn">Eliminar</button>
-          </div>
+        <div class="report-actions">
+          <button @click="descargarReporte(reporte.idReporte)" class="action-btn download-btn">Descargar</button>
+          <button @click="eliminarReporte(reporte.idReporte)" class="action-btn delete-btn">Eliminar</button>
         </div>
-        
-        <!-- Botón para Crear Nuevo Reporte -->
-        <button @click="crearNuevoReporte" class="create-report-btn">Crear Nuevo Reporte</button>
-      </main>
-      <FooterComponent />
-    </div>
-  </template>
-  
-  <script>
-  import NavBar from '@/components/NavBar.vue';
-  import FooterComponent from '@/components/FooterComponent.vue';
-  
-  export default {
-    name: 'HistorialReportes',
-    components: {
-      NavBar,
-      FooterComponent,
+      </div>
+      
+      <!-- Botón para Crear Nuevo Reporte -->
+      <button @click="crearNuevoReporte" class="create-report-btn">Crear Nuevo Reporte</button>
+    </main>
+    <FooterComponent />
+  </div>
+</template>
+
+<script>
+import NavBar from '@/components/NavBar.vue';
+import FooterComponent from '@/components/FooterComponent.vue';
+import Swal from 'sweetalert2';
+import { BASE_URL } from '@/config/globals';
+
+export default {
+  name: 'HistorialReportes',
+  components: {
+    NavBar,
+    FooterComponent,
+  },
+  data() {
+    return {
+      filterText: "",
+      sortOrder: "asc",
+      reportes: [],
+      perPage: 5,
+      currentPage: 1,
+    };
+  },
+  mounted(){
+    this.fetchReportes();
+  },
+  methods: {
+    toggleSortOrder() {
+      this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
+      this.fetchReportes();
     },
-    data() {
-      return {
-        filterText: "",
-        sortOrder: "asc",
-        reportes: [
-          { id: 1, titulo: "Reporte 1", fecha: "2024-11-01" },
-          { id: 2, titulo: "Reporte 2", fecha: "2024-11-02" },
-        ],
-      };
+    async fetchReportes(page = 1) {
+      try {
+        const response = await this.$publicAxios.get(`${BASE_URL}/reporte`, {
+          params: {
+            page: page - 1,
+            size: this.perPage,
+            sortBy: 'titulo',
+            sortDirection: this.sortOrder,
+            filter: this.filterText,
+          },
+        });
+        this.reportes = response.data.content;
+      } catch (error) {
+        console.error('Error al cargar los reportes:', error);
+      }
     },
-    computed: {
-      filteredAndSortedReports() {
-        return this.reportes
-          .filter((reporte) => reporte.titulo.toLowerCase().includes(this.filterText.toLowerCase()))
-          .sort((a, b) => this.sortOrder === "asc" ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha));
-      },
+    async descargarReporte(id) {
+      // Lógica para descargar el reporte (esto puede implicar otra llamada a un endpoint específico si está disponible)
+      console.log("Descargar reporte:", id);
     },
-    methods: {
-      toggleSortOrder() {
-        this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
-      },
-      descargarReporte(id) {
-        console.log("Descargar reporte:", id);
-      },
-      eliminarReporte(id) {
-        console.log("Eliminar reporte:", id);
-      },
-      crearNuevoReporte() {
-        this.$router.push("/crear-reporte-director");
-      },
+    async eliminarReporte(id) {
+      try {
+        await this.$protectedAxios.delete(`${BASE_URL}/reporte/${id}`);
+        Swal.fire("Eliminado", "El reporte ha sido eliminado correctamente", "success");
+        this.fetchReportes();
+      } catch (error) {
+        Swal.fire("Error", "No se pudo eliminar el reporte", "error");
+      }
     },
-  };
-  </script>
+    crearNuevoReporte() {
+      this.$router.push("/crear-reporte-director");
+    },
+  },
+};
+</script>
   
   <style scoped>
   @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');

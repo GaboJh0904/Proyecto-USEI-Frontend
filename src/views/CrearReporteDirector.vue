@@ -16,15 +16,7 @@
           <span class="form-label">Descripción</span>
           <textarea v-model="descripcion" class="form-input" rows="3"></textarea>
         </label>
-        
-        <label class="block mb-2">
-          <span class="form-label">Formato</span>
-          <select v-model="formato" class="form-input">
-            <option value="PDF">PDF</option>
-            <option value="DOCX">DOCX</option>
-          </select>
-        </label>
-        
+
         <button type="submit" class="submit-btn">Crear Reporte</button>
       </form>
     </main>
@@ -35,6 +27,8 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
+import Swal from 'sweetalert2';
+import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'CrearReporteDirector',
@@ -46,12 +40,29 @@ export default {
     return {
       titulo: "",
       descripcion: "",
-      formato: "PDF",
+      fecha: new Date().toISOString().split('T')[0], // Fecha actual
+      usuarioId: 1, // Cambiar según el usuario actual
     };
   },
   methods: {
-    crearReporte() {
-      console.log("Crear reporte con título:", this.titulo);
+    async crearReporte() {
+      const formData = new FormData();
+      formData.append("titulo", this.titulo);
+      formData.append("descripcion", this.descripcion);
+      formData.append("fecha", this.fecha); // Formato: "yyyy-MM-dd"
+      formData.append("UsuarioIdUsuario", this.usuarioId);
+
+      try {
+        await this.$publicAxios.post(`${BASE_URL}/reporte/generate-dashboard`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        Swal.fire("Éxito", "Reporte creado exitosamente", "success");
+        this.$router.push("/historial-reportes");
+      } catch (error) {
+        Swal.fire("Error", "No se pudo crear el reporte", "error");
+      }
     },
   },
 };
