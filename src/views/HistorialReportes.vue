@@ -21,7 +21,7 @@
       </div>
       
       <!-- Lista de Reportes -->
-      <div v-for="reporte in reportes" :key="reporte.id" class="report-item">
+      <div v-for="reporte in reportes" :key="reporte.idReporte" class="report-item">
         <div>
           <p class="report-title">{{ reporte.titulo }}</p>
           <p class="report-date">{{ reporte.fecha }}</p>
@@ -85,8 +85,31 @@ export default {
       }
     },
     async descargarReporte(id) {
-      // Lógica para descargar el reporte (esto puede implicar otra llamada a un endpoint específico si está disponible)
-      console.log("Descargar reporte:", id);
+      try {
+        // Realizar una petición GET al endpoint de descarga
+        const response = await this.$publicAxios.get(`${BASE_URL}/reporte/download/${id}`, {
+          responseType: 'blob', // Importante para manejar archivos binarios
+        });
+
+        // Crear un enlace para descargar el archivo
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Nombre sugerido del archivo (esto también puede venir desde el backend)
+        link.setAttribute('download', `Reporte-${id}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+
+        // Limpiar el DOM
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+
+        Swal.fire("Descarga completa", "El reporte se descargó correctamente", "success");
+      } catch (error) {
+        console.error('Error al descargar el reporte:', error);
+        Swal.fire("Error", "No se pudo descargar el reporte", "error");
+      }
     },
     async eliminarReporte(id) {
       try {

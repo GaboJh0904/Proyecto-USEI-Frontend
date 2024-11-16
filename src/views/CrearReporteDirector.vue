@@ -40,7 +40,7 @@ export default {
     return {
       titulo: "",
       descripcion: "",
-      fecha: new Date().toISOString().split('T')[0], // Fecha actual
+      fecha: new Date().toISOString(), // Fecha actual
       usuarioId: 1, // Cambiar según el usuario actual
     };
   },
