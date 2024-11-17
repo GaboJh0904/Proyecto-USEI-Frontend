@@ -5,21 +5,27 @@
     </header>
     <main class="user-management-container">
       <h1 class="user-management-title">Historial de Reportes</h1>
-      
+
       <!-- Filtro y Ordenamiento -->
       <div class="filter-sort-container">
-        <input
-          type="text"
-          placeholder="Filtrar por título..."
-          v-model="filterText"
-          @input="fetchReportes"
-          class="filter-input"
-        />
+        <div class="search-container">
+          <input
+            type="text"
+            placeholder="Buscar por título..."
+            v-model="filterText"
+            @input="fetchReportes"
+            class="filter-input"
+          />
+          <button class="search-button">
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
         <button @click="toggleSortOrder" class="sort-button">
-          Ordenar {{ sortOrder === 'asc' ? 'Ascendente' : 'Descendente' }}
+          <i class="fas fa-sort"></i>
+          {{ sortOrder === 'asc' ? 'Ascendente' : 'Descendente' }}
         </button>
       </div>
-      
+
       <!-- Lista de Reportes -->
       <div v-for="reporte in reportes" :key="reporte.idReporte" class="report-item">
         <div>
@@ -27,13 +33,36 @@
           <p class="report-date">{{ reporte.fecha }}</p>
         </div>
         <div class="report-actions">
-          <button @click="descargarReporte(reporte.idReporte)" class="action-btn download-btn">Descargar</button>
-          <button @click="eliminarReporte(reporte.idReporte)" class="action-btn delete-btn">Eliminar</button>
+          <button
+            @click="descargarReporte(reporte.idReporte)"
+            class="action-btn download-btn"
+          >
+            <i class="fas fa-download"></i> Descargar
+          </button>
+          <button
+            @click="confirmEliminarReporte(reporte.idReporte)"
+            class="action-btn delete-btn"
+          >
+            <i class="fas fa-trash"></i> Eliminar
+          </button>
         </div>
       </div>
-      
+
+      <!-- Paginación -->
+      <div class="pagination-container">
+        <button @click="previousPage" :disabled="currentPage === 1" class="page-btn">
+          Anterior
+        </button>
+        <span>Página {{ currentPage }}</span>
+        <button @click="nextPage" :disabled="reportes.length < perPage" class="page-btn">
+          Siguiente
+        </button>
+      </div>
+
       <!-- Botón para Crear Nuevo Reporte -->
-      <button @click="crearNuevoReporte" class="create-report-btn">Crear Nuevo Reporte</button>
+      <button @click="crearNuevoReporte" class="create-report-btn">
+        <i class="fas fa-plus"></i> Crear Nuevo Reporte
+      </button>
     </main>
     <FooterComponent />
   </div>
@@ -127,111 +156,134 @@ export default {
 };
 </script>
   
-  <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+<style scoped>
+/* Añadiendo mejores estilos */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap');
+
+.user-management-container {
+  padding: 100px 20px 20px; /* Agregamos un padding-top para evitar que el título quede cubierto */
+  min-height: 100vh;
+  background-color: #f9f9f9;
+  font-family: 'Poppins', sans-serif;
+}
   
-  .user-management-container {
-    padding-top: 100px;
-    min-height: 100vh;
-    background-color: #ffffff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 30px auto;
-  }
+.user-management-title {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
   
-  .user-management-title {
-    font-size: 35px;
-    font-weight: bold;
-    color: #000000;
-    margin-bottom: 2rem;
-  }
+.filter-sort-container {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.search-container {
+  display: flex;
+  gap: 5px;
+}
   
-  .filter-sort-container {
-    display: flex;
-    gap: 22px;
-    margin-bottom: 20px;
-  }
+.filter-input {
+  width: 300px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
   
-  .filter-input {
-    width: 40%;
-    padding: 8px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-  }
+.search-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.sort-button {
+  background-color: #28a745;
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
   
-  .sort-button {
-    background-color: #263D42;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-  }
+.report-item {
+  background: white;
+  padding: 15px;
+  width: 60%;
+  margin: 0 auto;
+  justify-content: space-between;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
   
-  .sort-button:hover {
-    background-color: #63C7B2;
-  }
+.report-title {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
   
-  .report-item {
-    display: flex;
-    justify-between: space-between;
-    align-items: center;
-    border: 1px solid #CBDADB;
-    padding: 1rem;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    width: 100%;
-    max-width: 600px;
-  }
+.report-actions .action-btn {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
   
-  .report-title {
-    font-weight: 500;
-    font-size: 18px;
-  }
+.download-btn {
+  background-color: #007bff;
+  color: white;
+  margin-right: 10px;
+}
   
-  .report-date {
-    color: #8A8A8A;
-    font-size: 14px;
-  }
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+}
   
-  .report-actions {
-    display: flex;
-    gap: 10px;
-  }
+.create-report-btn {
+  background-color: #17a2b8;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.page-btn {
+  background-color: #343a40;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin: 0 5px;
+}
+
+.page-btn:hover {
+  background-color: #6c757d;
+}
   
-  .action-btn {
-    padding: 10px;
-    font-weight: bold;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .download-btn {
-    background-color: #80CED7;
-    color: white;
-  }
-  
-  .delete-btn {
-    background-color: #8E6C88;
-    color: white;
-  }
-  
-  .create-report-btn {
-    background-color: #263D42;
-    color: white;
-    padding: 12px 20px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 8px;
-    margin-top: 20px;
-    cursor: pointer;
-    width: 100%;
-    max-width: 600px;
-  }
-  
-  .create-report-btn:hover {
-    background-color: #63C7B2;
-  }
+.create-report-btn:hover {
+  background-color: #63C7B2;
+}
+
+
   </style>
   
