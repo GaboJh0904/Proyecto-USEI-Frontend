@@ -1,9 +1,13 @@
 <template>
+  <div>
     <header>
       <NavBar :userRole="userRole" />
     </header>
     <div class="ver-preguntas-container">
       <h1 class="title">Preguntas de la Encuesta</h1>
+
+      <!-- Botón de actualización -->
+      <button class="refresh-button" @click="fetchPreguntas">Actualizar Preguntas</button>
 
       <!-- Lista de preguntas -->
       <div v-if="preguntas.length" class="preguntas-list">
@@ -19,6 +23,7 @@
           </ul>
         </div>
       </div>
+    </div>
     <FooterComponent />
   </div>
 </template>
@@ -88,7 +93,7 @@ export default {
         this.preguntas = preguntas;
 
         Swal.fire({
-          title: 'Preguntas cargadas',
+          title: 'Preguntas actualizadas',
           text: 'Las preguntas se han cargado correctamente.',
           icon: 'success',
           confirmButtonColor: '#63c7b2',
@@ -126,6 +131,24 @@ export default {
   margin-bottom: 1.5rem;
   text-align: center;
   text-transform: uppercase;
+}
+
+.refresh-button {
+  background-color: #63c7b2;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  margin-bottom: 1.5rem;
+}
+
+.refresh-button:hover {
+  background-color: #80ced7;
+  transform: scale(1.05);
 }
 
 .preguntas-list {
