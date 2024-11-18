@@ -1,6 +1,4 @@
 <template>
- 
-    <!-- Integración del NavBar -->
     <header>
       <NavBar :userRole="userRole" />
     </header>
