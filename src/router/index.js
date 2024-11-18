@@ -25,6 +25,7 @@ import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import AccesoDenegado from '@/components/AccesoDenegado.vue'
 import SoporteDirector from '@/views/SoporteDirector.vue'
+import VerPreguntas from '@/views/VerPreguntas.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -187,6 +188,13 @@ const router = createRouter({
       component: SoporteDirector,
       meta: { requiresAuth: true, roles: ['Director'] }
     },  
+    {
+      path: '/lista-preguntas',
+      name: 'ListaPreguntas',
+      component: VerPreguntas,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
+    }, 
+
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {

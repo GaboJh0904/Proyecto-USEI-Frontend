@@ -47,7 +47,7 @@
           </div>
           <h3>ENCUESTA DE GRADUACIÓN</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToVerPreguntas">Ingresar</button>
           </div>
         </div>
         <!-- Card 3 -->
@@ -228,10 +228,12 @@
     goToPlazos() {
       this.$router.push('/formulario-plazos');
     },
+    goToVerPreguntas(){
+        this.$router.push('/lista-preguntas');
+      },
     goToDashboard(){
         this.$router.push('/dashboard');
     },
-
   },
   };
   </script>
