@@ -184,7 +184,8 @@ const router = createRouter({
     {
       path: '/lista-preguntas',
       name: 'ListaPreguntas',
-      component: VerPreguntas // Componente que muestra un mensaje de acceso denegado
+      component: VerPreguntas,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
     }, 
 
   ],

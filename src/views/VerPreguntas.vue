@@ -2,16 +2,16 @@
     <header>
       <NavBar :userRole="userRole" />
     </header>
-
     <div class="ver-preguntas-container">
       <h1 class="title">Preguntas de la Encuesta</h1>
-      <div class="preguntas-list">
-        <!-- Lista de preguntas -->
+
+      <!-- Lista de preguntas -->
+      <div v-if="preguntas.length" class="preguntas-list">
         <div class="pregunta-card" v-for="pregunta in preguntas" :key="pregunta.idPregunta">
           <h2 class="pregunta-titulo">Pregunta {{ pregunta.numPregunta }}</h2>
           <p class="pregunta-texto">{{ pregunta.pregunta }}</p>
 
-          <!-- Lista de opciones asociadas a la pregunta -->
+          <!-- Opciones asociadas a la pregunta -->
           <ul v-if="pregunta.opciones && pregunta.opciones.length > 0" class="opciones-list">
             <li v-for="opcion in pregunta.opciones" :key="opcion.idOpcionesPregunta" class="opcion-item">
               {{ opcion.opcion }}
@@ -19,11 +19,14 @@
           </ul>
         </div>
       </div>
+    <FooterComponent />
   </div>
 </template>
 
 <script>
 import NavBar from '@/components/NavBar.vue';
+import FooterComponent from '@/components/FooterComponent.vue';
+import Swal from 'sweetalert2';
 import axios from 'axios';
 import { BASE_URL } from '@/config/globals';
 
@@ -31,6 +34,7 @@ export default {
   name: 'VerPreguntas',
   components: {
     NavBar,
+    FooterComponent,
   },
   data() {
     return {
@@ -44,10 +48,31 @@ export default {
   methods: {
     // Método para obtener preguntas y sus opciones
     async fetchPreguntas() {
+      Swal.fire({
+        title: 'Cargando preguntas...',
+        text: 'Por favor espera mientras cargamos las preguntas.',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading(); // Mostrar el indicador de carga
+        },
+      });
+
       try {
         // Obtener todas las preguntas
         const preguntasResponse = await axios.get(`${BASE_URL}/pregunta`);
         const preguntas = preguntasResponse.data;
+
+        if (!preguntas.length) {
+          Swal.fire({
+            title: 'Sin preguntas',
+            text: 'No hay preguntas disponibles para mostrar.',
+            icon: 'warning',
+            confirmButtonColor: '#63c7b2',
+          });
+          return;
+        }
 
         // Obtener las opciones para cada pregunta
         for (let pregunta of preguntas) {
@@ -60,9 +85,22 @@ export default {
           }
         }
 
-        this.preguntas = preguntas; // Asignar las preguntas al estado
+        this.preguntas = preguntas;
+
+        Swal.fire({
+          title: 'Preguntas cargadas',
+          text: 'Las preguntas se han cargado correctamente.',
+          icon: 'success',
+          confirmButtonColor: '#63c7b2',
+        });
       } catch (error) {
         console.error('Error al obtener las preguntas:', error);
+        Swal.fire({
+          title: 'Error al cargar preguntas',
+          text: 'Hubo un problema al intentar cargar las preguntas. Por favor, inténtalo de nuevo más tarde.',
+          icon: 'error',
+          confirmButtonColor: '#8e6c88',
+        });
       }
     },
   },
