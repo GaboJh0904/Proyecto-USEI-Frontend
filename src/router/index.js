@@ -24,6 +24,7 @@ import PorcentajeIncompleto from '@/views/PorcentajeIncompleto.vue'
 import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import AccesoDenegado from '@/components/AccesoDenegado.vue'
+import VerPreguntas from '@/views/VerPreguntas.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -180,6 +181,12 @@ const router = createRouter({
       name: 'AccesoDenegado',
       component: AccesoDenegado // Componente que muestra un mensaje de acceso denegado
     },    
+    {
+      path: '/lista-preguntas',
+      name: 'ListaPreguntas',
+      component: VerPreguntas // Componente que muestra un mensaje de acceso denegado
+    }, 
+
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
