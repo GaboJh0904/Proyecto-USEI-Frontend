@@ -7,44 +7,109 @@
       <h1 class="student-list-title">Estudiantes que Completaron la Encuesta</h1>
 
       <div class="student-table-container">
+        <!-- Filtros y Controles -->
+        <div class="filter-sort-container">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Buscar por nombre..."
+            @input="fetchEstudiantes(1)"
+           />
+
+          <select v-model="selectedEstado" @change="fetchEstudiantes(1)">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="enviado">Enviado</option>
+        </select>
+
+          <select v-model="perPage" @change="fetchEstudiantes(1)">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select>
+
+          <button @click="toggleSortDirection" class="sort-button">
+            <i
+              :class="sortOrder === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"
+            ></i>
+          </button>
+
+          <div class="columns-menu">
+            <button @click="toggleColumnsMenu" class="columns-button">Columnas</button>
+            <div v-if="showColumnsMenu" class="columns-dropdown">
+              <div
+                v-for="(visible, key) in visibleColumns"
+                :key="key"
+                @click="toggleColumn(key)"
+                class="column-option"
+              >
+                <span>{{ getColumnLabel(key) }}</span>
+                <i v-if="visible" class="fas fa-check"></i>
+              </div>
+            </div>
+          </div>
+
+          <select v-model="selectedAsignatura" @change="fetchEstudiantes(1)">
+            <option value="">Todas las asignaturas</option>
+            <option value="Taller de grado I">Taller de grado I</option>
+            <option value="Taller de grado II">Taller de grado II</option>
+          </select>
+
+        </div>
+
+        <!-- Tabla de Estudiantes -->
         <h2 class="table-subtitle">Lista de Estudiantes</h2>
         <table>
           <thead>
             <tr>
-              <th @click="toggleSort('nombre')" class="sortable">
-                Nombre del Estudiante
-                <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
-              </th>
-              <th>Estado</th>
-              <th>Encuesta</th>
-              <th>Acciones</th>
+              <th v-if="visibleColumns.nombre" @click="toggleSortDirection" class="sortable">
+              Nombre del Estudiante
+              <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
+            </th>
+            <th v-if="visibleColumns.asignatura">Asignatura</th>
+              <th v-if="visibleColumns.estado">Estado</th>
+              <th v-if="visibleColumns.encuesta">Encuesta</th>
+              <th v-if="visibleColumns.acciones">Acciones</th>
             </tr>
           </thead>
-          <tbody v-if="sortedEstudiantes.length > 0">
-            <tr v-for="estudiante in sortedEstudiantes" :key="estudiante.idEstudiante">
-              <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
-              <td :class="estudiante.estado.toLowerCase()">{{ estudiante.estado }}</td>
-              <td>
-                <button @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)" class="view-survey-button">
-                  Ver Encuesta
-                </button>
-              </td>
-              <td>
-                <button 
-                  @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)" 
-                  class="send-button"
-                  :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'">
-                  Enviar Certificado
-                </button>
-              </td>
-            </tr>
-          </tbody>
+          <tbody v-if="estudiantes.length > 0">
+    <tr v-for="estudiante in estudiantes" :key="estudiante.idEstCertificado">
+        <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
+        <td v-if="visibleColumns.asignatura">{{ estudiante.estudianteIdEstudiante.asignatura }}</td>
+        <td>{{ estudiante.estado }}</td>
+        <td>
+            <button
+                @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)"
+                class="view-survey-button"
+            >
+                Ver Encuesta
+            </button>
+        </td>
+        <td>
+            <button
+                @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)"
+                class="send-button"
+                :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
+            >
+                Enviar Certificado
+            </button>
+        </td>
+    </tr>
+</tbody>
+
           <tbody v-else>
             <tr>
               <td colspan="4" class="no-results">No se encontraron estudiantes que coincidan con los criterios de búsqueda.</td>
             </tr>
           </tbody>
         </table>
+
+        <!-- Paginación -->
+        <PaginationComponent
+          :page-count="totalPages"
+          :current-page="currentPage"
+          @page-changed="fetchEstudiantes"
+        />
       </div>
     </main>
     <FooterComponent />
@@ -52,108 +117,123 @@
 </template>
 
 <script>
-import NavBar from '@/components/NavBar.vue';
-import FooterComponent from '@/components/FooterComponent.vue';
-import Swal from 'sweetalert2';  
-import { BASE_URL } from '@/config/globals';
+import NavBar from "@/components/NavBar.vue";
+import FooterComponent from "@/components/FooterComponent.vue";
+import PaginationComponent from "@/components/PaginationComponent.vue";
+import Swal from "sweetalert2";
+import { BASE_URL } from "@/config/globals";
 
 export default {
-  name: 'EnviarEncuesta',
+  name: "EnviarEncuesta",
   components: {
     NavBar,
-    FooterComponent
+    FooterComponent,
+    PaginationComponent,
   },
   data() {
     return {
-      estudiantes: [], 
-      searchQuery: '',
-      selectedEstado: '', 
-      sortOrder: 'asc',
+      estudiantes: [],
+      searchQuery: "",
+      selectedEstado: "",
+      selectedAsignatura: "",
+      sortOrder: "asc",
+      perPage: 5,
+      currentPage: 1,
+      totalPages: 1,
+      visibleColumns: {
+        nombre: true,
+        asignatura: true,
+        estado: true,
+        encuesta: true,
+        acciones: true,
+      },
+      showColumnsMenu: false,
     };
   },
   mounted() {
-    this.fetchEstudiantes(); 
+    this.fetchEstudiantes();
   },
   computed: {
-    filteredEstudiantes() {
-      return this.estudiantes.filter(estudiante => {
-        const fullName = `${estudiante.estudianteIdEstudiante.nombre} ${estudiante.estudianteIdEstudiante.apellido}`.toLowerCase();
-        const matchesName = fullName.includes(this.searchQuery.toLowerCase());
-        const matchesEstado = this.selectedEstado 
-          ? estudiante.estado.trim().toLowerCase() === this.selectedEstado.trim().toLowerCase() 
-          : true;
-
-        return matchesName && matchesEstado;
-      });
-    },
     sortedEstudiantes() {
-      return this.filteredEstudiantes.sort((a, b) => {
-        const fullNameA = `${a.estudianteIdEstudiante.nombre} ${a.estudianteIdEstudiante.apellido}`.toLowerCase();
-        const fullNameB = `${b.estudianteIdEstudiante.nombre} ${b.estudianteIdEstudiante.apellido}`.toLowerCase();
-
-        if (this.sortOrder === 'asc') {
-          return fullNameA.localeCompare(fullNameB);
-        } else {
-          return fullNameB.localeCompare(fullNameA);
-        }
-      });
-    }
+    return this.estudiantes;
   },
+},
+
   methods: {
-    async fetchEstudiantes() {
-    try {
-      const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado`);
-      if (response.data && Array.isArray(response.data)) {
-            this.estudiantes = response.data;
-        } else {
-          console.error('Respuesta inesperada:', response.data);
-        }
-      } catch (error) {
-        console.error('Error al obtener los estudiantes:', error);
-      }
+    async fetchEstudiantes(page = 1) {
+  try {
+    const params = {
+      page: page - 1, // Backend empieza desde 0
+      size: this.perPage,
+      sortBy: "estudianteIdEstudiante.nombre",
+      sortDirection: this.sortOrder,
+      estado: this.selectedEstado.trim(), // Estado seleccionado
+      asignatura: this.selectedAsignatura.trim(), // Asignatura seleccionada
+    };
+
+
+    if (this.searchQuery.trim()) {
+      params.searchQuery = this.searchQuery.trim();
+    }
+
+    if (this.selectedEstado.trim()) {
+      params.estado = this.selectedEstado.trim();
+    }
+
+    if (this.selectedAsignatura.trim()) {
+      params.asignatura = this.selectedAsignatura.trim();
+    }
+
+    const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
+
+    this.estudiantes = response.data.content;
+    this.totalPages = response.data.totalPages;
+    this.currentPage = page;
+  } catch (error) {
+    console.error("Error al obtener los estudiantes:", error);
+    this.estudiantes = [];
+  }
+},
+
+    toggleSortDirection() {
+      this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
+      this.fetchEstudiantes(1);
     },
-    toggleSort() {
-      this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+    toggleColumn(columnKey) {
+      this.visibleColumns[columnKey] = !this.visibleColumns[columnKey];
+    },
+    getColumnLabel(key) {
+      const labels = {
+        nombre: "Nombre",
+        estado: "Estado",
+        encuesta: "Encuesta",
+        acciones: "Acciones",
+      };
+      return labels[key];
+    },
+    toggleColumnsMenu() {
+      this.showColumnsMenu = !this.showColumnsMenu;
     },
     async enviarCertificado(idEstudiante) {
-      if (!idEstudiante) {
-        Swal.fire('Error', 'ID del estudiante no encontrado', 'error');
-        return;
-      }
-    try {
-      // Enviar certificado
-      await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
-        params: {
-          idEstudiante: idEstudiante
-        }
-      });
-        await Swal.fire({
-          icon: 'success',
-          title: 'Certificado enviado correctamente',
-          confirmButtonText: 'Continuar'
+      try {
+        await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
+          params: { idEstudiante },
         });
-
-        await Swal.fire({
-          icon: 'success',
-          title: 'Certificado enviado correctamente',
-          confirmButtonText: 'Continuar'
-        });
-
-        this.fetchEstudiantes();
-        
+        Swal.fire("Certificado enviado correctamente", "", "success");
+        this.fetchEstudiantes(this.currentPage);
       } catch (error) {
-        Swal.fire('Error', 'No se pudo enviar el certificado o registrar la notificación', 'error');
-        console.error('Error al enviar el certificado o registrar la notificación:', error);
+        Swal.fire("Error", "No se pudo enviar el certificado", "error");
+        console.error("Error al enviar el certificado:", error);
       }
     },
     verEncuesta(idEstudiante) {
       this.$router.push({
-        name: 'RespuestasEstudiante',
-        params: { idEstudiante }
+        name: "RespuestasEstudiante",
+        params: { idEstudiante },
       });
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -183,13 +263,16 @@ export default {
 }
 
 .student-table-container {
-  background-color: #ccdbdc;
-  padding: 2.5rem;
+  background-color: #ccdbdc; /* Verde claro */
+  padding: 2rem;
   border-radius: 10px;
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 48rem;
+  max-width: 1000px;
   animation: fadeIn 0.5s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .table-subtitle {
@@ -210,6 +293,8 @@ export default {
   border: 1px solid #263d42;
   padding: 14px;
   text-align: left;
+  white-space: nowrap;
+  word-wrap: break-word;
 }
 
 .student-table-container th {
@@ -221,20 +306,20 @@ export default {
   transition: background-color 0.3s ease;
 }
 
-.student-table-container th:hover {
+.student-table-container th.sortable:hover {
   background-color: #1F2E34;
 }
 
 .student-table-container td {
-  font-size: 1rem;
   color: #333;
+  background-color: #f9f9f9;
 }
 
 .student-table-container .no-results {
   text-align: center;
   font-size: 1rem;
   color: #8e6c88;
-  padding: 2rem 0;
+  padding: 1rem;
 }
 
 .sortable {
@@ -245,6 +330,45 @@ export default {
 .sortable i {
   margin-left: 5px;
   font-size: 0.9em;
+}
+
+.filter-sort-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background-color: rgba(130, 206, 217, 0.4);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  justify-content: center;
+  align-items: center;
+}
+
+.filter-sort-container input,
+.filter-sort-container select,
+.filter-sort-container button {
+  padding: 0.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  flex: 1;
+  max-width: 200px;
+}
+
+.filter-sort-container input {
+  max-width: 250px;
+}
+
+.filter-sort-container button {
+  background-color: #8e6c88;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.filter-sort-container button:hover {
+  background-color: #63c7b2;
 }
 
 .view-survey-button,
@@ -271,6 +395,53 @@ export default {
   cursor: not-allowed;
 }
 
+.sort-button {
+  background-color: #80ced7;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sort-button:hover {
+  background-color: #63c7b2;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.pagination-container button {
+  background-color: #80ced7;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.pagination-container button:hover {
+  background-color: #63c7b2;
+}
+
+.pagination-container button:disabled {
+  background-color: #bab7b7;
+  cursor: not-allowed;
+}
+
+.pagination-container span {
+  font-size: 1rem;
+  color: #263d42;
+  font-weight: bold;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -281,4 +452,44 @@ export default {
     transform: translateY(0);
   }
 }
+
+.columns-dropdown {
+  display: block;
+  position: absolute;
+  background-color: #1c1c1e; 
+  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+  padding: 10px;
+  border-radius: 8px;
+  color: #ffffff; 
+  width: 150px;
+}
+
+.column-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.column-option:hover {
+  background-color: #3a3a3c;
+  border-radius: 4px;
+}
+
+.columns-menu button {
+  background-color: #263d42; 
+  color: #fff;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.columns-menu button:hover {
+  background-color: #3a3a3c; 
+}
+
 </style>

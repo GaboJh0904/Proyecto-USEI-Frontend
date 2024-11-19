@@ -26,6 +26,9 @@ import Dashboard from '@/views/Dashboard.vue'
 import AccesoDenegado from '@/components/AccesoDenegado.vue'
 import ReporteDash from '@/views/ReporteDash.vue' // Importa la nueva vista
 import SoporteDirector from '@/views/SoporteDirector.vue'
+import VerPreguntas from '@/views/VerPreguntas.vue'
+import HistorialReportes from '@/views/HistorialReportes.vue'
+import CrearReporteDirector from '@/views/CrearReporteDirector.vue'
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -193,7 +196,24 @@ const router = createRouter({
       name: 'SoporteDirector',
       component: SoporteDirector,
       meta: { requiresAuth: true, roles: ['Director'] }
-    },  
+    },
+    {
+      path: '/lista-preguntas',
+      name: 'ListaPreguntas',
+      component: VerPreguntas,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
+    }, 
+
+    {
+      path: '/historial-reportes',
+      name: 'HistorialReportes',
+      component: HistorialReportes,
+    },
+    {
+      path: '/crear-reporte-director',
+      name: 'CrearReporteDirector',
+      component: CrearReporteDirector,
+    }
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
