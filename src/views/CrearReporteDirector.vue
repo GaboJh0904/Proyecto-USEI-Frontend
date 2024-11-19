@@ -46,7 +46,8 @@ export default {
       titulo: "",
       descripcion: "",
       fecha: new Date().toISOString(), // Fecha actual
-      usuarioId: 1, // Cambiar según el usuario actual
+      carrera: localStorage.getItem('carrera'), // Cambiar según el usuario actual
+      usuarioId: localStorage.getItem('id_usuario'), // Cambiar según el usuario actual
     };
   },
   methods: {
@@ -55,6 +56,7 @@ export default {
       formData.append("titulo", this.titulo);
       formData.append("descripcion", this.descripcion);
       formData.append("fecha", this.fecha); // Formato: "yyyy-MM-dd"
+      formData.append("carrera", this.carrera);
       formData.append("UsuarioIdUsuario", this.usuarioId);
 
       try {
