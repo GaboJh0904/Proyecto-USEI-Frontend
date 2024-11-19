@@ -48,6 +48,13 @@
               </div>
             </div>
           </div>
+
+          <select v-model="selectedAsignatura" @change="fetchEstudiantes(1)">
+            <option value="">Todas las asignaturas</option>
+            <option value="Taller de grado I">Taller de grado I</option>
+            <option value="Taller de grado II">Taller de grado II</option>
+          </select>
+
         </div>
 
         <!-- Tabla de Estudiantes -->
@@ -59,6 +66,7 @@
               Nombre del Estudiante
               <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
             </th>
+            <th v-if="visibleColumns.asignatura">Asignatura</th>
               <th v-if="visibleColumns.estado">Estado</th>
               <th v-if="visibleColumns.encuesta">Encuesta</th>
               <th v-if="visibleColumns.acciones">Acciones</th>
@@ -67,6 +75,7 @@
           <tbody v-if="estudiantes.length > 0">
     <tr v-for="estudiante in estudiantes" :key="estudiante.idEstCertificado">
         <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
+        <td v-if="visibleColumns.asignatura">{{ estudiante.estudianteIdEstudiante.asignatura }}</td>
         <td>{{ estudiante.estado }}</td>
         <td>
             <button
@@ -126,12 +135,14 @@ export default {
       estudiantes: [],
       searchQuery: "",
       selectedEstado: "",
+      selectedAsignatura: "",
       sortOrder: "asc",
       perPage: 5,
       currentPage: 1,
       totalPages: 1,
       visibleColumns: {
         nombre: true,
+        asignatura: true,
         estado: true,
         encuesta: true,
         acciones: true,
@@ -152,11 +163,14 @@ export default {
     async fetchEstudiantes(page = 1) {
   try {
     const params = {
-      page: page - 1, // Enviar al backend con índice 0
+      page: page - 1, // Backend empieza desde 0
       size: this.perPage,
       sortBy: "estudianteIdEstudiante.nombre",
       sortDirection: this.sortOrder,
+      estado: this.selectedEstado.trim(), // Estado seleccionado
+      asignatura: this.selectedAsignatura.trim(), // Asignatura seleccionada
     };
+
 
     if (this.searchQuery.trim()) {
       params.searchQuery = this.searchQuery.trim();
@@ -166,17 +180,20 @@ export default {
       params.estado = this.selectedEstado.trim();
     }
 
+    if (this.selectedAsignatura.trim()) {
+      params.asignatura = this.selectedAsignatura.trim();
+    }
+
     const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
 
     this.estudiantes = response.data.content;
     this.totalPages = response.data.totalPages;
-    this.currentPage = page; // Actualiza el frontend con índice 1
+    this.currentPage = page;
   } catch (error) {
     console.error("Error al obtener los estudiantes:", error);
     this.estudiantes = [];
   }
 },
-
 
     toggleSortDirection() {
       this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
@@ -251,7 +268,7 @@ export default {
   border-radius: 10px;
   box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 800px;
+  max-width: 1000px;
   animation: fadeIn 0.5s ease;
   display: flex;
   flex-direction: column;
@@ -277,6 +294,7 @@ export default {
   padding: 14px;
   text-align: left;
   white-space: nowrap;
+  word-wrap: break-word;
 }
 
 .student-table-container th {
