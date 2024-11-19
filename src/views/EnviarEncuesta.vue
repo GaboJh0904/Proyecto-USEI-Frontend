@@ -17,11 +17,10 @@
           />
 
           <select v-model="selectedEstado" @change="fetchEstudiantes(1)">
-            <option value="">Todos los estados</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="aprobado">Aprobado</option>
-            <option value="rechazado">Rechazado</option>
-          </select>
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="enviado">Enviado</option>
+        </select>
 
           <select v-model="perPage" @change="fetchEstudiantes(1)">
             <option value="5">5</option>
@@ -56,9 +55,10 @@
         <table>
           <thead>
             <tr>
-              <th v-if="visibleColumns.nombre" @click="toggleSort('nombre')" class="sortable">
-                Nombre del Estudiante
-              </th>
+              <th v-if="visibleColumns.nombre" @click="toggleSortDirection" class="sortable">
+              Nombre del Estudiante
+              <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
+            </th>
               <th v-if="visibleColumns.estado">Estado</th>
               <th v-if="visibleColumns.encuesta">Encuesta</th>
               <th v-if="visibleColumns.acciones">Acciones</th>
@@ -78,14 +78,14 @@
                 </button>
               </td>
               <td v-if="visibleColumns.acciones">
-                <button
-                  @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)"
-                  class="send-button"
-                  :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
-                >
-                  Enviar Certificado
-                </button>
-              </td>
+              <button
+                @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)"
+                class="send-button"
+                :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
+              >
+                Enviar Certificado
+              </button>
+            </td>
             </tr>
           </tbody>
           <tbody v-else>
@@ -143,45 +143,30 @@ export default {
     this.fetchEstudiantes();
   },
   computed: {
-  sortedEstudiantes() {
-    return this.estudiantes
-      .filter((estudiante) => {
-        const estudianteData = estudiante.estudianteIdEstudiante || {};
-        const fullName = `${estudianteData.nombre || ""} ${estudianteData.apellido || ""}`.toLowerCase();
-        const matchesName = fullName.includes(this.searchQuery.toLowerCase());
-        const matchesEstado = this.selectedEstado
-          ? estudiante.estado.trim().toLowerCase() === this.selectedEstado.trim().toLowerCase()
-          : true;
-        return matchesName && matchesEstado;
-      })
-      .sort((a, b) => {
-        const estudianteA = a.estudianteIdEstudiante || {};
-        const estudianteB = b.estudianteIdEstudiante || {};
-        const nameA = `${estudianteA.nombre || ""} ${estudianteA.apellido || ""}`.toLowerCase();
-        const nameB = `${estudianteB.nombre || ""} ${estudianteB.apellido || ""}`.toLowerCase();
-        return this.sortOrder === "asc" ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-      });
+    sortedEstudiantes() {
+    return this.estudiantes;
   },
 },
 
   methods: {
     async fetchEstudiantes(page = 1) {
   try {
-    const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado`, {
+    const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, {
       params: {
-        page: page - 1,
-        size: this.perPage,
-        filter: this.searchQuery,
-        estado: this.selectedEstado,
-        sortBy: "nombre",
-        sortDirection: this.sortOrder,
+        page: page - 1, // Backend usa índices 0-based
+        size: this.perPage, // Cantidad de elementos por página
+        estado: this.selectedEstado, // "pendiente", "enviado" o ""
+        sortBy: "estudianteIdEstudiante.nombre", // Ordenar siempre por nombre
+        sortDirection: this.sortOrder // "asc" o "desc"
       },
     });
-    this.estudiantes = response.data; // Ajustado según los datos de Postman
-    this.totalPages = Math.ceil(response.data.length / this.perPage);
+
+    this.estudiantes = response.data.content;
+    this.totalPages = response.data.totalPages;
     this.currentPage = page;
   } catch (error) {
     console.error("Error al obtener los estudiantes:", error);
+    this.estudiantes = [];
   }
 },
 
