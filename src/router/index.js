@@ -25,6 +25,7 @@ import CertificadoEstudiante from '@/views/CertificadoEstudiante.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import AccesoDenegado from '@/components/AccesoDenegado.vue'
 import SoporteDirector from '@/views/SoporteDirector.vue'
+import VerPreguntas from '@/views/VerPreguntas.vue'
 import HistorialReportes from '@/views/HistorialReportes.vue'
 import CrearReporteDirector from '@/views/CrearReporteDirector.vue'
 
@@ -189,6 +190,13 @@ const router = createRouter({
       component: SoporteDirector,
       meta: { requiresAuth: true, roles: ['Director'] }
     },
+    {
+      path: '/lista-preguntas',
+      name: 'ListaPreguntas',
+      component: VerPreguntas,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
+    }, 
+
     {
       path: '/historial-reportes',
       name: 'HistorialReportes',
