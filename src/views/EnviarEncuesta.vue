@@ -150,31 +150,31 @@ export default {
 
   methods: {
     async fetchEstudiantes(page = 1) {
-    try {
-        const params = {
-            page: page - 1, // Backend usa índices 0-based
-            size: this.perPage,
-            sortBy: "estudianteIdEstudiante.nombre",
-            sortDirection: this.sortOrder,
-        };
+  try {
+    const params = {
+      page: page - 1, // Enviar al backend con índice 0
+      size: this.perPage,
+      sortBy: "estudianteIdEstudiante.nombre",
+      sortDirection: this.sortOrder,
+    };
 
-        if (this.searchQuery.trim()) {
-            params.searchQuery = this.searchQuery.trim();
-        }
-
-        if (this.selectedEstado.trim()) {
-            params.estado = this.selectedEstado.trim();
-        }
-
-        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
-
-        this.estudiantes = response.data.content;
-        this.totalPages = response.data.totalPages;
-        this.currentPage = page;
-    } catch (error) {
-        console.error("Error al obtener los estudiantes:", error);
-        this.estudiantes = [];
+    if (this.searchQuery.trim()) {
+      params.searchQuery = this.searchQuery.trim();
     }
+
+    if (this.selectedEstado.trim()) {
+      params.estado = this.selectedEstado.trim();
+    }
+
+    const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
+
+    this.estudiantes = response.data.content;
+    this.totalPages = response.data.totalPages;
+    this.currentPage = page; // Actualiza el frontend con índice 1
+  } catch (error) {
+    console.error("Error al obtener los estudiantes:", error);
+    this.estudiantes = [];
+  }
 },
 
 
