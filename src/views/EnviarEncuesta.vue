@@ -14,7 +14,7 @@
             v-model="searchQuery"
             placeholder="Buscar por nombre..."
             @input="fetchEstudiantes(1)"
-          />
+           />
 
           <select v-model="selectedEstado" @change="fetchEstudiantes(1)">
           <option value="">Todos los estados</option>
@@ -64,30 +64,30 @@
               <th v-if="visibleColumns.acciones">Acciones</th>
             </tr>
           </thead>
-          <tbody v-if="sortedEstudiantes.length > 0">
-            <tr v-for="estudiante in sortedEstudiantes" :key="estudiante.idEstCertificado">
-
-              <td v-if="visibleColumns.nombre">{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
-              <td v-if="visibleColumns.estado">{{ estudiante.estado }}</td>
-              <td v-if="visibleColumns.encuesta">
-                <button
-                  @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)"
-                  class="view-survey-button"
-                >
-                  Ver Encuesta
-                </button>
-              </td>
-              <td v-if="visibleColumns.acciones">
-              <button
+          <tbody v-if="estudiantes.length > 0">
+    <tr v-for="estudiante in estudiantes" :key="estudiante.idEstCertificado">
+        <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
+        <td>{{ estudiante.estado }}</td>
+        <td>
+            <button
+                @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)"
+                class="view-survey-button"
+            >
+                Ver Encuesta
+            </button>
+        </td>
+        <td>
+            <button
                 @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)"
                 class="send-button"
                 :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
-              >
+            >
                 Enviar Certificado
-              </button>
-            </td>
-            </tr>
-          </tbody>
+            </button>
+        </td>
+    </tr>
+</tbody>
+
           <tbody v-else>
             <tr>
               <td colspan="4" class="no-results">No se encontraron estudiantes que coincidan con los criterios de búsqueda.</td>
@@ -150,25 +150,33 @@ export default {
 
   methods: {
     async fetchEstudiantes(page = 1) {
-  try {
-    const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, {
-      params: {
-        page: page - 1, // Backend usa índices 0-based
-        size: this.perPage, // Cantidad de elementos por página
-        estado: this.selectedEstado, // "pendiente", "enviado" o ""
-        sortBy: "estudianteIdEstudiante.nombre", // Ordenar siempre por nombre
-        sortDirection: this.sortOrder // "asc" o "desc"
-      },
-    });
+    try {
+        const params = {
+            page: page - 1, // Backend usa índices 0-based
+            size: this.perPage,
+            sortBy: "estudianteIdEstudiante.nombre",
+            sortDirection: this.sortOrder,
+        };
 
-    this.estudiantes = response.data.content;
-    this.totalPages = response.data.totalPages;
-    this.currentPage = page;
-  } catch (error) {
-    console.error("Error al obtener los estudiantes:", error);
-    this.estudiantes = [];
-  }
+        if (this.searchQuery.trim()) {
+            params.searchQuery = this.searchQuery.trim();
+        }
+
+        if (this.selectedEstado.trim()) {
+            params.estado = this.selectedEstado.trim();
+        }
+
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
+
+        this.estudiantes = response.data.content;
+        this.totalPages = response.data.totalPages;
+        this.currentPage = page;
+    } catch (error) {
+        console.error("Error al obtener los estudiantes:", error);
+        this.estudiantes = [];
+    }
 },
+
 
     toggleSortDirection() {
       this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
