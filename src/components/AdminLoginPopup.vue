@@ -56,6 +56,7 @@ export default {
           localStorage.setItem('usuario', userData.usuario);
           localStorage.setItem('nombre', userData.nombre);
           localStorage.setItem('rol', userData.rol);
+          localStorage.setItem('carrera', userData.carrera);
 
           console.log('Inicio de sesión correcto. ID del usuario:', userData.id_usuario);
 
