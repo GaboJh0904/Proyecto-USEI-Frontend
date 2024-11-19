@@ -57,7 +57,7 @@
           </div>
           <h3>REPORTES</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToReportes">Ingresar</button>
           </div>
         </div>
       <!-- Card 4 -->
@@ -95,7 +95,10 @@
       },
       goToVerPreguntas(){
         this.$router.push('/lista-preguntas');
-      }
+      },
+      goToReportes(){
+        this.$router.push('/historial-reportes');
+      },
     },
   };
   </script>
