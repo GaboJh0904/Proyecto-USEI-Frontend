@@ -98,7 +98,7 @@
 
   async getPlazoActivo() {
     try {
-      const response = await axios.get(`${BASE_URL}/plazo/activo`);
+      const response = await this.$protectedAxios.get(`${BASE_URL}/plazo/activo`);
       return response.data.idPlazo; // Retorna el ID del plazo activo
     } catch (error) {
       console.error('Error al obtener el plazo activo:', error);
@@ -127,7 +127,7 @@
         descripcion: this.encuestaForm.descripcion,
         fechaModificado: new Date().toISOString().split('T')[0],
         usuarioIdUsuario: { idUsuario: this.usuarioId },
-        plazoIdPlazo: { idPlazo }, // Añade el plazo activo
+        plazoIdPlazo: {idPlazo}, // Añade el plazo activo
       });
 
       Swal.fire('Agregado', 'La nueva encuesta ha sido registrada exitosamente.', 'success');
