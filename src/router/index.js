@@ -208,11 +208,13 @@ const router = createRouter({
       path: '/historial-reportes',
       name: 'HistorialReportes',
       component: HistorialReportes,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
     },
     {
       path: '/crear-reporte-director',
       name: 'CrearReporteDirector',
       component: CrearReporteDirector,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
     }
   ],
   scrollBehavior(to, from, savedPosition) {
