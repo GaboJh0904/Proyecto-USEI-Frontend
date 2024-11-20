@@ -11,16 +11,10 @@
       <div class="upload-container">
         <!-- Campos de filtrado -->
         <div class="filter-container">
-          <label for="filter1">Año:</label>
+          <label for="filter1">Filtrar por año de encuesta:</label>
           <select v-model="selectedFilter1" @change="updateCharts">
             <option value="">Seleccione una opción</option>
             <option v-for="option in filterOptions1" :key="option" :value="option">{{ option }}</option>
-          </select>
-
-          <label for="filter2">Periodo:</label>
-          <select v-model="selectedFilter2" @change="updateCharts">
-            <option value="">Seleccione una opción</option>
-            <option v-for="option in filterOptions2" :key="option" :value="option">{{ option }}</option>
           </select>
         </div>
 
@@ -73,9 +67,7 @@ export default {
   data() {
     return {
       selectedFilter1: "",
-      selectedFilter2: "",
       filterOptions1: [],
-      filterOptions2: [],
       generoData: [], // Datos de género dinámicos
       pieChartData: [],
       pieChartOptions: {
@@ -108,21 +100,13 @@ export default {
           },
         });
         this.generoData = generoResponse.data;
-        // Obtener estudiantes que completaron la encuesta con filtros
-        const completadosResponse = await axios.get(`${BASE_URL}/estado_encuesta/completadas`, {
-          params: {
-            anio: this.selectedFilter1,
-            semestre: this.selectedFilter2,
-          },
-        });
+
+        const completadosResponse = await axios.get(`${BASE_URL}/estado_encuesta/completadas`);
+          
         const completados = completadosResponse.data;
 
-        const noCompletadosResponse = await axios.get(`${BASE_URL}/estudiante/no_completaron_encuesta`, {
-          params: {
-            anio: this.selectedFilter1,
-            semestre: this.selectedFilter2,
-          },
-        });
+        const noCompletadosResponse = await axios.get(`${BASE_URL}/estudiante/no_completaron_encuesta`);
+          
         const noCompletados = noCompletadosResponse.data;
 
         // Actualizar datos del gráfico de torta
@@ -135,7 +119,6 @@ export default {
       try {
         const response = await axios.get(`${BASE_URL}/estudiante/opciones_filtro`);
         this.filterOptions1 = response.data.anios;
-        this.filterOptions2 = response.data.periodos;
       } catch (error) {
         console.error("Error al obtener las opciones de filtro: ", error);
       }
