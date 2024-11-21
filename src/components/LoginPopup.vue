@@ -93,6 +93,13 @@ export default {
           localStorage.setItem('rol', data.rol);
           localStorage.setItem('telefono', data.telefono);
 
+          if (data.carrera) {
+  localStorage.setItem('carrera', data.carrera);
+  console.log('Carrera guardada correctamente:', data.carrera); // Log adicional
+} else {
+  console.warn('El backend no proporcionó la carrera del usuario.');
+}
+
           // Usar SweetAlert para mostrar éxito
           Swal.fire({
             icon: 'success',

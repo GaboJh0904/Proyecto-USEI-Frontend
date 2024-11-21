@@ -37,7 +37,7 @@
           </div>
           <h3>CERTIFICADOS</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToCertificado">Ingresar</button>
           </div>
         </div>
         <!-- Card 2 -->
@@ -89,7 +89,39 @@
       ImageCarousel,
       FooterComponent  
     },
+    data() {
+    return {
+      userId: null, // Almacena el ID del usuario
+    };
+  },
+    mounted() {
+      this.getUserId(); // Obtener el ID del usuario al montar el componente
+    },
     methods: {
+      getUserId() {
+  try {
+    // Obtener el ID del usuario desde localStorage
+    const storedUserId = localStorage.getItem('id_usuario');
+    if (storedUserId) {
+      console.log('ID del usuario encontrado:', storedUserId); // Cambiado de 'cons' a 'console'
+      this.userId = storedUserId;
+    } else {
+      console.warn('ID del usuario no encontrado, redirigiendo al login.'); // Mensaje de advertencia en lugar de error
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sesión no encontrada',
+        text: 'Por favor, inicia sesión nuevamente.',
+        confirmButtonText: 'Aceptar',
+      })
+    }
+  } catch (error) {
+    console.error('Error al obtener el ID del usuario:', error); // Log de errores mejorado
+  }
+},
+    goToCertificado() {
+      this.$router.push('/estado-estudiante');
+    },
+
       goToSoporteDirector(){
         this.$router.push('/soporte-director');
       },
@@ -100,7 +132,9 @@
         this.$router.push('/historial-reportes');
       },
     },
+
   };
+  
   </script>
   
   <style scoped>
