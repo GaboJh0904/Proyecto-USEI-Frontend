@@ -1,7 +1,7 @@
 <template>
   <div>
     <header>
-      <NavBar :userRole="userRole" :userName="userName" />
+      <NavBar :userRole="userRole" />
     </header>
     <main class="user-management-container">
       <h1 class="user-management-title">Historial de Reportes</h1>
@@ -87,6 +87,8 @@ export default {
       reportes: [],
       perPage: 5,
       currentPage: 1,
+      userRole: localStorage.getItem('rol') || '', // Carga el rol del usuario
+      usuarioId: localStorage.getItem('id_usuario'), // Cambiar según el usuario actual
     };
   },
   mounted(){
@@ -99,7 +101,7 @@ export default {
     },
     async fetchReportes(page = 1) {
       try {
-        const response = await this.$publicAxios.get(`${BASE_URL}/reporte`, {
+        const response = await this.$publicAxios.get(`${BASE_URL}/reporte/historial/${this.usuarioId}`, {
           params: {
             page: page - 1,
             size: this.perPage,
