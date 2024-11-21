@@ -60,49 +60,56 @@
         <!-- Tabla de Estudiantes -->
         <h2 class="table-subtitle">Lista de Estudiantes</h2>
         <table>
-          <thead>
-            <tr>
-              <th v-if="visibleColumns.nombre" @click="toggleSortDirection" class="sortable">
-              Nombre del Estudiante
-              <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
-            </th>
-            <th v-if="visibleColumns.asignatura">Asignatura</th>
-              <th v-if="visibleColumns.estado">Estado</th>
-              <th v-if="visibleColumns.encuesta">Encuesta</th>
-              <th v-if="visibleColumns.acciones">Acciones</th>
-            </tr>
-          </thead>
-          <tbody v-if="estudiantes.length > 0">
-    <tr v-for="estudiante in estudiantes" :key="estudiante.idEstCertificado">
-        <td>{{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}</td>
-        <td v-if="visibleColumns.asignatura">{{ estudiante.estudianteIdEstudiante.asignatura }}</td>
-        <td>{{ estudiante.estado }}</td>
-        <td>
-            <button
-                @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)"
-                class="view-survey-button"
-            >
-                Ver Encuesta
-            </button>
-        </td>
-        <td>
-            <button
-                @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)"
-                class="send-button"
-                :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
-            >
-                Enviar Certificado
-            </button>
-        </td>
+  <thead>
+    <tr>
+      <th v-if="visibleColumns.nombre" @click="toggleSortDirection" class="sortable">
+        Nombre del Estudiante
+        <i :class="sortOrder === 'asc' ? 'fas fa-sort-alpha-down' : 'fas fa-sort-alpha-up'"></i>
+      </th>
+      <th v-if="visibleColumns.asignatura">Asignatura</th>
+      <th v-if="visibleColumns.estado">Estado</th>
+      <th v-if="visibleColumns.encuesta">Encuesta</th>
+      <th v-if="visibleColumns.acciones">Acciones</th>
     </tr>
-</tbody>
-
-          <tbody v-else>
-            <tr>
-              <td colspan="4" class="no-results">No se encontraron estudiantes que coincidan con los criterios de búsqueda.</td>
-            </tr>
-          </tbody>
-        </table>
+  </thead>
+  <tbody v-if="estudiantes.length > 0">
+    <tr v-for="estudiante in estudiantes" :key="estudiante.idEstCertificado">
+      <td v-if="visibleColumns.nombre">
+        {{ estudiante.estudianteIdEstudiante.nombre }} {{ estudiante.estudianteIdEstudiante.apellido }}
+      </td>
+      <td v-if="visibleColumns.asignatura">
+        {{ estudiante.estudianteIdEstudiante.asignatura }}
+      </td>
+      <td v-if="visibleColumns.estado">
+        {{ estudiante.estado }}
+      </td>
+      <td v-if="visibleColumns.encuesta">
+        <button
+          @click="verEncuesta(estudiante.estudianteIdEstudiante.idEstudiante)"
+          class="view-survey-button"
+        >
+          Ver Encuesta
+        </button>
+      </td>
+      <td v-if="visibleColumns.acciones">
+        <button
+          @click="enviarCertificado(estudiante.estudianteIdEstudiante.idEstudiante)"
+          class="send-button"
+          :disabled="estudiante.estado.trim().toLowerCase() === 'enviado'"
+        >
+          Enviar Certificado
+        </button>
+      </td>
+    </tr>
+  </tbody>
+  <tbody v-else>
+    <tr>
+      <td colspan="5" class="no-results">
+        No se encontraron estudiantes que coincidan con los criterios de búsqueda.
+      </td>
+    </tr>
+  </tbody>
+</table>
 
         <!-- Paginación -->
         <PaginationComponent
@@ -205,6 +212,7 @@ export default {
     getColumnLabel(key) {
       const labels = {
         nombre: "Nombre",
+        asignatura: "Asignatura",
         estado: "Estado",
         encuesta: "Encuesta",
         acciones: "Acciones",
