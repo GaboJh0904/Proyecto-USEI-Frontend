@@ -107,7 +107,9 @@ export default {
           return;
         }
         const params = {
-               
+                carrera: carreraUsuario,
+                estadoCertificado: this.selectedEstadoCertificado || null,
+                
             };
 
             const response = await this.$protectedAxios.get(`${BASE_URL}/estudiante/por-carrera`, { params });
@@ -125,6 +127,19 @@ export default {
       } catch (error) {
         console.error("Error al obtener estudiantes:", error);
         this.estudiantes = [];
+      }
+    },
+    async fetchEstadoEncuesta(estudiante) {
+      try {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_encuesta/estudiante/${estudiante.idEstudiante}`);
+        if (response.status === 200) {
+          estudiante.estadoEncuesta = response.data.estado; // Asignar el estado de la encuesta al estudiante
+        } else {
+          estudiante.estadoEncuesta = "Sin información";
+        }
+      } catch (error) {
+        console.error(`Error al obtener el estado de la encuesta para el estudiante ${estudiante.idEstudiante}:`, error);
+        estudiante.estadoEncuesta = "Sin información";
       }
     },
    
