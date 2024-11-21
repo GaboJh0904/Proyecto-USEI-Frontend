@@ -103,7 +103,7 @@
           </div>
           <h3>REPORTES</h3>
           <div class="card-button-container">
-            <button class="btn-ingresar" @click="goToEnProgreso">Ingresar</button>
+            <button class="btn-ingresar" @click="goToReporteDash">Ingresar</button>
           </div>
         </div>
         <!-- Card 8 -->
@@ -234,6 +234,9 @@
     goToDashboard(){
         this.$router.push('/dashboard');
     },
+    goToReporteDash() { // Método para ir a la ruta de ReporteDash
+    this.$router.push('/reporte-dash');
+  },
   },
   };
   </script>
