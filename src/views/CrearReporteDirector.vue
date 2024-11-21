@@ -1,7 +1,7 @@
 <template>
   <div>
     <header>
-      <NavBar :userRole="userRole" :userName="userName" />
+      <NavBar :userRole="userRole" />
     </header>
     <main class="user-management-container">
       <h1 class="user-management-title">Crear Nuevo Reporte</h1>
@@ -48,6 +48,7 @@ export default {
       fecha: new Date().toISOString(), // Fecha actual
       carrera: localStorage.getItem('carrera'), // Cambiar según el usuario actual
       usuarioId: localStorage.getItem('id_usuario'), // Cambiar según el usuario actual
+      userRole: localStorage.getItem('rol') || '', // Carga el rol del usuario
     };
   },
   methods: {
