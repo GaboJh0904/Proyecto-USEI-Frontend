@@ -16,7 +16,18 @@
             @input="fetchEstudiantes"
            />
 
-        
+          <select v-model="selectedEstadoCertificado" @change="fetchEstudiantes">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="enviado">Enviado</option>
+        </select>
+        <select v-model="selectedEstadoEncuesta" @change="fetchEstudiantes">
+          <option value="">Todos los estados</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="completado">Completado</option>
+        </select>
+        </div>
+
         <!-- Tabla de Estudiantes -->
         <h2 class="table-subtitle">Lista de Estudiantes</h2>
         <table>
@@ -49,46 +60,7 @@
 </template>
 
 <script>
-import NavBar from "@/components/NavBar.vue";
-import FooterComponent from "@/components/FooterComponent.vue";
-import PaginationComponent from "@/components/PaginationComponent.vue";
-import Swal from "sweetalert2";
-import { BASE_URL } from "@/config/globals";
 
-export default {
-  name: "EnviarEncuesta",
-  components: {
-    NavBar,
-    FooterComponent,
-    PaginationComponent,
-  },
-  data() {
-    return {
-      estudiantes: [],
-      searchQuery: "",
-      selectedEstadoCertificado: "",
-      selectedEstadoEncuesta: "",
-      sortOrder: "asc",
-    };
-  },
-  mounted() {
-    const carreraUsuario = localStorage.getItem("carrera");
-    if (!carreraUsuario) {
-      Swal.fire({
-        icon: "warning",
-        title: "Carrera no configurada",
-        text: "No se puede mostrar la lista de estudiantes porque la carrera no está configurada. Por favor, inicia sesión nuevamente.",
-        confirmButtonText: "Aceptar",
-      }).then(() => {
-        this.$router.push({ name: "login" }); // Redirigir al login
-      });
-      return;
-    }
-    this.fetchEstudiantes(); // Solo llamar si la carrera está configurada
-  },
-  methods: {
-  }
-};
 </script>
 
 <style scoped>
