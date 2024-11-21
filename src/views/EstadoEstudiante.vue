@@ -60,7 +60,76 @@
 </template>
 
 <script>
+import NavBar from "@/components/NavBar.vue";
+import FooterComponent from "@/components/FooterComponent.vue";
+import PaginationComponent from "@/components/PaginationComponent.vue";
+import Swal from "sweetalert2";
+import { BASE_URL } from "@/config/globals";
 
+export default {
+  name: "EnviarEncuesta",
+  components: {
+    NavBar,
+    FooterComponent,
+    PaginationComponent,
+  },
+  data() {
+    return {
+      estudiantes: [],
+      searchQuery: "",
+      selectedEstadoCertificado: "",
+      selectedEstadoEncuesta: "",
+      sortOrder: "asc",
+    };
+  },
+  mounted() {
+    const carreraUsuario = localStorage.getItem("carrera");
+    if (!carreraUsuario) {
+      Swal.fire({
+        icon: "warning",
+        title: "Carrera no configurada",
+        text: "No se puede mostrar la lista de estudiantes porque la carrera no está configurada. Por favor, inicia sesión nuevamente.",
+        confirmButtonText: "Aceptar",
+      }).then(() => {
+        this.$router.push({ name: "login" }); // Redirigir al login
+      });
+      return;
+    }
+    this.fetchEstudiantes(); // Solo llamar si la carrera está configurada
+  },
+  methods: {
+    async fetchEstudiantes() {
+      try {
+        const carreraUsuario = localStorage.getItem("carrera");
+        if (!carreraUsuario) {
+          console.error("Carrera no encontrada en localStorage");
+          this.estudiantes = [];
+          return;
+        }
+        const params = {
+               
+            };
+
+            const response = await this.$protectedAxios.get(`${BASE_URL}/estudiante/por-carrera`, { params });
+            if (response.status === 200 && Array.isArray(response.data)) {
+                this.estudiantes = response.data;
+          // Iterar sobre cada estudiante para obtener el estado de la encuesta y del certificado
+          for (let estudiante of this.estudiantes) {
+            await this.fetchEstadoEncuesta(estudiante);
+            await this.fetchEstadoCertificado(estudiante);
+          }
+        } else {
+          console.warn("No se encontraron estudiantes para la carrera:", carreraUsuario);
+          this.estudiantes = [];
+        }
+      } catch (error) {
+        console.error("Error al obtener estudiantes:", error);
+        this.estudiantes = [];
+      }
+    },
+   
+  },
+};
 </script>
 
 <style scoped>
