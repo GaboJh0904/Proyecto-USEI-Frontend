@@ -28,6 +28,8 @@ import SoporteDirector from '@/views/SoporteDirector.vue'
 import VerPreguntas from '@/views/VerPreguntas.vue'
 import HistorialReportes from '@/views/HistorialReportes.vue'
 import CrearReporteDirector from '@/views/CrearReporteDirector.vue'
+import EstadoEstudiante from '@/views/EstadoEstudiante.vue'
+
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -208,7 +210,13 @@ const router = createRouter({
       name: 'CrearReporteDirector',
       component: CrearReporteDirector,
       meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
-    }
+    },
+    {
+      path: '/estado-estudiante',
+      name: 'EstadoEstudiante',
+      component: EstadoEstudiante,
+      meta: { requiresAuth: true, roles: ['Administrador', 'Director']  } // Rutas protegidas
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
