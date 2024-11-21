@@ -109,7 +109,8 @@ export default {
         const params = {
                 carrera: carreraUsuario,
                 estadoCertificado: this.selectedEstadoCertificado || null,
-                
+                estadoEncuesta: this.selectedEstadoEncuesta || null,
+                searchQuery: this.searchQuery || null,
             };
 
             const response = await this.$protectedAxios.get(`${BASE_URL}/estudiante/por-carrera`, { params });
@@ -142,7 +143,19 @@ export default {
         estudiante.estadoEncuesta = "Sin información";
       }
     },
-   
+    async fetchEstadoCertificado(estudiante) {
+      try {
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/estado/${estudiante.idEstudiante}`);
+        if (response.status === 200) {
+          estudiante.estadoCertificado = response.data; // Asignar el estado del certificado al estudiante
+        } else {
+          estudiante.estadoCertificado = "Sin información";
+        }
+      } catch (error) {
+        console.error(`Error al obtener el estado del certificado para el estudiante ${estudiante.idEstudiante}:`, error);
+        estudiante.estadoCertificado = "Sin información";
+      }
+    },
   },
 };
 </script>
