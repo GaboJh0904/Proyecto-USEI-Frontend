@@ -11,7 +11,7 @@
       <div class="upload-container">
         <!-- Campos de filtrado -->
         <div class="filter-container">
-          <label for="filter1">Filtrar por año de encuesta:</label>
+          <label for="filter1">Filtrar por año en que se completo la encuesta:</label>
           <select v-model="selectedFilter1" @change="updateCharts">
             <option value="">Seleccione una opción</option>
             <option v-for="option in filterOptions1" :key="option" :value="option">{{ option }}</option>
@@ -117,8 +117,8 @@ export default {
     },
     async fetchFilterOptions() {
       try {
-        const response = await axios.get(`${BASE_URL}/estudiante/opciones_filtro`);
-        this.filterOptions1 = response.data.anios;
+        const response = await axios.get(`${BASE_URL}/estudiante/anios_unicos`);
+        this.filterOptions1 = response.data;
       } catch (error) {
         console.error("Error al obtener las opciones de filtro: ", error);
       }
