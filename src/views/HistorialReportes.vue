@@ -13,10 +13,10 @@
             type="text"
             placeholder="Buscar por título..."
             v-model="filterText"
-            @input="fetchReportes"
+            @input="fetchReportes(this.currentPage)"
             class="filter-input"
           />
-          <button class="search-button">
+          <button class="search-button" @click="fetchReportes">
             <i class="fas fa-search"></i>
           </button>
         </div>
@@ -27,27 +27,31 @@
       </div>
 
       <!-- Lista de Reportes -->
-      <div v-for="reporte in reportes" :key="reporte.idReporte" class="report-item">
-        <div>
-          <p class="report-title">{{ reporte.titulo }}</p>
-          <p class="report-date">{{ reporte.fecha }}</p>
-        </div>
-        <div class="report-actions">
-          <button
-            @click="descargarReporte(reporte.idReporte)"
-            class="action-btn download-btn"
-          >
-            <i class="fas fa-download"></i> Descargar
-          </button>
-          <button
-            @click="confirmEliminarReporte(reporte.idReporte)"
-            class="action-btn delete-btn"
-          >
-            <i class="fas fa-trash"></i> Eliminar
-          </button>
+      <div v-if="reportes.length === 0" class="no-reports">
+        No se encontraron reportes con el término buscado.
+      </div>
+      <div v-else>
+        <div v-for="reporte in reportes" :key="reporte.idReporte" class="report-item">
+          <div>
+            <p class="report-title">{{ reporte.titulo }}</p>
+            <p class="report-date">{{ formatDate(reporte.fecha) }}</p>
+          </div>
+          <div class="report-actions">
+            <button
+              @click="descargarReporte(reporte.idReporte)"
+              class="action-btn download-btn"
+            >
+              <i class="fas fa-download"></i> Descargar
+            </button>
+            <button
+              @click="confirmEliminarReporte(reporte.idReporte)"
+              class="action-btn delete-btn"
+            >
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
         </div>
       </div>
-
       <!-- Paginación -->
       <div class="pagination-container">
         <button @click="previousPage" :disabled="currentPage === 1" class="page-btn">
@@ -99,18 +103,34 @@ export default {
       this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
       this.fetchReportes();
     },
-    async fetchReportes(page = 1) {
+    previousPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+        this.fetchReportes(this.currentPage); // Llama a fetchReportes con la página actualizada
+      }
+    },
+    nextPage() {
+      this.currentPage++;
+      this.fetchReportes(this.currentPage); // Llama a fetchReportes con la página actualizada
+    },
+    async fetchReportes(page = this.currentPage) {
       try {
+        if (isNaN(this.currentPage) || this.currentPage < 1) {
+          page = 1; // Reinicia a la primera página si hay un valor inválido
+        }
         const response = await this.$publicAxios.get(`${BASE_URL}/reporte/historial/${this.usuarioId}`, {
           params: {
-            page: page - 1,
+            page: page - 1, // El backend espera índices basados en 0
             size: this.perPage,
             sortBy: 'titulo',
             sortDirection: this.sortOrder,
-            filter: this.filterText,
+            filter: this.filterText || '', // Envía un string vacío si el filtro está vacío
           },
         });
         this.reportes = response.data.content;
+        if (this.reportes.length === 0 && this.currentPage > 1) {
+          this.currentPage--; // Retrocede si no hay más resultados
+        }
       } catch (error) {
         console.error('Error al cargar los reportes:', error);
       }
@@ -153,6 +173,15 @@ export default {
     },
     crearNuevoReporte() {
       this.$router.push("/crear-reporte-director");
+    },
+    formatDate(timestamp) {
+      if (!timestamp) return "Fecha no disponible";
+      const date = new Date(timestamp); // Convierte el número a un objeto Date
+      return date.toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }); // Ajusta el formato según tus necesidades
     },
   },
 };
@@ -286,6 +315,12 @@ export default {
   background-color: #63C7B2;
 }
 
+.no-reports {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: #888;
+}
 
   </style>
   
