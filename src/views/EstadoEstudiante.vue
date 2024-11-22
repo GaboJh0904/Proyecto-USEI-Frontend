@@ -4,7 +4,7 @@
       <NavBar userRole="Director" />
     </header>
     <main class="student-list-container">
-      <h1 class="student-list-title">Estudiantes que Completaron la Encuesta</h1>
+      <h1 class="student-list-title"> Estados de Encuesta y certificado</h1>
 
       <div class="student-table-container">
         <!-- Filtros y Controles -->
@@ -16,16 +16,31 @@
             @input="fetchEstudiantes"
            />
 
-          <select v-model="selectedEstadoCertificado" @change="fetchEstudiantes">
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="enviado">Enviado</option>
-        </select>
-        <select v-model="selectedEstadoEncuesta" @change="fetchEstudiantes">
-          <option value="">Todos los estados</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="completado">Completado</option>
-        </select>
+           <div class="filter-group">
+    <label for="estadoCertificado">Por estado de certificado:</label>
+    <select
+      id="estadoCertificado"
+      v-model="selectedEstadoCertificado"
+      @change="fetchEstudiantes"
+    >
+      <option value="">Todos los estados</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="enviado">Enviado</option>
+    </select>
+  </div>
+
+  <div class="filter-group">
+    <label for="estadoEncuesta">Por estado de encuesta:</label>
+    <select
+      id="estadoEncuesta"
+      v-model="selectedEstadoEncuesta"
+      @change="fetchEstudiantes"
+    >
+      <option value="">Todos los estados</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="completado">Completado</option>
+    </select>
+  </div>
         </div>
 
         <!-- Tabla de Estudiantes -->

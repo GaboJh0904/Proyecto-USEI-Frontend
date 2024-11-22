@@ -140,7 +140,7 @@ export default {
   console.log('Ejecutando fetchRespuestas');
   const idEstudiante = this.$route.params.idEstudiante;
   try {
-    const pageToFetch = this.currentPage - 2;
+    const pageToFetch = this.currentPage - 1;
     console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
 
     // Llamar a la API con el parámetro de búsqueda (searchQuery)
