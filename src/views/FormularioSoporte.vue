@@ -184,63 +184,73 @@ export default {
     },
 
     async submitSupport() {
-      this.showErrors = true;
+        this.showErrors = true;
 
-      // Verificar si los campos requeridos están llenos
-      if (!this.formData.tipoProblema.idProblema || !this.formData.mensaje) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Por favor complete todos los campos obligatorios.',
-          confirmButtonColor: '#6b45b1',
-          confirmButtonText: 'Aceptar',
-        });
-        return;
-      }
-
-      try {
-        this.loading = true;
-        const userId = localStorage.getItem('id_usuario');
-        if (!userId) {
-          this.loading = false;
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se encontró información del usuario. Por favor, inicia sesión.',
-            confirmButtonColor: '#6b45b1',
-            confirmButtonText: 'Aceptar',
-          });
-          return;
+        // Verificar si los campos requeridos están llenos
+        if (!this.formData.tipoProblema.idProblema || !this.formData.mensaje) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Por favor complete todos los campos obligatorios.',
+                confirmButtonColor: '#6b45b1',
+                confirmButtonText: 'Aceptar',
+            });
+            return;
         }
 
-        this.formData.usuario.idUsuario = userId;
-        this.formData.fecha = new Date().toISOString().split('.')[0];
+        try {
+            this.loading = true;
+            const userId = localStorage.getItem('id_usuario');
+            if (!userId) {
+                this.loading = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se encontró información del usuario. Por favor, inicia sesión.',
+                    confirmButtonColor: '#6b45b1',
+                    confirmButtonText: 'Aceptar',
+                });
+                return;
+            }
 
-        await this.$protectedAxios.post(`${BASE_URL}/soporte`, this.formData);
+            this.formData.usuario.idUsuario = userId;
+            this.formData.fecha = new Date().toISOString().split('.')[0];
 
-        this.loading = false;
-        this.showErrors = false; // Resetea los errores si el envío es exitoso
+            // Enviar los datos al backend
+            await this.$protectedAxios.post(`${BASE_URL}/soporte`, this.formData);
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Reporte enviado correctamente.',
-          confirmButtonColor: '#49caa1',
-          confirmButtonText: 'Aceptar',
-        });
+            this.loading = false;
+            this.showErrors = false; // Resetea los errores si el envío es exitoso
 
-        this.fetchReportes();
-      } catch (error) {
-        console.error('Error al enviar soporte:', error);
-        this.loading = false;
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Hubo un error al enviar el soporte.',
-          confirmButtonColor: '#6b45b1',
-          confirmButtonText: 'Aceptar',
-        });
-      }
+            // Limpiar los campos del formulario
+            this.formData = {
+                tipoProblema: { idProblema: null },
+                mensaje: '',
+                fecha: new Date().toISOString(),
+                usuario: { idUsuario: null },
+            };
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Éxito',
+                text: 'Reporte enviado correctamente.',
+                confirmButtonColor: '#49caa1',
+                confirmButtonText: 'Aceptar',
+            });
+
+            // Refrescar la lista de reportes
+            this.fetchReportes();
+        } catch (error) {
+            console.error('Error al enviar soporte:', error);
+            this.loading = false;
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un error al enviar el soporte.',
+                confirmButtonColor: '#6b45b1',
+                confirmButtonText: 'Aceptar',
+            });
+        }
     },
 
     formatDate(dateString) {
