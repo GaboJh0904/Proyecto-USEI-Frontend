@@ -38,7 +38,12 @@
 
             <div class="form-group">
               <label for="fechaModificado">Fecha</label>
-              <input type="text" id="fechaModificado" :value="formatDate(currentNoticia.fechaModificado)" readonly />
+              <input
+                type="text"
+                id="fechaModificado"
+                :value="formatDate(currentNoticia.fechaModificado, true)"
+                readonly
+              />
             </div>
 
             <div class="form-actions">
@@ -48,7 +53,6 @@
           </form>
         </div>
 
-        <!-- Noticias activas con scroll bar -->
         <div class="user-table-container">
           <h2>Noticias Existentes</h2>
 
@@ -80,7 +84,7 @@
               <div v-if="showColumnsMenu" class="columns-dropdown">
                 <div v-for="(visible, key) in visibleColumns" :key="key" @click="toggleColumn(key)" class="column-option">
                   <span>{{ getColumnLabel(key) }}</span>
-                  <i v-if="visible" class="fas fa-check"></i> <!-- Muestra el icono si está activada -->
+                  <i v-if="visible" class="fas fa-check"></i> 
                 </div>
               </div>
             </div>
@@ -103,7 +107,9 @@
                   <td v-if="visibleColumns.title">{{ noticia.titulo }}</td>
                   <td v-if="visibleColumns.description">{{ noticia.descripcion }}</td>
                   <td v-if="visibleColumns.estado">{{ noticia.estado }}</td>
-                  <td v-if="visibleColumns.fechaModificado">{{ formatDate(noticia.fechaModificado) }}</td>
+                  <td v-if="visibleColumns.fechaModificado">
+                    {{ formatDate(noticia.fechaModificado, true) }}
+                  </td>
                   <td v-if="visibleColumns.acciones" class="action-buttons">
                     <button class="edit-button" @click="editNoticia(noticia)">
                       <i class="fas fa-pencil-alt"></i>
@@ -186,7 +192,7 @@ export default {
         descripcion: '',
         img: null,
         estado: 'publicado',
-        fechaModificado: new Date().toISOString().split('T')[0],
+        fechaModificado: new Date().toISOString(), 
       },
       isEditing: false,
       editNoticiaId: null,
@@ -202,10 +208,7 @@ export default {
       sortDirection: 'asc',
       currentArchivedPage: 1,
       totalArchivedPages: 1,
-
-      // Estado seleccionado para el filtro
       selectedStatus: '',
-
       // Estado de visibilidad de las columnas
       visibleColumns: {
         title: true,
@@ -286,7 +289,7 @@ export default {
     },
 
     // Formatear fecha
-    formatDate(fechaModificado) {
+    formatDate(fechaModificado, onlyDate = false) {
       if (!fechaModificado) return 'Fecha no disponible';
 
       const date = new Date(fechaModificado);
@@ -299,8 +302,16 @@ export default {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const year = date.getFullYear();
 
-      return `${day}-${month}-${year}`;
+      if (onlyDate) {
+        return `${day}-${month}-${year}`; 
+      }
+
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+
+      return `${day}-${month}-${year} ${hours}:${minutes}`; 
     },
+
     handlePageClick(pageNumber) {
       this.fetchNoticias(pageNumber);
     },
@@ -543,15 +554,16 @@ export default {
     },
 
     // Editar noticia
-    editNoticia(noticia) {
-      this.currentNoticia = {
-        ...noticia,
-        img: noticia.img ? noticia.img : null,
-        fechaModificado: this.formatDate(noticia.fechaModificado),
-      };
-      this.isEditing = true;
-      this.editNoticiaId = noticia.idNoticia;
-    }
+  editNoticia(noticia) {
+    this.currentNoticia = {
+      ...noticia,
+      img: noticia.img ? noticia.img : null,
+      fechaModificado: noticia.fechaModificado || new Date().toISOString(), 
+    };
+    this.isEditing = true;
+    this.editNoticiaId = noticia.idNoticia;
+  },
+
   },
 };
 </script>
@@ -662,8 +674,8 @@ textarea {
 
 /* Agregar scroll bar a la tabla */
 .scrollable-table {
-  max-height: 400px; /* Fija la altura máxima del contenedor de noticias */
-  overflow-y: auto;  /* Habilita el scroll vertical */
+  max-height: 400px; 
+  overflow-y: auto;  
 }
 
 .noticias-table {
@@ -874,4 +886,3 @@ textarea {
 }
 
 </style>
-
