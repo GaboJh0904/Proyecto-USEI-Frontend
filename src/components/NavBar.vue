@@ -33,7 +33,7 @@
       </template>
 
       <!-- Mostrar notificaciones y perfil si el usuario está logueado -->
-      <template v-if="userRole">
+      <template v-if="isStudent">
         <button @click="toggleNotifications" class="icon-button notification-icon" :class="{ 'has-unread': hasUnreadNotifications }">
           <i class="fas fa-bell"></i>
         </button>
@@ -64,7 +64,9 @@
             </template>
           </div>
         </div>
+      </template>
 
+      <template v-if="userRole">
         <div class="user-wrapper">
           <button @click="openUserProfile" class="icon-button user-icon">
             <i class="fas fa-user-circle"></i>
@@ -175,7 +177,10 @@ export default {
     // Detecta si hay notificaciones sin leer
     hasUnreadNotifications() {
       return this.notifications.some(notification => !notification.read);
-    }
+    },
+    isStudent() {
+      return localStorage.getItem('rol') === 'estudiante';
+    },
   },
   watch: {
     estudianteId(newVal, oldVal) {
