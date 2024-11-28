@@ -126,7 +126,14 @@
             </table>
           </div>
 
-          <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
+          <PaginationComponent
+          :page-count="totalPages"
+          :current-page="currentPage"
+          :force-page="currentPage - 1"
+          @page-changed="fetchNoticias"
+        />
+
+
         </div>
 
         <!-- Modal para Noticias Archivadas -->
@@ -158,7 +165,12 @@
                 </tr>
               </tbody>
             </table>
-            <PaginationComponent :page-count="totalArchivedPages" :current-page="currentArchivedPage" @page-changed="handleArchivedPageClick" />
+            <PaginationComponent
+              :page-count="totalPages"
+              :current-page="currentPage"
+              :force-page="currentPage - 1"
+              @page-changed="fetchNoticias"
+            />
           </div>
         </div>
       </div>
@@ -223,8 +235,8 @@ export default {
 
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchNoticias();
-    this.fetchNoticiasArchivadas();
+    this.fetchNoticias(1);
+    this.fetchNoticiasArchivadas(1);
   },
 
   methods: {
@@ -247,26 +259,28 @@ export default {
     // Método para obtener noticias con paginación, filtro y ordenación
     async fetchNoticias(page = 1) {
       try {
-        const estadoFilter = this.selectedStatus ? this.selectedStatus : ''; 
-
         const response = await this.$protectedAxios.get(`${BASE_URL}/noticia`, {
           params: {
-            page: page - 1,
+            page: page - 1, // Convertir de base 1 a base 0 para el backend
             size: this.perPage,
             sortBy: this.sortBy,
             sortDirection: this.sortDirection,
             filter: this.filterTerm,
-            estado: estadoFilter,
+            estado: this.selectedStatus,
           },
         });
-        this.noticias = response.data.content.filter(noticia => noticia.estado !== 'archivado');
+        this.noticias = response.data.content;
         this.totalPages = response.data.totalPages;
-        this.currentPage = page;
+        this.currentPage = page; // Actualizar la página actual (base 1)
       } catch (error) {
         console.error('Error al cargar las noticias:', error);
       }
     },
 
+    toggleSortDirection() {
+      this.sortDirection = this.sortDirection === "asc" ? "desc" : "asc";
+      this.fetchNoticias(1); // Refrescar la tabla con el nuevo orden
+    },
 
     // Método para obtener noticias archivadas
     async fetchNoticiasArchivadas(page = 1) {
@@ -530,11 +544,6 @@ export default {
       this.fetchNoticiasArchivadas();
     },
 
-    // Alternar la dirección de orden (ascendente/descendente)
-    toggleSortDirection() {
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-      this.fetchNoticias(1); // Refrescar la tabla
-    },
     
     // Resetear formulario
     resetForm() {
