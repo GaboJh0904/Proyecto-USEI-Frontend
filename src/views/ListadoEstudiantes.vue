@@ -208,7 +208,7 @@ export default {
         formData.append('file', this.file);
 
         try {
-          await this.$protectedAxios.post(`${BASE_URL}/estudiante/csv-estudiantes`, formData, {
+          await this.$protectedAxios.post(`${BASE_URL}/estudiante/upload-csv`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },
