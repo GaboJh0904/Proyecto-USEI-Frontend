@@ -4,19 +4,8 @@
       <img src="@/components/images/USEI.png" alt="Logo" />
     </div>
     <div class="nav-links">
-      <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
-      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante">
-        <!-- Botón "Volver" con icono -->
-        <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
-          <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
-        </button>
-        <button @click="openSupport" class="icon-button support-icon" title="Soporte">
-          <i class="fas fa-headset"></i>
-        </button>
-      </template>
-
       <!-- Mostrar opciones de usuario y notificaciones cuando está logueado -->
-      <template v-else>
+      <template v-if="isMenuAdministador || isMenuDirector || isMenuEstudiante || isMenuPrincipal ">
         <!-- Regular navigation options -->
         <a v-if="!userRole" href="#carrusel" class="navigation-link">Noticias</a>
         <a v-if="!userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
@@ -28,6 +17,17 @@
         <a v-if="userRole" href="#panel" class="navigation-link">Panel</a>
         <a v-if="userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
         <button v-if="userRole" @click="openSupport" class="icon-button support-icon" title="Soporte">
+          <i class="fas fa-headset"></i>
+        </button>
+      </template>
+
+      <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
+      <template v-else>
+        <!-- Botón "Volver" con icono -->
+        <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
+          <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
+        </button>
+        <button @click="openSupport" class="icon-button support-icon" title="Soporte">
           <i class="fas fa-headset"></i>
         </button>
       </template>
@@ -160,55 +160,22 @@ export default {
     };
   },
   computed: {
-    isEncuestaEstudiante() {
-      return this.$route.path === '/encuesta-estudiante';
+    isMenuPrincipal() {
+      return this.$route.path === '/';
     },
-    isGestionDirectores() {
-      return this.$route.path === '/gestion-directores';
+    isMenuEstudiante() {
+      return this.$route.path === '/menu-estudiante';
     },
-    isEnviarEncuesta() {
-      return this.$route.path === '/enviar-encuesta';
+    isMenuAdministador() {
+      return this.$route.path === '/menu-administrador';
     },
-    isListadoEstudiantes() {
-      return this.$route.path === '/listado-estudiantes';
-    },
-    isResumePage() {
-      return this.$route.path === '/resume';
-    },
-    isNoticiaForm(){
-      return this.$route.path === '/noticia-form'
+    isMenuDirector() {
+      return this.$route.path === '/menu-director';
     },
     // Detecta si hay notificaciones sin leer
     hasUnreadNotifications() {
       return this.notifications.some(notification => !notification.read);
-    },
-    isFormularioSoporte(){
-      return this.$route.path === '/formulario-soporte'
-    },
-    isContactoAdmin(){
-      return this.$route.path === '/contacto-admin'
-    },
-    isEstudiantesRegistrados() {
-      return this.$route.path === '/estudiantes-registrados'
-    },
-    isFormularioPlazos() {
-      return this.$route.path === '/formulario-plazos'
-    },
-    isPorcentajeIncompleto() {
-      return this.$route.path === '/porcentaje-incompleto'
-    },
-    isGestionEncuesta() {
-      return this.$route.path === '/gestion-encuestas'
-    },
-    isSoporteDirector() {
-      return this.$route.path === '/soporte-director'
-    },
-    isVerPreguntas() {
-      return this.$route.path === '/lista-preguntas'
-    },
-    isEstadoEstudiante() {
-      return this.$route.path === '/estado-estudiante'
-    },
+    }
   },
   watch: {
     estudianteId(newVal, oldVal) {
