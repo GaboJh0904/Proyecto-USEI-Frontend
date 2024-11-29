@@ -543,7 +543,7 @@ export default {
         descripcion: '',
         img: null,
         estado: 'publicado',
-        fechaModificado: new Date().toISOString().split('T')[0],
+        fechaModificado: new Date().toISOString(), // Asegúrate de incluir la hora
       };
       this.isEditing = false;
 
