@@ -13,7 +13,7 @@
       :prev-link-class="'page-link'"
       :next-link-class="'page-link'"
       :active-class="'active'"
-      :force-page="currentPage - 1"
+      :force-page="zeroBasedCurrentPage"
     />
   </div>
 </template>
@@ -36,13 +36,24 @@ export default {
       default: 1, 
     },
   },
+  computed: {
+    zeroBasedCurrentPage() {
+      return this.currentPage > 0 ? this.currentPage - 1 : 0;
+    },
+  },
+  watch: {
+    currentPage(newVal) {
+      console.log('Actualización de currentPage en PaginationComponent:', newVal);
+    },
+  },
   methods: {
     onPageClick(pageNumber) {
-      this.$emit('page-changed', pageNumber + 1); 
+      this.$emit('page-changed', pageNumber + 1); // Emitir la página en base uno
     },
   },
 };
 </script>
+
 
 <style scoped>
 .pagination-container {

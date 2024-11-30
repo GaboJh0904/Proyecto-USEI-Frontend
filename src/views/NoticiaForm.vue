@@ -125,8 +125,11 @@
               </tbody>
             </table>
           </div>
-
-          <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
+          <PaginationComponent
+            :page-count="totalPages"
+            :current-page="currentPage"
+            @page-changed="handlePageClick"
+          />
         </div>
 
         <!-- Modal para Noticias Archivadas -->
@@ -223,7 +226,9 @@ export default {
 
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchNoticias();
+    const savedPage = localStorage.getItem('currentPage');
+    this.currentPage = savedPage ? parseInt(savedPage, 10) : 1;
+    this.fetchNoticias(this.currentPage);
     this.fetchNoticiasArchivadas();
   },
 
@@ -246,16 +251,17 @@ export default {
     },
     // Método para obtener noticias con paginación, filtro y ordenación
     async fetchNoticias(page = 1) {
+  this.currentPage = page; // Sincroniza la página seleccionada
   try {
     const estadoFilter = this.selectedStatus ? this.selectedStatus.trim().toLowerCase() : '';
     const filterTerm = this.filterTerm ? this.filterTerm.trim().toLowerCase() : '';
 
     const response = await this.$protectedAxios.get(`${BASE_URL}/noticia`, {
       params: {
-        page: page - 1,
+        page: page - 1, // Ajuste para la paginación backend
         size: this.perPage,
-        sortBy: this.sortBy, // Campo por el que se ordena
-        sortDirection: this.sortDirection, // Dirección (asc/desc)
+        sortBy: this.sortBy,
+        sortDirection: this.sortDirection,
         filter: filterTerm,
         estado: estadoFilter,
       },
@@ -263,11 +269,13 @@ export default {
 
     this.noticias = response.data.content;
     this.totalPages = response.data.totalPages;
-    this.currentPage = page;
   } catch (error) {
     console.error('Error al cargar las noticias:', error);
   }
 },
+
+
+
 
 
     // Método para obtener noticias archivadas
@@ -315,8 +323,10 @@ export default {
     },
 
     handlePageClick(pageNumber) {
-      this.fetchNoticias(pageNumber);
-    },
+    this.currentPage = pageNumber;
+    localStorage.setItem('currentPage', pageNumber); // Guarda la página actual
+    this.fetchNoticias(pageNumber);
+  },
     handleArchivedPageClick(pageNumber) {
       this.fetchNoticiasArchivadas(pageNumber);
     },
