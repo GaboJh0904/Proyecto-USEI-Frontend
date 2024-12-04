@@ -274,10 +274,6 @@ export default {
   }
 },
 
-
-
-
-
     // Método para obtener noticias archivadas
     async fetchNoticiasArchivadas(page = 1) {
       try {
