@@ -186,7 +186,7 @@ export default {
         Swal.fire('Asociada', 'La pregunta ha sido asociada a la encuesta exitosamente.', 'success');
       } catch (error) {
         console.error('Error al asociar la pregunta con la encuesta:', error);
-        Swal.fire('Error', 'Ocurrió un problema al asociar la pregunta con la encuesta.', 'error');
+        Swal.fire('Advertencia', 'La pregunta ha sido editada.', 'info');
       }
     },
 
