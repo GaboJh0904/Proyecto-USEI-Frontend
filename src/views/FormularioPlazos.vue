@@ -27,7 +27,7 @@
           <select v-model="formData.estado" id="estado" required>
             <option value="" disabled>Seleccione un estado</option>
             <option value="activo">Activo</option>
-            <option value="pendiente">Pendiente</option>
+            
           </select>
           <span v-if="!formData.estado && showErrors" class="error-message">Este campo es obligatorio.</span>
         </div>
@@ -95,6 +95,7 @@
 
 <script>
 import Swal from 'sweetalert2';
+import axios from 'axios';
 import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import PaginationComponent from '@/components/PaginationComponent.vue';
