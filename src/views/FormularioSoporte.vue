@@ -54,19 +54,24 @@
       <!-- Controles para filtro y ordenación -->
       <div class="filter-sort-container">
         <!-- Filtro por mensaje del reporte -->
-        <input class="search-input" type="text" v-model="filterTerm" placeholder="Buscar por mensaje..." @input="fetchReportes(1)" />
+        <input
+        class="search-input"
+        type="text"
+        v-model="filterTerm"
+        placeholder="Buscar por mensaje..."
+        @input="applyFilters"
+      />
 
-        <!-- Selección de cantidad de elementos por página -->
-        <select class="dropdown-page-size" v-model="perPage" @change="fetchReportes(1)">
-          <option value="5">5</option>
-          <option value="10">10</option>
-          <option value="20">20</option>
-        </select>
+      <select class="dropdown-page-size" v-model="perPage" @change="applyFilters">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+      </select>
 
-        <!-- Botón para seleccionar orden ascendente/descendente -->
-        <button class="sort-button" @click="toggleSortDirection">
-          <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
-        </button>
+      <button class="sort-button" @click="toggleSortDirection">
+        <i :class="sortDirection === 'asc' ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down'"></i>
+      </button>
+
       </div>
 
       <table>
@@ -87,7 +92,12 @@
       </table>
 
       <!-- Componente de paginación -->
-      <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
+      <PaginationComponent
+        :page-count="totalPages"
+        :current-page="currentPage"
+        @page-changed="fetchReportes"
+      />
+
     </div>
   </div>
 
