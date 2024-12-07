@@ -63,8 +63,10 @@
     methods: {
       async handleSendCode() {
         if (this.selectedRole === 'Estudiante') {
+          localStorage.setItem('selectedRole', 'Estudiante');
           await this.handleSendCodeStudent();
         } else if (this.selectedRole === 'Director') {
+          localStorage.setItem('selectedRole', 'Director');
           await this.handleSendCodeDirector();
         } else {
           Swal.fire({
@@ -87,7 +89,7 @@
         });
       try {
         // Consumir la API para enviar el código de verificación
-        const response = await this.$publicAxios.post(`${BASE_URL}/estudiante/codigoVerificacion/${this.email}`);
+        const response = await this.$publicAxios.post(`${BASE_URL}/estudiante/enviarCodigoVerificacion/${this.email}`);
         
         // Cerrar el mensaje de carga
         Swal.close();
@@ -130,7 +132,7 @@
         });
       try {
         // Consumir la API para enviar el código de verificación
-        const response = await this.$publicAxios.post(`${BASE_URL}/usuario/codigoVerificacion/${this.email}`);
+        const response = await this.$publicAxios.post(`${BASE_URL}/usuario/enviarCodigoVerificacion/${this.email}`);
         
         // Cerrar el mensaje de carga
         Swal.close();
