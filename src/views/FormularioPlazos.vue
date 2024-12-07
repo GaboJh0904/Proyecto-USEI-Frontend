@@ -238,6 +238,8 @@ export default {
           fechaModificacion: new Date(this.formData.fechaModificacion).toISOString().split('T')[0],
           usuarioIdUsuario: { idUsuario: userId },
         };
+        // Mostrar datos en consola
+        console.log("Datos enviados al servidor:", data);
         await this.$protectedAxios.post(`${BASE_URL}/plazo`, data);
 
         this.loading = false;
