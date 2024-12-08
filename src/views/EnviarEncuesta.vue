@@ -279,6 +279,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-bottom: 100px;
 }
 
 .table-subtitle {

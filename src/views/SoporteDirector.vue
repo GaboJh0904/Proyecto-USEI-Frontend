@@ -87,7 +87,12 @@
         </table>
   
         <!-- Componente de paginación -->
-        <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
+        <PaginationComponent
+        :page-count="totalPages"
+        :current-page="currentPage"
+        @page-changed="handlePageClick"
+      />
+
       </div>
     </div>
   
@@ -143,45 +148,47 @@
       },
   
       async fetchReportes(page = 1) {
-        try {
-          const userId = localStorage.getItem('id_usuario');
-          if (!userId) {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error',
-              text: 'No se encontró información del usuario. Por favor, inicia sesión.',
-              confirmButtonColor: '#6b45b1',
-              confirmButtonText: 'Aceptar',
-            });
-            return;
-          }
-  
-          // Solicitud al backend con paginación, filtrado y ordenación
-          const response = await this.$protectedAxios.get(`${BASE_URL}/soporte/paginado`, {
-            params: {
-              page: page - 1,
-              size: this.perPage,
-              sortBy: this.sortBy,
-              sortDirection: this.sortDirection,
-              filter: this.filterTerm,
-              idUsuario: userId,
-            },
-          });
-  
-          this.reportes = response.data.content;
-          this.totalPages = response.data.totalPages;
-          this.currentPage = page;
-        } catch (error) {
-          console.error('Error al obtener los reportes:', error);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Hubo un error al obtener los reportes.',
-            confirmButtonColor: '#6b45b1',
-            confirmButtonText: 'Aceptar',
-          });
-        }
-      },
+    try {
+      const userId = localStorage.getItem('id_usuario');
+      if (!userId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se encontró información del usuario. Por favor, inicia sesión.',
+          confirmButtonColor: '#6b45b1',
+          confirmButtonText: 'Aceptar',
+        });
+        return;
+      }
+
+      // Guardar la página actual en localStorage
+      this.currentPage = page;
+      localStorage.setItem('currentPage', page);
+
+      const response = await this.$protectedAxios.get(`${BASE_URL}/soporte/paginado`, {
+        params: {
+          page: page - 1, // Ajusta la página para el backend (índice basado en 0)
+          size: this.perPage,
+          sortBy: this.sortBy,
+          sortDirection: this.sortDirection,
+          filter: this.filterTerm,
+          idUsuario: userId,
+        },
+      });
+
+      this.reportes = response.data.content;
+      this.totalPages = response.data.totalPages;
+    } catch (error) {
+      console.error('Error al obtener los reportes:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un error al obtener los reportes.',
+        confirmButtonColor: '#6b45b1',
+        confirmButtonText: 'Aceptar',
+      });
+    }
+  },
   
       async submitSupport() {
         this.showErrors = true;
@@ -273,8 +280,12 @@
     mounted() {
       this.userRole = localStorage.getItem('rol') || '';
       this.fetchProblemas();
-      this.fetchReportes();
-  
+
+      // Restaurar la página desde localStorage
+      const savedPage = localStorage.getItem('currentPage');
+      const initialPage = savedPage ? parseInt(savedPage, 10) : 1;
+
+      this.fetchReportes(initialPage);
       this.formattedFecha = this.formatDate(this.formData.fecha);
     },
   };
