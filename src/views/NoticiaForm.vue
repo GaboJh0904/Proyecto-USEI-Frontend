@@ -253,8 +253,9 @@ export default {
     async fetchNoticias(page = 1) {
   this.currentPage = page; // Sincroniza la página seleccionada
   try {
-    const estadoFilter = this.selectedStatus ? this.selectedStatus.trim().toLowerCase() : '';
-    const filterTerm = this.filterTerm ? this.filterTerm.trim().toLowerCase() : '';
+    // Maneja el estado vacío como null
+    const estadoFilter = this.selectedStatus ? this.selectedStatus.trim().toLowerCase() : null; 
+    const filterTerm = this.filterTerm ? this.filterTerm.trim().toLowerCase() : null; // Normaliza el filtro de texto
 
     const response = await this.$protectedAxios.get(`${BASE_URL}/noticia`, {
       params: {
@@ -262,8 +263,8 @@ export default {
         size: this.perPage,
         sortBy: this.sortBy,
         sortDirection: this.sortDirection,
-        filter: filterTerm,
-        estado: estadoFilter,
+        filter: filterTerm, // Enviar filtro general
+        estado: estadoFilter, // Enviar estado filtrado o null
       },
     });
 
@@ -273,6 +274,7 @@ export default {
     console.error('Error al cargar las noticias:', error);
   }
 },
+
 
     // Método para obtener noticias archivadas
     async fetchNoticiasArchivadas(page = 1) {
