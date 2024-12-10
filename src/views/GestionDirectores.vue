@@ -149,7 +149,6 @@
     <FooterComponent />
   </div>
 </template>
-
 <script>
 import NavBar from "@/components/NavBar.vue";
 import FooterComponent from "@/components/FooterComponent.vue";
@@ -191,7 +190,7 @@ export default {
 
         // Validar datos de usuarios
         this.users.forEach((user) => {
-          if (!user.idUsuario) { // Cambiar a idUsuario
+          if (!user.idUsuario) {
             console.warn("Usuario sin ID válido:", user);
           }
         });
@@ -201,7 +200,17 @@ export default {
       }
     },
 
+    validateEmail(email) {
+      const emailRegex = /^[^@]+@ucb\.edu\.bo$/; // Validar que el correo termine en @ucb.edu.bo
+      return emailRegex.test(email);
+    },
+
     async addUser() {
+      if (!this.validateEmail(this.currentUser.correo)) {
+        Swal.fire("Error", "El correo debe terminar con @ucb.edu.bo", "error");
+        return;
+      }
+
       try {
         const response = await this.$protectedAxios.post(
           `${BASE_URL}/usuario`,
@@ -215,14 +224,15 @@ export default {
         Swal.fire("Error", "No se pudo añadir el usuario.", "error");
       }
     },
+
     editUser(user) {
-      if (!user || !user.idUsuario) { // Cambiar a idUsuario
+      if (!user || !user.idUsuario) {
         Swal.fire("Error", "El usuario seleccionado no tiene un ID válido.", "error");
         return;
       }
 
       this.isEditing = true;
-      this.editUserId = user.idUsuario; // Cambiar a idUsuario
+      this.editUserId = user.idUsuario;
 
       // Asignar los datos del usuario al formulario
       this.currentUser = { ...user };
@@ -235,14 +245,19 @@ export default {
         return;
       }
 
+      if (!this.validateEmail(this.currentUser.correo)) {
+        Swal.fire("Error", "El correo debe terminar con @ucb.edu.bo", "error");
+        return;
+      }
+
       try {
         const response = await this.$protectedAxios.put(
-          `${BASE_URL}/usuario/${this.editUserId}`, // Cambiar a idUsuario
+          `${BASE_URL}/usuario/${this.editUserId}`,
           this.currentUser
         );
 
         const index = this.users.findIndex(
-          (user) => user.idUsuario === this.editUserId // Cambiar a idUsuario
+          (user) => user.idUsuario === this.editUserId
         );
 
         if (index !== -1) {
