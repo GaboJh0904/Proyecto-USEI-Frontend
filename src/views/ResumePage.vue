@@ -23,7 +23,7 @@
         
         <div class="form-actions">
           <button class="back-button" @click="goBackToSurvey">Regresar a la Encuesta</button>
-          <button class="submit-button" @click="submitSurvey">Enviar</button>
+          <button class="submit-button" @click="submitSurvey" :disabled="isSubmitting">Enviar</button>
         </div>
       </div>
     </main>
@@ -46,6 +46,7 @@ export default {
   },
   data() {
     return {
+      isSubmitting: false, // evitar envios duplicados
       form: this.$route.query, // Recibe los datos del formulario desde query params
       preguntas: [], // Lista de preguntas obtenida desde la base de datos
       encuestaId: this.$route.params.idEncuesta || 1, // ID dinámico de la encuesta (cambiar según sea necesario)
@@ -87,6 +88,10 @@ export default {
     },
 
     async submitSurvey() {
+      if (this.isSubmitting) {
+    return;
+  }
+  this.isSubmitting = true; // Marcar como en proceso
       try {
         const estudianteId = this.form.estudianteId;
         if (!estudianteId) {
@@ -103,7 +108,6 @@ export default {
           });
           return;
         }
-
         // Registrar notificación
         const notification = {
           titulo: "Encuesta completada exitosamente",
@@ -123,14 +127,20 @@ export default {
             console.warn(`La pregunta con ID ${preguntaId} no tiene respuesta.`);
             continue; // Saltar respuestas vacías
           }
+          let formattedResponse = respuesta;
+          // Si es de tipo multiple, transformar el array en un string
+          if (Array.isArray(respuesta)) {
+            formattedResponse = respuesta.join(', '); // Convierte el array en un string separado por comas
+          }
+
 
           const payload = {
-            respuesta: respuesta,
+            respuesta: formattedResponse,
             preguntaIdPregunta: { idPregunta: preguntaId },
             estudianteIdEstudiante: { idEstudiante: estudianteId }
           };
 
-          console.log('Enviando respuesta:', payload); // Para depuración
+          console.log('Enviando respuesta:', payload); 
 
           try {
             await this.$protectedAxios.post(`${BASE_URL}/respuesta`, payload);
@@ -170,6 +180,9 @@ export default {
           text: 'Hubo un problema al enviar la encuesta. Por favor, inténtalo más tarde.',
           confirmButtonText: 'Aceptar'
         });
+      } finally {
+        this.isSubmitting = false; // Liberar la bandera al terminar
+  
       }
     }
   }
