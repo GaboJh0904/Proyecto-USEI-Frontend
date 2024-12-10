@@ -114,6 +114,7 @@
       <!-- Tabla de usuarios -->
       <div class="user-table-container">
         <h2>Usuarios Registrados</h2>
+        <div class="table-responsive">
         <table>
           <thead>
             <tr>
@@ -136,16 +137,16 @@
                 <button class="edit-button" @click="editUser(user)">
                   Editar
                 </button>
-                <button class="delete-button" @click="deleteUser(user.id_usuario)">
+                <button class="delete-button" @click="deleteUser(user)">
                   Eliminar
                 </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </main>
-
     <FooterComponent />
   </div>
 </template>
@@ -275,14 +276,44 @@ export default {
       }
     },
 
-    async deleteUser(userId) {
+    async deleteUser(user) {
+  // Verificar que el usuario tiene un ID válido
+      if (!user || !user.idUsuario) {
+      Swal.fire("Error", "El usuario seleccionado no tiene un ID válido.", "error");
+      return;
+    }
       try {
-        await this.$protectedAxios.delete(`${BASE_URL}/usuario/${userId}`);
-        this.users = this.users.filter((user) => user.id_usuario !== userId);
+        // Confirmar la acción antes de eliminar
+        const confirmation = await Swal.fire({
+          title: "¿Estás seguro?",
+          text: "Esta acción eliminará al usuario de forma permanente.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        });
+
+        if (!confirmation.isConfirmed) {
+          return;
+        }
+
+        // Realizar la solicitud DELETE al backend
+        await this.$protectedAxios.delete(`${BASE_URL}/usuario/${user.idUsuario}`);
+        // Actualizar la lista de usuarios en el frontend
+        this.users = this.users.filter((u) => u.idUsuario !== user.idUsuario);
+
         Swal.fire("Éxito", "Usuario eliminado correctamente.", "success");
       } catch (error) {
         console.error("Error al eliminar el usuario:", error);
-        Swal.fire("Error", "No se pudo eliminar el usuario.", "error");
+
+        // Manejar errores del backend
+        if (error.response && error.response.status === 404) {
+          Swal.fire("Error", "El usuario no fue encontrado.", "error");
+        } else {
+          Swal.fire("Error", "No se pudo eliminar el usuario. Inténtelo de nuevo.", "error");
+        }
       }
     },
     resetForm() {
@@ -408,25 +439,64 @@ td button:hover {
 }
 
 /* Tabla */
+/* Contenedor para tablas responsive */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto; /* Desplazamiento horizontal en dispositivos pequeños */
+  -webkit-overflow-scrolling: touch; /* Suaviza el scroll en dispositivos táctiles */
+  margin-top: 1rem; /* Espaciado superior */
+}
+
+/* Tabla */
 table {
   width: 100%;
   border-collapse: collapse;
+  min-width: 600px; /* Anchura mínima para evitar deformaciones */
 }
 
-th,
-td {
+/* Celdas y encabezados */
+th, td {
   border: 1px solid #80ced7;
   padding: 0.75rem;
+  text-align: left;
+  white-space: nowrap; /* Evita que el contenido se corte */
 }
 
+/* Encabezados de tabla */
 th {
   background-color: #63c7b2;
   color: #ffffff;
-  text-align: left;
 }
 
-/* Espaciado entre filas */
-tr:not(:last-child) td {
-  border-bottom: 1px solid #80ced7;
+/* Botones dentro de la tabla */
+td button {
+  background-color: #80ced7;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem 0; /* Margen entre botones */
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+td button:hover {
+  background-color: #63c7b2;
+}
+
+/* Ajustes para pantallas pequeñas */
+@media (max-width: 768px) {
+  table {
+    min-width: unset; /* Elimina la anchura mínima */
+  }
+
+  th, td {
+    font-size: 0.85rem; /* Reduce el tamaño de la fuente */
+    padding: 0.5rem; /* Reduce el relleno */
+  }
+
+  td button {
+    font-size: 0.8rem; /* Reduce el tamaño de los botones */
+  }
 }
 </style>
