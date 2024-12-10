@@ -50,7 +50,7 @@
           <!-- Carrera -->
           <div class="form-group">
             <label for="carrera">Carrera</label>
-            <select id="carrera" v-model="currentUser.carrera" required>
+            <select id="carrera" v-model="currentUser.carrera">
               <option disabled value="">Seleccione una carrera</option>
               <option value="Administración de Empresas">Administración de Empresas</option>
               <option value="Administración Turística">Administración Turística</option>
@@ -179,6 +179,36 @@ export default {
       editUserId: null, // Almacenar el ID del usuario que se está editando
     };
   },
+  computed: {
+    availableCareers() {
+      // Lista de carreras disponibles (no asignadas a otro director)
+      const assignedCareers = this.users
+        .filter((user) => user.rol === "Director" && user.carrera)
+        .map((user) => user.carrera);
+      return [
+        "Administración de Empresas",
+        "Administración Turística",
+        "Contaduría Pública",
+        "Economía",
+        "Economía e Inteligencia de Negocios",
+        "Ingeniería Comercial",
+        "Ingeniería en Innovación Empresarial",
+        "Marketing y Medio Digitales",
+        "Ingeniería Ambiental",
+        "Ingeniería Biomédica",
+        "Ingeniería Bioquímica y de Bioprocesos",
+        "Ingeniería Civil",
+        "Ingeniería en Energía",
+        "Ingeniería en Multimedia e Interactividad Digital",
+        "Ingenieriá en Logística y Analítica de la Cadena de Suministro",
+        "Ingeniería Industrial",
+        "Ingeniería Mecatrónica",
+        "Ingeniería Química",
+        "Ingeniería en Sistemas",
+        "Ingeniería en Telecomunicaciones",
+      ].filter((career) => !assignedCareers.includes(career));
+    },
+  },
   mounted() {
     this.userRole = localStorage.getItem("rol") || "";
     this.fetchUsers(); // Cargar usuarios al montar el componente
@@ -188,13 +218,6 @@ export default {
       try {
         const response = await this.$protectedAxios.get(`${BASE_URL}/usuario`);
         this.users = response.data;
-
-        // Validar datos de usuarios
-        this.users.forEach((user) => {
-          if (!user.idUsuario) {
-            console.warn("Usuario sin ID válido:", user);
-          }
-        });
       } catch (error) {
         console.error("Error al cargar los usuarios:", error);
         Swal.fire("Error", "No se pudieron cargar los usuarios.", "error");
@@ -209,6 +232,22 @@ export default {
     async addUser() {
       if (!this.validateEmail(this.currentUser.correo)) {
         Swal.fire("Error", "El correo debe terminar con @ucb.edu.bo", "error");
+        return;
+      }
+      if (!this.currentUser.carrera && this.currentUser.rol === "Director") {
+        Swal.fire("Error", "Debe seleccionar una carrera para el Director.", "error");
+        return;
+      }
+
+      // Verificar que la carrera seleccionada no esté ya asignada
+      const isCareerTaken = this.users.some(
+        (user) =>
+          user.rol === "Director" &&
+          user.carrera === this.currentUser.carrera &&
+          user.idUsuario !== this.editUserId
+      );
+      if (isCareerTaken) {
+        Swal.fire("Error", "La carrera ya está asignada a otro Director.", "error");
         return;
       }
 
@@ -237,7 +276,11 @@ export default {
 
       // Asignar los datos del usuario al formulario
       this.currentUser = { ...user };
-      console.log("Editando usuario:", this.currentUser); // Debugging
+
+      // No exigir carrera si es administrador
+      if (this.currentUser.rol === "Administrador") {
+        this.currentUser.carrera = "";
+      }
     },
 
     async updateUser() {
@@ -245,9 +288,26 @@ export default {
         Swal.fire("Error", "No se puede actualizar el usuario porque no tiene un ID válido.", "error");
         return;
       }
-
       if (!this.validateEmail(this.currentUser.correo)) {
         Swal.fire("Error", "El correo debe terminar con @ucb.edu.bo", "error");
+        return;
+      }
+
+      // Carrera no requerida si el usuario es Administrador
+      if (!this.currentUser.carrera && this.currentUser.rol === "Director") {
+        Swal.fire("Error", "Debe seleccionar una carrera para el Director.", "error");
+        return;
+      }
+
+      // Verificar que la carrera seleccionada no esté ya asignada
+      const isCareerTaken = this.users.some(
+        (user) =>
+          user.rol === "Director" &&
+          user.carrera === this.currentUser.carrera &&
+          user.idUsuario !== this.editUserId
+      );
+      if (isCareerTaken) {
+        Swal.fire("Error", "La carrera ya está asignada a otro Director.", "error");
         return;
       }
 
@@ -271,19 +331,22 @@ export default {
         Swal.fire("Éxito", "Usuario actualizado correctamente.", "success");
       } catch (error) {
         console.error("Error al actualizar el usuario:", error);
-
         Swal.fire("Error", "No se pudo actualizar el usuario.", "error");
       }
     },
 
     async deleteUser(user) {
-  // Verificar que el usuario tiene un ID válido
       if (!user || !user.idUsuario) {
-      Swal.fire("Error", "El usuario seleccionado no tiene un ID válido.", "error");
-      return;
-    }
+        Swal.fire("Error", "El usuario seleccionado no tiene un ID válido.", "error");
+        return;
+      }
+
+      if (user.rol === "Administrador") {
+        Swal.fire("Error", "No se puede eliminar un Administrador.", "error");
+        return;
+      }
+
       try {
-        // Confirmar la acción antes de eliminar
         const confirmation = await Swal.fire({
           title: "¿Estás seguro?",
           text: "Esta acción eliminará al usuario de forma permanente.",
@@ -299,16 +362,12 @@ export default {
           return;
         }
 
-        // Realizar la solicitud DELETE al backend
         await this.$protectedAxios.delete(`${BASE_URL}/usuario/${user.idUsuario}`);
-        // Actualizar la lista de usuarios en el frontend
         this.users = this.users.filter((u) => u.idUsuario !== user.idUsuario);
 
         Swal.fire("Éxito", "Usuario eliminado correctamente.", "success");
       } catch (error) {
         console.error("Error al eliminar el usuario:", error);
-
-        // Manejar errores del backend
         if (error.response && error.response.status === 404) {
           Swal.fire("Error", "El usuario no fue encontrado.", "error");
         } else {
@@ -316,6 +375,7 @@ export default {
         }
       }
     },
+
     resetForm() {
       this.currentUser = {
         nombre: "",
@@ -328,12 +388,14 @@ export default {
       };
       this.isEditing = false;
     },
+
     goBack() {
       this.$router.go(-1);
     },
   },
 };
 </script>
+
 <style scoped>
 .user-management-container {
   padding: 2rem;
