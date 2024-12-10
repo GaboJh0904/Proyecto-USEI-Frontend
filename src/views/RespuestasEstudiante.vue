@@ -132,16 +132,15 @@ export default {
       }
     },
     handlePageClick(pageNumber) {
-    this.currentPage = pageNumber; 
-    this.fetchRespuestas();        
+      this.currentPage = Math.max(pageNumber, 1); // Aseguramos que no sea menor a 1
+      this.fetchRespuestas();        
   },
 
   async fetchRespuestas() {
   console.log('Ejecutando fetchRespuestas');
   const idEstudiante = this.$route.params.idEstudiante;
   try {
-    const pageToFetch = this.currentPage - 1;
-    console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
+    const pageToFetch = this.currentPage - 1; // Convertir  base 0
 
     // Llamar a la API con el parámetro de búsqueda (searchQuery)
     const response = await this.$protectedAxios.get(`${BASE_URL}/respuesta/estudiante/${idEstudiante}`, {
