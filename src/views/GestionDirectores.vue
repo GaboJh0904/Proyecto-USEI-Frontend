@@ -246,8 +246,15 @@ export default {
           user.carrera === this.currentUser.carrera &&
           user.idUsuario !== this.editUserId
       );
+      const isEmailTaken = this.users.some(
+        (user) => user.correo === this.currentUser.correo
+      );
       if (isCareerTaken) {
         Swal.fire("Error", "La carrera ya está asignada a otro Director.", "error");
+        return;
+      }
+      if (isEmailTaken) {
+        Swal.fire("Error", "El correo ya está en uso.", "error");
         return;
       }
 
@@ -306,11 +313,20 @@ export default {
           user.carrera === this.currentUser.carrera &&
           user.idUsuario !== this.editUserId
       );
+      const isEmailTaken = this.users.some(
+        (user) =>
+          user.correo === this.currentUser.correo &&
+          user.idUsuario !== this.editUserId
+      );
+
       if (isCareerTaken) {
         Swal.fire("Error", "La carrera ya está asignada a otro Director.", "error");
         return;
       }
-
+      if (isEmailTaken) {
+        Swal.fire("Error", "El correo ya está en uso.", "error");
+        return;
+      }
       try {
         const response = await this.$protectedAxios.put(
           `${BASE_URL}/usuario/${this.editUserId}`,
