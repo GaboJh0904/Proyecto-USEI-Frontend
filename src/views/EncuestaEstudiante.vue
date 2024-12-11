@@ -231,13 +231,14 @@ export default {
       });
     },
     clearForm() {
-      // Restablecer respuestas y campos
+  // Restablecer respuestas locales y en localStorage
       this.answers = {};
-      Swal.fire("Formulario limpiado", "Todas las respuestas han sido borradas.", "info");
+      localStorage.removeItem('surveyAnswers'); // Eliminar respuestas del almacenamiento local
+      Swal.fire("Formulario limpiado", "Todas las respuestas han sido borradas definitivamente.", "info");
     },
 
     goBack() {
-      this.$router.go(-1);
+      this.$router.push('/menu-estudiante');
     },
 
     goToResume() {
