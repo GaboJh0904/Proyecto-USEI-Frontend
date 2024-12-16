@@ -5,7 +5,8 @@
     </div>
     <div class="nav-links">
       <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
-      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante">
+      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante || isDashboard ||isReporteDashboard || isSubirCertificado ||isHistorialReportes
+      ">
         <!-- Botón "Volver" con icono -->
         <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
           <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
@@ -166,6 +167,12 @@ export default {
     isGestionDirectores() {
       return this.$route.path === '/gestion-directores';
     },
+    isHistorialReportes() {
+      return this.$route.path === '/historial-reportes';
+    },
+    isSubirCertificado() {
+      return this.$route.path === '/subir-certificado';
+    },
     isEnviarEncuesta() {
       return this.$route.path === '/enviar-encuesta';
     },
@@ -209,6 +216,12 @@ export default {
     isEstadoEstudiante() {
       return this.$route.path === '/estado-estudiante'
     },
+    isDashboard() {
+      return this.$route.path === '/dashboard'
+    },
+    isReporteDashboard() {
+      return this.$route.path === '/reporte-dash'
+    }
   },
   watch: {
     estudianteId(newVal, oldVal) {
