@@ -329,7 +329,9 @@ header {
   border: 1px solid #263D42;
   padding: 12px;
   text-align: left;
+  gap: 0.5rem;
 }
+
 
 .user-table-container th {
   background-color: #263D42;
@@ -342,10 +344,41 @@ header {
   padding: 0.25rem 0.75rem;
   border: none;
   border-radius: 10px;
+  margin-right: 0.5rem;
   cursor: pointer;
 }
 
 .user-table-container td button:hover {
   background-color: #1F2E34;
 }
+/* Estilo del dropdown */
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #929292;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-family: 'Roboto', sans-serif;
+  background-color: #ffffff;
+  color: #263D42;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: #263D42;
+  box-shadow: 0 0 5px rgba(38, 61, 66, 0.5);
+}
+
+option {
+  font-size: 1rem;
+  color: #263D42;
+  background-color: #ffffff;
+  padding: 10px;
+}
+
+select:hover {
+  background-color: #f4f4f4;
+}
+
 </style>
