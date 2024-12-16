@@ -62,22 +62,19 @@
                 />
               </template>
 
-              <template v-else-if="question.tipoPregunta === 'Multiple'">
-                <div
-                  v-for="option in question.opciones"
-                  :key="option.idOpciones"
-                  class="checkbox-group"
-                >
-                  <input
-                    type="checkbox"
-                    :id="'option-' + option.idOpciones"
-                    :value="option.opcion"
-                    v-model="answers[question.idPregunta]"
-                    :disabled="isFieldDisabled(index)"
-                  />
-                  <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
-                </div>
-              </template>
+            <template v-else-if="question.tipoPregunta === 'Multiple'">
+              <div v-for="option in question.opciones" :key="option.idOpciones" class="checkbox-group">
+                <input
+                  type="checkbox"
+                  :id="'option-' + option.idOpciones"
+                  :value="option.opcion"
+                  :checked="answers[question.idPregunta]?.includes(option.opcion)"
+                  @change="toggleOption(question.idPregunta, option.opcion)"
+                  :disabled="isFieldDisabled(index)"
+                />
+                <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
+              </div>
+            </template>
             </div>
           </div>
 
@@ -141,6 +138,24 @@ export default {
     }
   },
   methods: {
+    toggleOption(questionId, option) {
+      // inicializarla como un array vacio
+      if (!this.answers[questionId]) {
+        this.answers[questionId] = [];
+      }
+
+      const index = this.answers[questionId].indexOf(option);
+      if (index === -1) {
+        // Agregar la opcion si no esta seleccionada
+        this.answers[questionId].push(option);
+      } else {
+        // Eliminar la opcion si ya esta seleccionada
+        this.answers[questionId].splice(index, 1);
+      }
+
+      console.log(`Pregunta ID: ${questionId}, Respuesta:`, this.answers[questionId]);
+    },
+
     async fetchQuestions() {
       try {
         const response = await this.$protectedAxios.get(`${BASE_URL}/pregunta`);
@@ -219,8 +234,14 @@ export default {
 
     isAnswered(questionId) {
       const answer = this.answers[questionId];
-      return answer !== '' && answer !== undefined;
-    },
+      console.log(`Pregunta ID: ${questionId}, Respuesta:`, answer);
+      if (Array.isArray(answer)) {
+        //verificar si hay min una opcion seleccionada
+        return answer.length > 0; // Considerada respondida si el array tiene elementos
+      }
+  // Otros tipos de preguntas no vacios
+  return answer !== '' && answer !== undefined && answer !== null;
+      },
 
     showWarning(questionText) {
       Swal.fire({
@@ -262,7 +283,12 @@ export default {
 
     isFormComplete() {
       return this.questions.every((question) => {
-        return this.answers[question.idPregunta] !== '' && this.answers[question.idPregunta] !== undefined;
+        const answer = this.answers[question.idPregunta];
+        if (question.tipoPregunta === 'Multiple') {
+          //al menos una opcion seleccionada para preguntas multiples
+          return Array.isArray(answer) && answer.length > 0;
+        }
+        return answer !== '' && answer !== undefined;
       });
     },
 
