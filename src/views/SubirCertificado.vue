@@ -37,8 +37,8 @@
           <thead>
             <tr>
               <th>id
-                <button class="sort-button" @click="sort('id')">
-                  <i class="fas fa-sort"></i>
+                <button class="sort-button" @click="sort('idCertificado')">
+                  <i class="fas fa-sort" :class="getSortIcon('idCertificado')"></i>
                 </button>
               </th>
               <th>Archivo 
@@ -57,7 +57,7 @@
                 </button>
               </th>
               <th>Fecha 
-                <button class="sort-button" @click="sort(fecha)">
+                <button class="sort-button" @click="sort('fechaModificacion')">
                   <i class="fas fa-sort"></i>
                 </button>
               </th>
@@ -125,9 +125,10 @@ export default {
     return {
     selectedFile: null,  // Almacenar el archivo seleccionado
     certificados: [],     // Almacenar los registros de certificados
-    totalPages: 1,
-    currentPage: 1,
     usuarioId: null,
+    selectedSortBy: '',   // Column to sort by
+    selectedSortType: 'ASC', // Sort direction (ASC or DESC)
+
      
     };
   },
@@ -235,11 +236,32 @@ export default {
     }
   },
 
+  async sort(column) {
+    if (this.selectedSortBy !== column) {
+      this.selectedSortType = 'ASC'; // Reset to ASC when changing columns
+    } else {
+      // Toggle between ASC and DESC if the same column is clicked
+      this.selectedSortType = this.selectedSortType === 'ASC' ? 'DESC' : 'ASC';
+    }
+    this.selectedSortBy = column; // Set the selected column
+    await this.fetchCertificados(); // Reload data with the new sort order
+  },
+  getSortIcon(column) {
+    if (this.selectedSortBy === column) {
+      return this.selectedSortType === 'ASC' ? 'fa-sort-up' : 'fa-sort-down';
+    }
+    return 'fa-sort'; // Default icon
+  },
 
 
   async fetchCertificados() {
     try {
-      const response = await this.$protectedAxios.get(`${BASE_URL}/certificado`);
+      const response = await this.$protectedAxios.get(`${BASE_URL}/certificado`, {
+      params: {
+        sortBy: this.selectedSortBy || 'idCertificado', // Default sort by ID
+        sortType: this.selectedSortType || 'ASC', // Default sort direction
+        },
+      });  
       this.certificados = response.data;
       console.log('Certificados obtenidos:', this.certificados); 
     } catch (error) {

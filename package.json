@@ -22,7 +22,7 @@
     "frontend": "file:",
     "papaparse": "^5.4.1",
     "pinia": "^2.1.7",
-    "sweetalert2": "^11.14.1",
+    "sweetalert2": "^11.6.13",
     "vue": "^3.4.29",
     "vue-apexcharts": "^1.6.2",
     "vue-router": "^4.3.3",
