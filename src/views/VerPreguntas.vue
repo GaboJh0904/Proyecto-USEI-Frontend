@@ -67,9 +67,9 @@ export default {
       try {
         // Obtener todas las preguntas
         const preguntasResponse = await axios.get(`${BASE_URL}/pregunta`);
-        const preguntas = preguntasResponse.data;
+        const todasLasPreguntas = preguntasResponse.data;
 
-        if (!preguntas.length) {
+        if (!todasLasPreguntas.length) {
           Swal.fire({
             title: 'Sin preguntas',
             text: 'No hay preguntas disponibles para mostrar.',
@@ -79,8 +79,26 @@ export default {
           return;
         }
 
-        // Obtener las opciones para cada pregunta
-        for (let pregunta of preguntas) {
+        // Filtrar solo preguntas con estado activo
+        let preguntasActivas = todasLasPreguntas.filter(
+          (pregunta) => pregunta.estado.toLowerCase() === 'activo'
+        );
+
+        if (!preguntasActivas.length) {
+          Swal.fire({
+            title: 'Sin preguntas activas',
+            text: 'No hay preguntas activas disponibles para mostrar.',
+            icon: 'warning',
+            confirmButtonColor: '#63c7b2',
+          });
+          return;
+        }
+
+        // Ordenar las preguntas activas por número de pregunta (numPregunta) de forma ascendente
+        preguntasActivas.sort((a, b) => a.numPregunta - b.numPregunta);
+
+        // Obtener las opciones para cada pregunta activa
+        for (let pregunta of preguntasActivas) {
           try {
             const opcionesResponse = await axios.get(`${BASE_URL}/opciones_pregunta/pregunta/${pregunta.idPregunta}`);
             pregunta.opciones = opcionesResponse.data; // Asociar opciones a la pregunta
@@ -90,11 +108,11 @@ export default {
           }
         }
 
-        this.preguntas = preguntas;
+        this.preguntas = preguntasActivas;
 
         Swal.fire({
           title: 'Preguntas actualizadas',
-          text: 'Las preguntas se han cargado correctamente.',
+          text: 'Las preguntas activas se han cargado correctamente.',
           icon: 'success',
           confirmButtonColor: '#63c7b2',
         });
