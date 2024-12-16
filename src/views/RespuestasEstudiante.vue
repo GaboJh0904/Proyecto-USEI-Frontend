@@ -13,9 +13,9 @@
 
          <!-- Contenedor de filtros, busqueda y ordenacion -->
       <div class="filter-search-container">
-        <input type="text" v-model="searchQuery" @input="fetchRespuestas" placeholder="Buscar por pregunta o respuesta" class="search-input" />
+        <input type="text" v-model="searchQuery" @input="handleFilterAndSearchChange" placeholder="Buscar por pregunta o respuesta" class="search-input" />
         
-        <select v-model="selectedFilter" class="filter-select" @change="fetchRespuestas">
+        <select v-model="selectedFilter" class="filter-select" @change="handleFilterAndSearchChange">
           <option value="">Filtrar por tipo de pregunta</option>
           <option value="">Todos</option>
 
@@ -132,16 +132,28 @@ export default {
       }
     },
     handlePageClick(pageNumber) {
-    this.currentPage = pageNumber; 
-    this.fetchRespuestas();        
+      this.currentPage = Math.max(pageNumber, 1); // Aseguramos que no sea menor a 1
+      this.fetchRespuestas();        
+    },
+
+    async handleFilterChange() {
+    this.currentPage = 1; // Reinicia a la primera página
+    await this.fetchRespuestas(); // Vuelve a cargar las respuestas con el nuevo filtro
+    },
+    async handleSearchQueryChange() {
+    this.currentPage = 1; // Reinicia a la primera página
+    await this.fetchRespuestas(); // Vuelve a cargar las respuestas con la búsqueda aplicada
+    },
+    async handleFilterAndSearchChange() {
+    this.currentPage = 1; // Reinicia a la primera página siempre
+    await this.fetchRespuestas(); // Carga las respuestas considerando filtro y búsqueda
   },
 
   async fetchRespuestas() {
   console.log('Ejecutando fetchRespuestas');
   const idEstudiante = this.$route.params.idEstudiante;
   try {
-    const pageToFetch = this.currentPage - 1;
-    console.log('Solicitando página', pageToFetch, 'con tamaño de página', this.pageSize);
+    const pageToFetch = this.currentPage - 1; // Convertir  base 0
 
     // Llamar a la API con el parámetro de búsqueda (searchQuery)
     const response = await this.$protectedAxios.get(`${BASE_URL}/respuesta/estudiante/${idEstudiante}`, {

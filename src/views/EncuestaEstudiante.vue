@@ -14,7 +14,11 @@
           <div v-for="(question, index) in questions" :key="question.idPregunta" class="form-group">
             <label :for="'question-' + index">{{ question.pregunta }}</label>
             <div class="input-warning-container">
-              <span v-if="!isAnswered(question.idPregunta)" class="warning-icon" @click="showWarning(question.pregunta)">
+              <span 
+                v-if="!isAnswered(question.idPregunta)" 
+                class="warning-icon" 
+                @click="showWarning(question.pregunta)"
+              >
                 <i class="fas fa-exclamation-circle"></i>
               </span>
             <!-- Tipos de Pregunta -->
@@ -55,9 +59,10 @@
                   type="checkbox"
                   :id="'option-' + option.idOpciones"
                   :value="option.opcion"
-                  v-model="answers[question.idPregunta]"
+                  :checked="answers[question.idPregunta]?.includes(option.opcion)"
+                  @change="toggleOption(question.idPregunta, option.opcion)"
                   :disabled="isFieldDisabled(index)"
-                  />
+                />
                 <label :for="'option-' + option.idOpciones">{{ option.opcion }}</label>
               </div>
             </template>
@@ -122,6 +127,24 @@ export default {
     }
   },
   methods: {
+    toggleOption(questionId, option) {
+      // inicializarla como un array vacio
+      if (!this.answers[questionId]) {
+        this.answers[questionId] = [];
+      }
+
+      const index = this.answers[questionId].indexOf(option);
+      if (index === -1) {
+        // Agregar la opcion si no esta seleccionada
+        this.answers[questionId].push(option);
+      } else {
+        // Eliminar la opcion si ya esta seleccionada
+        this.answers[questionId].splice(index, 1);
+      }
+
+      console.log(`Pregunta ID: ${questionId}, Respuesta:`, this.answers[questionId]);
+    },
+
     validateTextInput(event, field) {
       const value = event.target.value.replace(/[^a-zA-Z\s@.]/g, '');// Solo letras y espacios
       this.answers[field] = value;
@@ -154,8 +177,14 @@ export default {
 
     isAnswered(questionId) {
       const answer = this.answers[questionId];
-      return answer !== '' && answer !== undefined;
-    },
+      console.log(`Pregunta ID: ${questionId}, Respuesta:`, answer);
+      if (Array.isArray(answer)) {
+        //verificar si hay min una opcion seleccionada
+        return answer.length > 0; // Considerada respondida si el array tiene elementos
+      }
+  // Otros tipos de preguntas no vacios
+  return answer !== '' && answer !== undefined && answer !== null;
+      },
 
     showWarning(questionText) {
       // Mostrar mensaje de advertencia de icono
@@ -178,7 +207,8 @@ export default {
         // Para cada pregunta, obtener sus opciones (si aplica)
         for (let question of questions) {
           if (question.tipoPregunta === 'Seleccion' || question.tipoPregunta === 'Multiple') {
-            const optionsResponse = await this.$protectedAxios.get(`${BASE_URL}/opciones_pregunta/pregunta/${question.idPregunta}`);
+            const optionsResponse = await this.$protectedAxios.get(
+              `${BASE_URL}/opciones_pregunta/pregunta/${question.idPregunta}`);
             question.opciones = optionsResponse.data;
           } else {
             question.opciones = []; // No hay opciones para preguntas de tipo 'Texto'
@@ -198,13 +228,16 @@ export default {
     },
 
     syncAnswersWithQuestions() {
-      // Si volvemos del resumen, asegurarnos de que las respuestas ya guardadas se sincronicen con las preguntas actuales.
       this.questions.forEach((question) => {
         if (!(question.idPregunta in this.answers)) {
-          // Inicializar la respuesta si no existe en el localStorage
-          this.answers[question.idPregunta] = '';
+          if (question.tipoPregunta === 'Multiple') {
+            this.$set(this.answers, question.idPregunta, []); // Inicializar como array vacio
+          } else {
+            this.$set(this.answers, question.idPregunta, ''); // Inicializar como string vacio
+          }
         }
       });
+      console.log('Respuestas inicializadas:', this.answers);
     },
 
     goBack() {
@@ -232,9 +265,13 @@ export default {
     },
 
     isFormComplete() {
-      // Verificar que todas las preguntas tengan una respuesta
       return this.questions.every((question) => {
-        return this.answers[question.idPregunta] !== '' && this.answers[question.idPregunta] !== undefined;
+        const answer = this.answers[question.idPregunta];
+        if (question.tipoPregunta === 'Multiple') {
+          //al menos una opcion seleccionada para preguntas multiples
+          return Array.isArray(answer) && answer.length > 0;
+        }
+        return answer !== '' && answer !== undefined;
       });
     },
 
