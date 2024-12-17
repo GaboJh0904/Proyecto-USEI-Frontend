@@ -437,7 +437,7 @@
 
 .action-btn {
   padding: 6px 12px;
-  background-color: #28a745;
+  background-color: #63c7b2;
   color: #fff;
   border: none;
   border-radius: 5px;

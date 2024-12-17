@@ -13,7 +13,8 @@
       </template>
 
       <!-- Condiciones para EncuestaEstudiante, GestionDirectores y otras vistas -->
-      <template v-else-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante">
+      <template v-else-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante || isDashboard ||isReporteDashboard || isSubirCertificado ||isHistorialReportes
+      ">
         <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
           <i class="fas fa-arrow-left"></i>
         </button>
@@ -169,6 +170,12 @@ export default {
     isGestionDirectores() {
       return this.$route.path === '/gestion-directores'&& !this.isReporteDash;
     },
+    isHistorialReportes() {
+      return this.$route.path === '/historial-reportes';
+    },
+    isSubirCertificado() {
+      return this.$route.path === '/subir-certificado';
+    },
     isEnviarEncuesta() {
       return this.$route.path === '/enviar-encuesta';
     },
@@ -211,6 +218,12 @@ export default {
     },
     isEstadoEstudiante() {
       return this.$route.path === '/estado-estudiante'
+    },
+    isDashboard() {
+      return this.$route.path === '/dashboard'
+    },
+    isReporteDashboard() {
+      return this.$route.path === '/reporte-dash'
     },
     isReporteDash() {
       return this.$route.path === '/reporte-dash'; 

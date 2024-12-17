@@ -577,4 +577,34 @@ td button:hover {
     font-size: 0.8rem; /* Reduce el tamaño de los botones */
   }
 }
+/* Estilo del dropdown */
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #929292;
+  border-radius: 15px;
+  font-size: 1rem;
+  font-family: 'Roboto', sans-serif;
+  background-color: #ffffff;
+  color: #263D42;
+  cursor: pointer;
+}
+
+select:focus {
+  outline: none;
+  border-color: #263D42;
+  box-shadow: 0 0 5px rgba(38, 61, 66, 0.5);
+}
+
+option {
+  font-size: 1rem;
+  color: #263D42;
+  background-color: #ffffff;
+  padding: 10px;
+}
+
+select:hover {
+  background-color: #f4f4f4;
+}
+
 </style>
