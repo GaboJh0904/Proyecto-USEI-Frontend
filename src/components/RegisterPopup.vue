@@ -1,7 +1,7 @@
 <template>
-  <div class="popup-overlay" @click.self="$emit('close')">
+  <div class="popup-overlay" @click.self="closePopup">
     <div class="popup-content">
-      <button class="close-btn" @click="$emit('close')">&times;</button>
+      <button class="close-btn" @click="closePopup">&times;</button>
       <h2>Registro de Estudiante</h2>
       <div class="popup-form-scroll">
         <form @submit.prevent="handleSubmit">
@@ -122,6 +122,9 @@ export default {
     };
   },
   methods: {
+    closePopup() {
+      this.$emit('close');
+    },
     togglePassword() {
       this.showPassword = !this.showPassword;
     },

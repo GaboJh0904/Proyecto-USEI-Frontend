@@ -94,7 +94,6 @@
       @switch-to-change-password="switchToChangePassword"
       @switch-to-code-verification="switchToCodeVerification"
     />
-    <RegisterPopup v-if="showRegisterPopup" @close="showRegisterPopup = false" />
     <AdminLoginPopup 
       v-if="showAdminLoginPopup" 
       @close="showAdminLoginPopup = false" 
@@ -120,7 +119,6 @@
 
 <script>
 import LoginPopup from '@/components/LoginPopup.vue';
-import RegisterPopup from '@/components/RegisterPopup.vue';
 import UserProfilePopup from '@/components/UserProfilePopup.vue';
 import AdminLoginPopup from '@/components/AdminLoginPopup.vue';
 import ChangePasswordPopup from '@/components/ChangePasswordPopup.vue';
@@ -131,7 +129,6 @@ export default {
   name: 'NavBar',
   components: {
     LoginPopup,
-    RegisterPopup,
     UserProfilePopup,
     AdminLoginPopup,
     ChangePasswordPopup,
@@ -211,13 +208,6 @@ export default {
     switchToStudentLogin() {
     this.showAdminLoginPopup = false;
     this.showLoginPopup = true;
-    this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
-    this.showCodeVerificationPopup = false;
-  },
-  switchToRegister() {
-    this.showLoginPopup = false;
-    this.showAdminLoginPopup = false;
-    this.showRegisterPopup = true;
     this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
     this.showCodeVerificationPopup = false;
   },

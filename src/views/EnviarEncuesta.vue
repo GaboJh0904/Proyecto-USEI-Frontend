@@ -223,13 +223,23 @@ export default {
       this.showColumnsMenu = !this.showColumnsMenu;
     },
     async enviarCertificado(idEstudiante) {
+      Swal.fire({
+          title: 'Enviando certificado...',
+          text: 'Por favor espera un momento.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
       try {
         await this.$protectedAxios.post(`${BASE_URL}/certificado/remision`, null, {
           params: { idEstudiante },
         });
+        Swal.close();
         Swal.fire("Certificado enviado correctamente", "", "success");
         this.fetchEstudiantes(this.currentPage);
       } catch (error) {
+        Swal.close();
         Swal.fire("Error", "No se pudo enviar el certificado", "error");
         console.error("Error al enviar el certificado:", error);
       }

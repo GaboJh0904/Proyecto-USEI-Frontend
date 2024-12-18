@@ -25,7 +25,6 @@
       <!-- Botón para Admin/Director -->
       <button class="role-btn" @click="$emit('switch-to-admin-login')">Admin / Director</button>
 
-      <button class="register-btn" @click="$emit('switch-to-register')">Registrarse</button>
     </div>
   </div>
 </template>
