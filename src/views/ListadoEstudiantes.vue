@@ -22,8 +22,15 @@
             <span>Cargar CSV</span>
             <div class="liquid"></div>
           </a>
+
+          <a href="#" class="liquid-button" @click="openRegisterPopup">
+            <span>Registrar Estudiante</span>
+            <div class="liquid"></div>
+          </a>
         </div>
       </div>
+
+      <RegisterPopup v-if="showRegisterPopup" @close="closeRegisterPopup" />
 
       <!-- Botón para guardar cambios o cancelar -->
       <div v-if="editingIndex !== null" class="save-button-container">
@@ -133,17 +140,21 @@ import NavBar from '@/components/NavBar.vue';
 import FooterComponent from '@/components/FooterComponent.vue';
 import Swal from 'sweetalert2';
 import PaginationComponent from '@/components/PaginationComponent.vue';
+import RegisterPopup from '@/components/RegisterPopup.vue';
 import { BASE_URL } from '@/config/globals';
 
 export default {
   name: 'ListadoEstudiantes',
   components: {
     NavBar,
+    RegisterPopup,
     FooterComponent,
     PaginationComponent,
+
   },
   data() {
     return {
+      showRegisterPopup: false,
       userRole: '',
       userName: '',
       estudiantes: [],
@@ -171,6 +182,13 @@ export default {
     };
   },
   methods: {
+    openRegisterPopup() {
+      this.showRegisterPopup = true;
+    },
+    closeRegisterPopup() {
+      this.showRegisterPopup = false;
+    },
+
     handleFileUpload(event) {
       this.file = event.target.files[0];
     },
@@ -208,7 +226,7 @@ export default {
         formData.append('file', this.file);
 
         try {
-          await this.$protectedAxios.post(`${BASE_URL}/estudiante/csv-estudiantes`, formData, {
+          await this.$protectedAxios.post(`${BASE_URL}/estudiante/upload-csv`, formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
             },

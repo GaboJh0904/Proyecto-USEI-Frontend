@@ -4,20 +4,8 @@
       <img src="@/components/images/USEI.png" alt="Logo" />
     </div>
     <div class="nav-links">
-      <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
-      <template v-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante || isDashboard ||isReporteDashboard || isSubirCertificado ||isHistorialReportes
-      ">
-        <!-- Botón "Volver" con icono -->
-        <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
-          <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
-        </button>
-        <button @click="openSupport" class="icon-button support-icon" title="Soporte">
-          <i class="fas fa-headset"></i>
-        </button>
-      </template>
-
       <!-- Mostrar opciones de usuario y notificaciones cuando está logueado -->
-      <template v-else>
+      <template v-if="isMenuAdministador || isMenuDirector || isMenuEstudiante || isMenuPrincipal ">
         <!-- Regular navigation options -->
         <a v-if="!userRole" href="#carrusel" class="navigation-link">Noticias</a>
         <a v-if="!userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
@@ -33,8 +21,19 @@
         </button>
       </template>
 
+      <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
+      <template v-else>
+        <!-- Botón "Volver" con icono -->
+        <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
+          <i class="fas fa-arrow-left"></i> <!-- Icono de flecha -->
+        </button>
+        <button @click="openSupport" class="icon-button support-icon" title="Soporte">
+          <i class="fas fa-headset"></i>
+        </button>
+      </template>
+
       <!-- Mostrar notificaciones y perfil si el usuario está logueado -->
-      <template v-if="userRole">
+      <template v-if="isStudent">
         <button @click="toggleNotifications" class="icon-button notification-icon" :class="{ 'has-unread': hasUnreadNotifications }">
           <i class="fas fa-bell"></i>
         </button>
@@ -65,7 +64,9 @@
             </template>
           </div>
         </div>
+      </template>
 
+      <template v-if="userRole">
         <div class="user-wrapper">
           <button @click="openUserProfile" class="icon-button user-icon">
             <i class="fas fa-user-circle"></i>
@@ -93,7 +94,6 @@
       @switch-to-change-password="switchToChangePassword"
       @switch-to-code-verification="switchToCodeVerification"
     />
-    <RegisterPopup v-if="showRegisterPopup" @close="showRegisterPopup = false" />
     <AdminLoginPopup 
       v-if="showAdminLoginPopup" 
       @close="showAdminLoginPopup = false" 
@@ -119,7 +119,6 @@
 
 <script>
 import LoginPopup from '@/components/LoginPopup.vue';
-import RegisterPopup from '@/components/RegisterPopup.vue';
 import UserProfilePopup from '@/components/UserProfilePopup.vue';
 import AdminLoginPopup from '@/components/AdminLoginPopup.vue';
 import ChangePasswordPopup from '@/components/ChangePasswordPopup.vue';
@@ -130,7 +129,6 @@ export default {
   name: 'NavBar',
   components: {
     LoginPopup,
-    RegisterPopup,
     UserProfilePopup,
     AdminLoginPopup,
     ChangePasswordPopup,
@@ -161,11 +159,11 @@ export default {
     };
   },
   computed: {
-    isEncuestaEstudiante() {
-      return this.$route.path === '/encuesta-estudiante';
+    isMenuPrincipal() {
+      return this.$route.path === '/';
     },
-    isGestionDirectores() {
-      return this.$route.path === '/gestion-directores';
+    isMenuEstudiante() {
+      return this.$route.path === '/menu-estudiante';
     },
     isHistorialReportes() {
       return this.$route.path === '/historial-reportes';
@@ -173,17 +171,11 @@ export default {
     isSubirCertificado() {
       return this.$route.path === '/subir-certificado';
     },
-    isEnviarEncuesta() {
-      return this.$route.path === '/enviar-encuesta';
+    isMenuAdministador() {
+      return this.$route.path === '/menu-administrador';
     },
-    isListadoEstudiantes() {
-      return this.$route.path === '/listado-estudiantes';
-    },
-    isResumePage() {
-      return this.$route.path === '/resume';
-    },
-    isNoticiaForm(){
-      return this.$route.path === '/noticia-form'
+    isMenuDirector() {
+      return this.$route.path === '/menu-director';
     },
     // Detecta si hay notificaciones sin leer
     hasUnreadNotifications() {
@@ -215,9 +207,6 @@ export default {
     },
     isEstadoEstudiante() {
       return this.$route.path === '/estado-estudiante'
-    },
-    isDashboard() {
-      return this.$route.path === '/dashboard'
     },
     isReporteDashboard() {
       return this.$route.path === '/reporte-dash'
@@ -252,13 +241,6 @@ export default {
     switchToStudentLogin() {
     this.showAdminLoginPopup = false;
     this.showLoginPopup = true;
-    this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
-    this.showCodeVerificationPopup = false;
-  },
-  switchToRegister() {
-    this.showLoginPopup = false;
-    this.showAdminLoginPopup = false;
-    this.showRegisterPopup = true;
     this.showChangePasswordPopup = false; // Asegúrate de cerrar el popup de cambiar contraseña
     this.showCodeVerificationPopup = false;
   },

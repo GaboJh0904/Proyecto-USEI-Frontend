@@ -115,7 +115,7 @@ export default {
           fecha: new Date().toISOString(), // Fecha actual
           estadoNotificacion: false, // Estado inicial como no leído
           estudianteIdEstudiante: { idEstudiante: estudianteId }, // ID del estudiante corregido
-          tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+          tipoNotificacionIdNotificacion: { idNotificacion: 0 } // Tipo de notificación por defecto
         };
 
         // Enviar la notificación

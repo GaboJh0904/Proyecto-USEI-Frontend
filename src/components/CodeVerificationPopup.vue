@@ -62,6 +62,22 @@
     },
     methods: {
       async handleSendCode() {
+        if (this.selectedRole === 'Estudiante') {
+          localStorage.setItem('selectedRole', 'Estudiante');
+          await this.handleSendCodeStudent();
+        } else if (this.selectedRole === 'Director') {
+          localStorage.setItem('selectedRole', 'Director');
+          await this.handleSendCodeDirector();
+        } else {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Selecciona un rol',
+            text: 'Por favor selecciona Estudiante o Director antes de enviar el código.',
+            confirmButtonText: 'Aceptar',
+          });
+        }
+      },
+      async handleSendCodeStudent() {
         // Mostrar mensaje de carga
         Swal.fire({
           title: 'Enviando código...',
@@ -73,7 +89,7 @@
         });
       try {
         // Consumir la API para enviar el código de verificación
-        const response = await this.$publicAxios.post(`${BASE_URL}/estudiante/codigoVerificacion/${this.email}`);
+        const response = await this.$publicAxios.post(`${BASE_URL}/estudiante/enviarCodigoVerificacion/${this.email}`);
         
         // Cerrar el mensaje de carga
         Swal.close();
@@ -90,6 +106,49 @@
 
         // Guardar idEstudiante en localStorage
         localStorage.setItem('idEstudianteCorreo', response.data.idEstudiante);
+    
+      } catch (error) {
+        // Cerrar el mensaje de carga si hay error
+          Swal.close();
+
+      // Mostrar mensaje de error
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo enviar el código de verificación. Intente nuevamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      }
+    },
+    async handleSendCodeDirector() {
+        // Mostrar mensaje de carga
+        Swal.fire({
+          title: 'Enviando código...',
+          text: 'Por favor espera un momento.',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          }
+        });
+      try {
+        // Consumir la API para enviar el código de verificación
+        const response = await this.$publicAxios.post(`${BASE_URL}/usuario/enviarCodigoVerificacion/${this.email}`);
+        
+        // Cerrar el mensaje de carga
+        Swal.close();
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Código enviado',
+          text: 'Se ha enviado un código de verificación a su correo.',
+          confirmButtonText: 'Aceptar',
+        });
+        
+        // Guardar el código enviado que llega en la respuesta del backend
+        this.sentCode = response.data.codigoVerificacion;
+
+        // Guardar idEstudiante en localStorage
+        localStorage.setItem('idDirectorCorreo', response.data.idDirector);
     
       } catch (error) {
         // Cerrar el mensaje de carga si hay error
