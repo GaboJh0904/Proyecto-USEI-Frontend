@@ -32,7 +32,7 @@
               <label for="estado">Estado</label>
               <select v-model="currentNoticia.estado" id="estado" required>
                 <option value="publicado">Publicado</option>
-                <option value="En revision">En Revisión</option>
+                <option value="en revision">En Revisión</option>
               </select>
             </div>
 
@@ -64,7 +64,7 @@
             <select v-model="selectedStatus" @change="fetchNoticias(1)">
               <option value="">Todos los estados</option>
               <option value="publicado">Publicado</option>
-              <option value="En revision">En Revisión</option>
+              <option value="en revision">En Revisión</option>
             </select>
 
             <!-- Selección de cantidad de elementos por página -->
@@ -125,8 +125,11 @@
               </tbody>
             </table>
           </div>
-
-          <PaginationComponent :page-count="totalPages" :current-page="currentPage" @page-changed="handlePageClick" />
+          <PaginationComponent
+            :page-count="totalPages"
+            :current-page="currentPage"
+            @page-changed="handlePageClick"
+          />
         </div>
 
         <!-- Modal para Noticias Archivadas -->
@@ -223,7 +226,9 @@ export default {
 
   mounted() {
     this.userRole = localStorage.getItem('rol') || '';
-    this.fetchNoticias();
+    const savedPage = localStorage.getItem('currentPage');
+    this.currentPage = savedPage ? parseInt(savedPage, 10) : 1;
+    this.fetchNoticias(this.currentPage);
     this.fetchNoticiasArchivadas();
   },
 
@@ -246,26 +251,29 @@ export default {
     },
     // Método para obtener noticias con paginación, filtro y ordenación
     async fetchNoticias(page = 1) {
-      try {
-        const estadoFilter = this.selectedStatus ? this.selectedStatus : ''; 
+  this.currentPage = page; // Sincroniza la página seleccionada
+  try {
+    // Maneja el estado vacío como null
+    const estadoFilter = this.selectedStatus ? this.selectedStatus.trim().toLowerCase() : null; 
+    const filterTerm = this.filterTerm ? this.filterTerm.trim().toLowerCase() : null; // Normaliza el filtro de texto
 
-        const response = await this.$protectedAxios.get(`${BASE_URL}/noticia`, {
-          params: {
-            page: page - 1,
-            size: this.perPage,
-            sortBy: this.sortBy,
-            sortDirection: this.sortDirection,
-            filter: this.filterTerm,
-            estado: estadoFilter,
-          },
-        });
-        this.noticias = response.data.content.filter(noticia => noticia.estado !== 'archivado');
-        this.totalPages = response.data.totalPages;
-        this.currentPage = page;
-      } catch (error) {
-        console.error('Error al cargar las noticias:', error);
-      }
-    },
+    const response = await this.$protectedAxios.get(`${BASE_URL}/noticia`, {
+      params: {
+        page: page - 1, // Ajuste para la paginación backend
+        size: this.perPage,
+        sortBy: this.sortBy,
+        sortDirection: this.sortDirection,
+        filter: filterTerm, // Enviar filtro general
+        estado: estadoFilter, // Enviar estado filtrado o null
+      },
+    });
+
+    this.noticias = response.data.content;
+    this.totalPages = response.data.totalPages;
+  } catch (error) {
+    console.error('Error al cargar las noticias:', error);
+  }
+},
 
 
     // Método para obtener noticias archivadas
@@ -313,8 +321,10 @@ export default {
     },
 
     handlePageClick(pageNumber) {
-      this.fetchNoticias(pageNumber);
-    },
+    this.currentPage = pageNumber;
+    localStorage.setItem('currentPage', pageNumber); // Guarda la página actual
+    this.fetchNoticias(pageNumber);
+  },
     handleArchivedPageClick(pageNumber) {
       this.fetchNoticiasArchivadas(pageNumber);
     },
@@ -533,9 +543,9 @@ export default {
     // Alternar la dirección de orden (ascendente/descendente)
     toggleSortDirection() {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-      this.fetchNoticias(1); // Refrescar la tabla
+      this.fetchNoticias(1); // Refresca la tabla con la nueva dirección
     },
-    
+
     // Resetear formulario
     resetForm() {
       this.currentNoticia = {
@@ -543,7 +553,7 @@ export default {
         descripcion: '',
         img: null,
         estado: 'publicado',
-        fechaModificado: new Date().toISOString().split('T')[0],
+        fechaModificado: new Date().toISOString(), // Asegúrate de incluir la hora
       };
       this.isEditing = false;
 

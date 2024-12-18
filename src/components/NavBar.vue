@@ -165,6 +165,12 @@ export default {
     isMenuEstudiante() {
       return this.$route.path === '/menu-estudiante';
     },
+    isHistorialReportes() {
+      return this.$route.path === '/historial-reportes';
+    },
+    isSubirCertificado() {
+      return this.$route.path === '/subir-certificado';
+    },
     isMenuAdministador() {
       return this.$route.path === '/menu-administrador';
     },
@@ -175,9 +181,36 @@ export default {
     hasUnreadNotifications() {
       return this.notifications.some(notification => !notification.read);
     },
-    isStudent() {
-      return localStorage.getItem('rol') === 'estudiante';
+    isFormularioSoporte(){
+      return this.$route.path === '/formulario-soporte'
     },
+    isContactoAdmin(){
+      return this.$route.path === '/contacto-admin'
+    },
+    isEstudiantesRegistrados() {
+      return this.$route.path === '/estudiantes-registrados'
+    },
+    isFormularioPlazos() {
+      return this.$route.path === '/formulario-plazos'
+    },
+    isPorcentajeIncompleto() {
+      return this.$route.path === '/porcentaje-incompleto'
+    },
+    isGestionEncuesta() {
+      return this.$route.path === '/gestion-encuestas'
+    },
+    isSoporteDirector() {
+      return this.$route.path === '/soporte-director'
+    },
+    isVerPreguntas() {
+      return this.$route.path === '/lista-preguntas'
+    },
+    isEstadoEstudiante() {
+      return this.$route.path === '/estado-estudiante'
+    },
+    isReporteDashboard() {
+      return this.$route.path === '/reporte-dash'
+    }
   },
   watch: {
     estudianteId(newVal, oldVal) {

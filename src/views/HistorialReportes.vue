@@ -225,7 +225,7 @@ export default {
 }
   
 .search-button {
-  background-color: #007bff;
+  background-color: #80ced7;
   color: white;
   border: none;
   padding: 10px;
@@ -234,7 +234,7 @@ export default {
 }
 
 .sort-button {
-  background-color: #28a745;
+  background-color: #8e6c88;
   color: white;
   padding: 10px;
   border-radius: 5px;
@@ -270,18 +270,18 @@ export default {
 }
   
 .download-btn {
-  background-color: #007bff;
+  background-color: #63c7b2;
   color: white;
   margin-right: 10px;
 }
   
 .delete-btn {
-  background-color: #dc3545;
+  background-color: #8e6c88;
   color: white;
 }
   
 .create-report-btn {
-  background-color: #17a2b8;
+  background-color: #63c7b2;
   color: white;
   padding: 10px 20px;
   border-radius: 5px;

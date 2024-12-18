@@ -13,16 +13,16 @@
             type="text"
             v-model="searchQuery"
             placeholder="Buscar por nombre..."
-            @input="fetchEstudiantes(1)"
-           />
+            @input="applyFilters"
+          />
 
-          <select v-model="selectedEstado" @change="fetchEstudiantes(1)">
+          <select v-model="selectedEstado" @change="applyFilters">
           <option value="">Todos los estados</option>
           <option value="pendiente">Pendiente</option>
           <option value="enviado">Enviado</option>
         </select>
 
-          <select v-model="perPage" @change="fetchEstudiantes(1)">
+          <select v-model="perPage" @change="applyFilters">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
@@ -113,9 +113,9 @@
 
         <!-- Paginación -->
         <PaginationComponent
-          :page-count="totalPages"
-          :current-page="currentPage"
-          @page-changed="fetchEstudiantes"
+        :page-count="totalPages"
+        :current-page="currentPage"
+        @page-changed="fetchEstudiantes"
         />
       </div>
     </main>
@@ -158,7 +158,9 @@ export default {
     };
   },
   mounted() {
-    this.fetchEstudiantes();
+    const savedPage = localStorage.getItem('currentPageEncuesta');
+    this.currentPage = savedPage ? parseInt(savedPage, 10) : 1;
+    this.fetchEstudiantes(this.currentPage);
   },
   computed: {
     sortedEstudiantes() {
@@ -167,40 +169,36 @@ export default {
 },
 
   methods: {
+    async applyFilters() {
+    this.currentPage = 1; // Reinicia a la página 1
+    localStorage.setItem('currentPageEncuesta', 1); // Guarda la página inicial
+    this.fetchEstudiantes(1); // Llama con la página inicial
+  },
     async fetchEstudiantes(page = 1) {
-  try {
-    const params = {
-      page: page - 1, // Backend empieza desde 0
-      size: this.perPage,
-      sortBy: "estudianteIdEstudiante.nombre",
-      sortDirection: this.sortOrder,
-      estado: this.selectedEstado.trim(), // Estado seleccionado
-      asignatura: this.selectedAsignatura.trim(), // Asignatura seleccionada
-    };
+      this.currentPage = page; // Sincroniza la página seleccionada
+      localStorage.setItem('currentPageEncuesta', page); // Guarda la página actual en localStorage
+      try {
+        const params = {
+          page: page - 1, // Backend espera base 0
+          size: this.perPage,
+          sortBy: "estudianteIdEstudiante.nombre",
+          sortDirection: this.sortOrder,
+          estado: this.selectedEstado.trim(),
+          asignatura: this.selectedAsignatura.trim(),
+        };
 
+        if (this.searchQuery.trim()) {
+          params.searchQuery = this.searchQuery.trim();
+        }
 
-    if (this.searchQuery.trim()) {
-      params.searchQuery = this.searchQuery.trim();
-    }
-
-    if (this.selectedEstado.trim()) {
-      params.estado = this.selectedEstado.trim();
-    }
-
-    if (this.selectedAsignatura.trim()) {
-      params.asignatura = this.selectedAsignatura.trim();
-    }
-
-    const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
-
-    this.estudiantes = response.data.content;
-    this.totalPages = response.data.totalPages;
-    this.currentPage = page;
-  } catch (error) {
-    console.error("Error al obtener los estudiantes:", error);
-    this.estudiantes = [];
-  }
-},
+        const response = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/paginado`, { params });
+        this.estudiantes = response.data.content;
+        this.totalPages = response.data.totalPages;
+      } catch (error) {
+        console.error("Error al obtener los estudiantes:", error);
+        this.estudiantes = [];
+      }
+    },
 
     toggleSortDirection() {
       this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
@@ -291,6 +289,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-bottom: 100px;
 }
 
 .table-subtitle {
