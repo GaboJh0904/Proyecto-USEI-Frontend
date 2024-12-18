@@ -17,7 +17,7 @@
             <div class="line"></div>
           </div>
           <!-- Estado del Certificado -->
-          <div :class="['timeline-item', hasFilled && estadoCertificado === 'pendiente' ? 'pending animated' : (estadoCertificado === 'enviado' ? 'completed' : 'disabled')]">
+          <div :class="['timeline-item', hasFilled && estadoCertificado === 'Pendiente' ? 'pending animated' : (estadoCertificado === 'Enviado' ? 'completed' : 'disabled')]">
             <div class="icon-wrapper pending-icon">
               <span v-if="estadoCertificado === 'enviado'">✔️</span>
               <span v-else>📄</span>
@@ -27,7 +27,7 @@
           </div>
 
         <!-- Certificado Listo -->
-          <div :class="['timeline-item', estadoCertificado === 'enviado' ? 'completed animated' : 'disabled']">
+          <div :class="['timeline-item', estadoCertificado === 'Enviado' ? 'completed animated' : 'disabled']">
             <div class="icon-wrapper disabled-icon">📄</div>
             <div class="status-text">Certificado listo</div>
           </div>
@@ -84,7 +84,7 @@ export default {
             const certificadoResponse = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/estado/${estudianteId}`);
             if (certificadoResponse.status === 200) {
                 this.estadoCertificado = certificadoResponse.data; 
-                  if (this.estadoCertificado === 'enviado') {
+                  if (this.estadoCertificado === 'Enviado') {
                     const archivoResponse = await this.$protectedAxios.get(`${BASE_URL}/estado_certificado/archivo/directo/${estudianteId}`, {
                       responseType: 'blob'  
                   });

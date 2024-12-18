@@ -44,7 +44,8 @@
       return {
         newPassword: '',      // Nueva contraseña
         confirmPassword: '',  // Confirmar nueva contraseña
-        errorMessage: ''      // Mensaje de error
+        errorMessage: '',      // Mensaje de error
+        selectedRole: localStorage.getItem('selectedRole'), // Obtener rol almacenado
       };
     },
     methods: {
@@ -67,24 +68,31 @@
         this.errorMessage = '';
   
         try {
-          // Obtener el idEstudiante desde localStorage
-          const idEstudiante = localStorage.getItem('idEstudianteCorreo');
-          // Llamada al backend para cambiar la contraseña
-          await this.$publicAxios.put(`${BASE_URL}/estudiante/new-password?idEstudiante=${idEstudiante}`, {
-            newPassword: this.newPassword
-          });
+          if (this.selectedRole === 'Director') {
+            const idDirector = localStorage.getItem('idDirectorCorreo');
+            await this.$publicAxios.put(`${BASE_URL}/usuario/change-password?idUsuario=${idDirector}`, {
+              newPassword: this.newPassword
+            });
+          } else if (this.selectedRole === 'Estudiante') {
+            // Obtener el idEstudiante desde localStorage
+            const idEstudiante = localStorage.getItem('idEstudianteCorreo');
+            // Llamada al backend para cambiar la contraseña
+            await this.$publicAxios.put(`${BASE_URL}/estudiante/change-password?idEstudiante=${idEstudiante}`, {
+              newPassword: this.newPassword
+            });
 
-          const notification = {
-            titulo: "Cambio de contraseña exitosa",
-            contenido: "Se realizo el cambio de contraseña exitosamente. Si no deseo realizar el cambio de contraseña, contactese con Soporte Técnico",
-            fecha: new Date().toISOString(), // Fecha actual
-            estadoNotificacion: false, // Estado inicial como no leído
-            estudianteIdEstudiante: { idEstudiante: idEstudiante }, // ID del estudiante corregido
-            tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
-          };
+            const notification = {
+              titulo: "Cambio de contraseña exitosa",
+              contenido: "Se realizo el cambio de contraseña exitosamente. Si no deseo realizar el cambio de contraseña, contactese con Soporte Técnico",
+              fecha: new Date().toISOString(), // Fecha actual
+              estadoNotificacion: false, // Estado inicial como no leído
+              estudianteIdEstudiante: { idEstudiante: idEstudiante }, // ID del estudiante corregido
+              tipoNotificacionIdNotificacion: { idNotificacion: 1 } // Tipo de notificación por defecto
+            };
 
-          // Enviar la notificación
-          await this.$publicAxios.post(`${BASE_URL}/notificacion`, notification);
+            // Enviar la notificación
+            await this.$publicAxios.post(`${BASE_URL}/notificacion`, notification);
+          }
   
           // Manejar respuesta exitosa
           Swal.fire({

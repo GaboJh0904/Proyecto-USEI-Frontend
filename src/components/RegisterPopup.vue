@@ -1,7 +1,7 @@
 <template>
-  <div class="popup-overlay" @click.self="$emit('close')">
+  <div class="popup-overlay" @click.self="closePopup">
     <div class="popup-content">
-      <button class="close-btn" @click="$emit('close')">&times;</button>
+      <button class="close-btn" @click="closePopup">&times;</button>
       <h2>Registro de Estudiante</h2>
       <div class="popup-form-scroll">
         <form @submit.prevent="handleSubmit">
@@ -122,6 +122,9 @@ export default {
     };
   },
   methods: {
+    closePopup() {
+      this.$emit('close');
+    },
     togglePassword() {
       this.showPassword = !this.showPassword;
     },
@@ -165,44 +168,63 @@ export default {
         return;
       }
 
-      const estudianteData = {
-        ci: this.ci,
-        nombre: this.nombre,
-        apellido: this.apellido,
-        correoInstitucional: this.correoInstitucional,
-        correoPersonal: this.correoPersonal,
-        carrera: this.carrera,
-        asignatura: this.asignatura,
-        telefono: this.telefono,
-        anio: this.anio,
-        semestre: this.semestre,
-        contrasena: this.contrasena  
-      };
-
       try {
-        await this.$publicAxios.post(`${BASE_URL}/estudiante`, estudianteData, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+        // Verificar si el estudiante ya existe
+        const verificationResponse = await this.$publicAxios.post(`${BASE_URL}/estudiante/existing-student`, {
+          ci: parseInt(this.ci)
         });
 
-        Swal.fire({
-          icon: 'success',
-          title: 'Registro exitoso',
-          text: 'El estudiante ha sido registrado correctamente.',
-          confirmButtonText: 'Aceptar'
-        });
+        if (verificationResponse.status === 200) {
+          // Si no existe, proceder con el registro
+          const estudianteData = {
+            ci: this.ci,
+            nombre: this.nombre,
+            apellido: this.apellido,
+            correoInstitucional: this.correoInstitucional,
+            correoPersonal: this.correoPersonal,
+            carrera: this.carrera,
+            asignatura: this.asignatura,
+            telefono: this.telefono,
+            anio: this.anio,
+            semestre: this.semestre,
+            contrasena: this.contrasena
+          };
 
-        this.$emit('close');
+          await this.$publicAxios.post(`${BASE_URL}/estudiante`, estudianteData, {
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            }
+          });
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Registro exitoso',
+            text: 'El estudiante ha sido registrado correctamente.',
+            confirmButtonText: 'Aceptar'
+          });
+
+          this.$emit('close');
+        }
       } catch (error) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error en el registro',
-          text: 'Ha ocurrido un error durante el registro. Inténtelo de nuevo.',
-          confirmButtonText: 'Aceptar'
-        });
-        console.error('Error en el registro:', error.response ? error.response.data : error.message);
+        if (error.response && error.response.status === 409) {
+          // Si el estudiante ya existe
+          Swal.fire({
+            icon: 'error',
+            title: 'Estudiante ya registrado',
+            text: 'El estudiante con este CI ya está registrado.',
+            confirmButtonText: 'Aceptar'
+          });
+        } else {
+          // Otros errores
+          Swal.fire({
+            icon: 'error',
+            title: 'Error en la verificación',
+            text: 'Ha ocurrido un error durante la verificación. Inténtelo de nuevo.',
+            confirmButtonText: 'Aceptar'
+          });
+          console.error('Error en la verificación:', error.response ? error.response.data : error.message);
+        }
       }
     }
   }
