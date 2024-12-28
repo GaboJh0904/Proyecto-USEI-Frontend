@@ -12,6 +12,23 @@
         </a>
       </template>
 
+      <!-- Mostrar opciones de usuario y notificaciones cuando está logueado -->
+      <template v-if="isMenuAdministador || isMenuDirector || isMenuEstudiante || isMenuPrincipal ">
+        <!-- Regular navigation options -->
+        <a v-if="!userRole" href="#carrusel" class="navigation-link">Noticias</a>
+        <a v-if="!userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
+        <a v-if="!userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
+
+        <!-- Opciones si el usuario está logueado -->
+        <a v-if="userRole" href="#noticias" class="navigation-link">Noticias</a>
+        <a v-if="userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
+        <a v-if="userRole" href="#panel" class="navigation-link">Panel</a>
+        <a v-if="userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
+        <button v-if="userRole" @click="openSupport" class="icon-button support-icon" title="Soporte">
+          <i class="fas fa-headset"></i>
+        </button>
+      </template>
+      
       <!-- Condiciones para EncuestaEstudiante, GestionDirectores y otras vistas -->
       <template v-else-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante || isDashboard ||isReporteDashboard || isSubirCertificado ||isHistorialReportes
       ">
@@ -23,19 +40,7 @@
         </button>
       </template>
 
-      <!-- Opciones regulares para otras vistas -->
-      <template v-else>
-        <a v-if="!userRole" href="#carrusel" class="navigation-link">Noticias</a>
-        <a v-if="!userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
-        <a v-if="!userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
-        <a v-if="userRole" href="#noticias" class="navigation-link">Noticias</a>
-        <a v-if="userRole" href="#about" class="navigation-link">Sobre Nosotros</a>
-        <a v-if="userRole" href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
-        <a v-if="userRole" href="#panel" class="navigation-link">Panel</a>
-        <button v-if="userRole" @click="openSupport" class="icon-button support-icon" title="Soporte">
-          <i class="fas fa-headset"></i>
-        </button>
-      </template>
+      
 
       <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
       <template v-else>
@@ -197,6 +202,11 @@ export default {
     },
     isMenuDirector() {
       return this.$route.path === '/menu-director';
+    },
+     // Detecta si hay notificaciones sin leer
+     
+    isStudent() {
+      return localStorage.getItem('rol') === 'estudiante';
     },
     // Detecta si hay notificaciones sin leer
     hasUnreadNotifications() {

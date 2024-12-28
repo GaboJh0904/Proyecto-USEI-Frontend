@@ -139,6 +139,7 @@
             <button class="btn-ingresar" @click="goToNoticiaForm">Ingresar</button>
           </div>
         </div>
+<!--         
         <div class="card-wrapper">
           <div class="card">
             <img src="@/components/images/estudiantes_registrados.png" alt="Estudiantes Registrados" class="card-icon" />
@@ -147,7 +148,7 @@
           <div class="card-button-container">
             <button class="btn-ingresar" @click="goToEstudiantesRegistrados">Ingresar</button>
           </div>
-        </div>
+        </div> -->
 
          <!--Card 11 para Plazos -->
          <div class="card-wrapper">
