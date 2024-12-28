@@ -4,6 +4,14 @@
       <img src="@/components/images/USEI.png" alt="Logo" />
     </div>
     <div class="nav-links">
+      <!-- Priorizar la vista de reporte-dash -->
+      <template v-if="isReporteDash">
+        <a href="#footer" class="navigation-link">Contacto y Redes Sociales</a>
+        <a @click.prevent="goToPreviousPage" class="navigation-link" title="Volver al Panel">
+          Panel
+        </a>
+      </template>
+
       <!-- Mostrar opciones de usuario y notificaciones cuando está logueado -->
       <template v-if="isMenuAdministador || isMenuDirector || isMenuEstudiante || isMenuPrincipal ">
         <!-- Regular navigation options -->
@@ -20,6 +28,19 @@
           <i class="fas fa-headset"></i>
         </button>
       </template>
+      
+      <!-- Condiciones para EncuestaEstudiante, GestionDirectores y otras vistas -->
+      <template v-else-if="isEncuestaEstudiante || isGestionDirectores || isEnviarEncuesta || isListadoEstudiantes || isResumePage || isNoticiaForm || isFormularioSoporte || isContactoAdmin || isEstudiantesRegistrados || isFormularioPlazos || isPorcentajeIncompleto || isGestionEncuesta || isSoporteDirector || isVerPreguntas || isEstadoEstudiante || isDashboard ||isReporteDashboard || isSubirCertificado ||isHistorialReportes
+      ">
+        <button @click="goToPreviousPage" class="icon-button volver-icon" title="Volver">
+          <i class="fas fa-arrow-left"></i>
+        </button>
+        <button @click="openSupport" class="icon-button support-icon" title="Soporte">
+          <i class="fas fa-headset"></i>
+        </button>
+      </template>
+
+      
 
       <!-- Si el usuario está en EncuestaEstudiante o GestionDirectores, solo mostrar "Volver" y "Soporte" -->
       <template v-else>
@@ -32,7 +53,7 @@
         </button>
       </template>
 
-      <!-- Mostrar notificaciones y perfil si el usuario está logueado -->
+      <!-- Notificaciones y perfil del usuario si está logueado -->
       <template v-if="isStudent">
         <button @click="toggleNotifications" class="icon-button notification-icon" :class="{ 'has-unread': hasUnreadNotifications }">
           <i class="fas fa-bell"></i>
@@ -49,14 +70,12 @@
                   <p>{{ notification.time }}</p>
                 </div>
               </div>
-              
-              <!-- Botón para retroceder a la página anterior -->
+
+              <!-- Botones para retroceder y cargar más notificaciones -->
               <div class="pagination-buttons">
                 <button v-if="currentPage > 0" @click="loadNotifications(currentPage - 1)" class="load-more-button prev-button">
                   ← Volver a Notificaciones Anteriores
                 </button>
-
-                <!-- Mostrar el botón de "Cargar más" solo si hay más páginas -->
                 <button v-if="currentPage < totalPages - 1" @click="loadNotifications(currentPage + 1)" class="load-more-button">
                   Cargar más
                 </button>
@@ -78,11 +97,12 @@
         </div>
       </template>
 
-      <!-- Mostrar el botón de iniciar sesión si no está logueado -->
+      <!-- Mostrar botón de iniciar sesión si no está logueado -->
       <template v-if="!userRole">
         <a href="#" class="login-btn" @click="showLoginPopup = true">Iniciar Sesión</a>
       </template>
     </div>
+
 
     <!-- Popups para login, perfil, etc. -->
     <UserProfilePopup v-if="showUserProfile" @close="closeUserProfile" />
@@ -159,11 +179,17 @@ export default {
     };
   },
   computed: {
+    isEncuestaEstudiante() {
+      return this.$route.path === '/encuesta-estudiante' && !this.isReporteDash;
+    },
     isMenuPrincipal() {
       return this.$route.path === '/';
     },
     isMenuEstudiante() {
       return this.$route.path === '/menu-estudiante';
+    },
+    isGestionDirectores() {
+      return this.$route.path === '/gestion-directores'&& !this.isReporteDash;
     },
     isHistorialReportes() {
       return this.$route.path === '/historial-reportes';
@@ -176,6 +202,11 @@ export default {
     },
     isMenuDirector() {
       return this.$route.path === '/menu-director';
+    },
+     // Detecta si hay notificaciones sin leer
+     
+    isStudent() {
+      return localStorage.getItem('rol') === 'estudiante';
     },
     // Detecta si hay notificaciones sin leer
     hasUnreadNotifications() {
@@ -210,7 +241,10 @@ export default {
     },
     isReporteDashboard() {
       return this.$route.path === '/reporte-dash'
-    }
+    },
+    isReporteDash() {
+      return this.$route.path === '/reporte-dash'; 
+    },
   },
   watch: {
     estudianteId(newVal, oldVal) {
@@ -317,6 +351,14 @@ export default {
     openUserProfile() {
       this.showUserProfile = true;
     },
+    goToPanel() {
+      if (this.isReporteDash) {
+        this.$router.push('/menu-administrador'); // Redirigir al panel principal desde /reporte-dash
+      } else {
+        this.$router.go(-1); // Volver a la página anterior para otras vistas
+      }
+    },
+
     closeUserProfile() {
       this.showUserProfile = false;
     },
